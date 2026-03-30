@@ -1,4 +1,4 @@
-function IntegrationScatterplot() {
+function IntegrationScatterplot({ mode = "standard" }) {
   const GEOM = {
     xMin: -0.2,
     xMax: 1.3,
@@ -25,11 +25,19 @@ function IntegrationScatterplot() {
     bg: "rgb(255, 255, 255)",
     greenHex: "#339e47",
     redHex: "#c72e33",
+    combo: "rgb(124, 58, 237)",
+    comboFill: "rgba(124, 58, 237, 0.14)",
+    gold: "rgb(245, 158, 11)",
   };
 
   const DOT = {
     baseSize: 18,
     sizeScale: 2800,
+  };
+
+  const COMBO = {
+    pair: [140, 94],
+    multiplier: 5,
   };
 
   const VIEW = {
@@ -144,6 +152,28 @@ function IntegrationScatterplot() {
   function markerRadiusFromWeight(weight) {
     const size = DOT.baseSize + DOT.sizeScale * weight;
     return Math.max(2.2, Math.sqrt(size) * 0.46);
+  }
+
+  function normalizeScores(scores) {
+    const total = scores.reduce((a, b) => a + b, 0);
+    if (total <= 0) return scores.map(() => 0);
+    return scores.map((s) => s / total);
+  }
+
+  function integratedScores(pointsInput, xIntercept, yIntercept) {
+    return pointsInput.map((p) =>
+      Math.max(signedDistanceToIntegrationLine(p.x, p.y, xIntercept, yIntercept), 0)
+    );
+  }
+
+  function weightedPortfolioPoint(pointsInput, weights) {
+    const total = weights.reduce((a, b) => a + b, 0);
+    if (total <= 0) return null;
+
+    const x = pointsInput.reduce((sum, p, i) => sum + weights[i] * p.x, 0);
+    const y = pointsInput.reduce((sum, p, i) => sum + weights[i] * p.y, 0);
+
+    return { x, y };
   }
 
   function clipPoint(point) {
@@ -306,10 +336,42 @@ function IntegrationScatterplot() {
         () => traditionalWeights(points, yH, xV, yP),
         [points, yH, xV, yP]
     );
-    const intW = React.useMemo(
-        () => integratedWeights(points, blueXIntercept, blueYIntercept),
-        [points, blueXIntercept, blueYIntercept]
+    const intScores = React.useMemo(
+      () => integratedScores(points, blueXIntercept, blueYIntercept),
+      [points, blueXIntercept, blueYIntercept]
     );
+
+    const intW = React.useMemo(() => normalizeScores(intScores), [intScores]);
+
+    const comboScores = React.useMemo(() => {
+      const next = [...intScores];
+      COMBO.pair.forEach((i) => {
+        if (next[i] !== undefined) {
+          next[i] *= COMBO.multiplier;
+        }
+      });
+      return next;
+    }, [intScores]);
+
+    const comboW = React.useMemo(() => normalizeScores(comboScores), [comboScores]);
+
+    const leftWeights = mode === "combinatorial" ? intW : tradW;
+    const rightWeights = mode === "combinatorial" ? comboW : intW;
+
+    const leftMask = leftWeights.map((w) => w > 1e-12);
+    const rightMask = rightWeights.map((w) => w > 1e-12);
+    const unfundedMask = leftMask.map((l, i) => !l && !rightMask[i]);
+
+    const integratedPortfolio = React.useMemo(
+      () => weightedPortfolioPoint(points, intW),
+      [points, intW]
+    );
+
+    const comboPortfolio = React.useMemo(
+      () => weightedPortfolioPoint(points, comboW),
+      [points, comboW]
+    );
+
     const integrationParams = React.useMemo(() => {
         const m = -blueYIntercept / blueXIntercept;
         const c = blueYIntercept;
@@ -318,23 +380,20 @@ function IntegrationScatterplot() {
 
   const backgroundUrl = React.useMemo(() => {
     return buildKernelBackground(
-    points,
-    tradW,
-    intW,
-    GEOM,
-    COLORS,
-    yH,
-    xV,
-    yP,
-    blueXIntercept,
-    blueYIntercept,
-    700,
-    500);
-  }, [points, tradW, intW, yH, xV, yP, blueXIntercept, blueYIntercept]);
-
-  const tradMask = tradW.map((w) => w > 1e-12);
-  const intMask = intW.map((w) => w > 1e-12);
-  const unfundedMask = tradMask.map((t, i) => !t && !intMask[i]);
+      points,
+      leftWeights,
+      rightWeights,
+      GEOM,
+      COLORS,
+      yH,
+      xV,
+      yP,
+      blueXIntercept,
+      blueYIntercept,
+      700,
+      500
+    );
+  }, [points, leftWeights, rightWeights, yH, xV, yP, blueXIntercept, blueYIntercept]);
 
     const integrationLine = React.useMemo(() => {
         const candidates = [];
@@ -532,34 +591,42 @@ function IntegrationScatterplot() {
         />
 
         {/* hurdle lines */}
-        <line
-          x1={sx(GEOM.xMin)}
-          y1={sy(yH)}
-          x2={sx(GEOM.xMax)}
-          y2={sy(yH)}
-          stroke={COLORS.orange}
-          strokeWidth="2.2"
-          strokeDasharray="9 8"
-        />
-        <line
-            x1={sx(xV)}
-            y1={sy(GEOM.yMin)}
-            x2={sx(xV)}
-            y2={sy(yP)}
-            stroke={COLORS.orange}
-            strokeWidth="2.2"
-            strokeDasharray="9 8"
-        />
-        <line
-            x1={sx(xV)}
-            y1={sy(yP)}
-            x2={sx(GEOM.xMax)}
-            y2={sy(yP)}
-            stroke={COLORS.orange}
-            strokeWidth="2.2"
-            strokeDasharray="9 8"
-        />
+        {mode === "standard" && (
+          <>
+            <line
+              x1={sx(GEOM.xMin)}
+              y1={sy(yH)}
+              x2={sx(GEOM.xMax)}
+              y2={sy(yH)}
+              stroke={COLORS.orange}
+              strokeWidth="2.2"
+              strokeDasharray="9 8"
+            />
 
+            <line
+              x1={sx(xV)}
+              y1={sy(GEOM.yMin)}
+              x2={sx(xV)}
+              y2={sy(yP)}
+              stroke={COLORS.orange}
+              strokeWidth="2.2"
+              strokeDasharray="9 8"
+            />
+
+            <line
+              x1={sx(xV)}
+              y1={sy(yP)}
+              x2={sx(GEOM.xMax)}
+              y2={sy(yP)}
+              stroke={COLORS.orange}
+              strokeWidth="2.2"
+              strokeDasharray="9 8"
+            />
+          </>
+        )}
+
+{mode === "standard" && (
+  <>
         {/* draggable hit area for traditional hurdle */}
         <line
         x1={sx(GEOM.xMin)}
@@ -595,6 +662,8 @@ function IntegrationScatterplot() {
         style={{ cursor: draggingPhilHorizontal ? "grabbing" : "ns-resize" }}
         onPointerDown={beginPhilHorizontalDrag}
         />
+  </>
+)}
 
         {/* integration line */}
         {integrationLine && (
@@ -664,31 +733,31 @@ function IntegrationScatterplot() {
           ) : null
         )}
 
-        {/* traditional allocation */}
+        {/* left allocation */}
         {points.map((p, i) =>
-          tradMask[i] ? (
+          leftMask[i] ? (
             <circle
-              key={`t-${i}`}
+              key={`left-${i}`}
               cx={sx(p.x)}
               cy={sy(p.y)}
-              r={markerRadiusFromWeight(tradW[i])}
-              fill={COLORS.pointOrange}
-              stroke={COLORS.orange}
-              strokeWidth="1.2"
+              r={markerRadiusFromWeight(leftWeights[i])}
+              fill={mode === "combinatorial" ? "rgba(31, 94, 163, 0.20)" : COLORS.pointOrange}
+              stroke={mode === "combinatorial" ? COLORS.blue : COLORS.orange}
+              strokeWidth={mode === "combinatorial" ? "1.2" : "1.2"}
             />
           ) : null
         )}
 
-        {/* integrated allocation */}
+        {/* right allocation */}
         {points.map((p, i) =>
-          intMask[i] ? (
+          rightMask[i] ? (
             <circle
-              key={`i-${i}`}
+              key={`right-${i}`}
               cx={sx(p.x)}
               cy={sy(p.y)}
-              r={markerRadiusFromWeight(intW[i])}
-              fill="none"
-              stroke={COLORS.blue}
+              r={markerRadiusFromWeight(rightWeights[i])}
+              fill={mode === "combinatorial" ? "none" : "none"}
+              stroke={mode === "combinatorial" ? COLORS.combo : COLORS.blue}
               strokeWidth="1.5"
             />
           ) : null
@@ -715,6 +784,8 @@ function IntegrationScatterplot() {
           Impact
         </text>
 
+{mode === "standard" && (
+  <>
         <text
           x={sx(0.49)}
           y={sy(yH) - 10}
@@ -732,7 +803,8 @@ function IntegrationScatterplot() {
         >
           Traditional philanthropy zone
         </text>
-
+  </>
+)}
         <text
           x={sx(0.44)}
           y={sy(0.4)}
@@ -762,7 +834,80 @@ function IntegrationScatterplot() {
         />
         ))}
 
+        {/* combinatorial pair markers */}
+        {mode === "combinatorial" &&
+          COMBO.pair.map((idx) => {
+            const p = points[idx];
+            if (!p) return null;
+
+            return (
+              <g key={`combo-pair-${idx}`}>
+                <circle
+                  cx={sx(p.x)}
+                  cy={sy(p.y)}
+                  r="10"
+                  fill="none"
+                  stroke={COLORS.gold}
+                  strokeWidth="2.5"
+                />
+                <text
+                  x={sx(p.x) + 10}
+                  y={sy(p.y) - 10}
+                  fontSize="18"
+                  fill={COLORS.gold}
+                >
+                  ★
+                </text>
+              </g>
+            );
+          })}
+
+        {/* portfolio dots for combinatorial tab */}
+        {mode === "combinatorial" && integratedPortfolio && (
+          <g>
+            <circle
+              cx={sx(integratedPortfolio.x)}
+              cy={sy(integratedPortfolio.y)}
+              r="8"
+              fill={COLORS.blue}
+              stroke="white"
+              strokeWidth="2"
+            />
+            <text
+              x={sx(integratedPortfolio.x) + 12}
+              y={sy(integratedPortfolio.y) + 4}
+              fontSize="14"
+              fill={COLORS.blue}
+            >
+              Integrated portfolio
+            </text>
+          </g>
+        )}
+
+        {mode === "combinatorial" && comboPortfolio && (
+          <g>
+            <circle
+              cx={sx(comboPortfolio.x)}
+              cy={sy(comboPortfolio.y)}
+              r="8"
+              fill={COLORS.combo}
+              stroke="white"
+              strokeWidth="2"
+            />
+            <text
+              x={sx(comboPortfolio.x) + 12}
+              y={sy(comboPortfolio.y) + 4}
+              fontSize="14"
+              fill={COLORS.combo}
+            >
+              Combo portfolio
+            </text>
+          </g>
+        )}
+
         {/* legend */}
+        {mode === "standard" && (
+  <>
         <g transform={`translate(${VIEW.width / 2 - 280}, ${VIEW.height - 92})`}>
           <circle cx="0" cy="0" r="8" fill={COLORS.pointOrange} stroke={COLORS.orange} strokeWidth="1.2" />
           <text x="16" y="5" fontSize="14" fill="#0f172a">Traditional allocation</text>
@@ -781,6 +926,82 @@ function IntegrationScatterplot() {
           <circle cx="280" cy="0" r="8" fill="rgba(51, 158, 71, 0.35)" stroke="none" />
           <text x="296" y="5" fontSize="14" fill="#0f172a">Underinvestment without integration</text>
         </g>
+  </>
+)}
+{mode === "combinatorial" && (
+  <>
+    <g transform={`translate(${VIEW.width / 2 - 280}, ${VIEW.height - 92})`}>
+      <circle
+        cx="0"
+        cy="0"
+        r="8"
+        fill="rgba(31, 94, 163, 0.20)"
+        stroke={COLORS.blue}
+        strokeWidth="1.2"
+      />
+      <text x="16" y="5" fontSize="14" fill="#0f172a">
+        Integrated allocation
+      </text>
+
+      <circle
+        cx="220"
+        cy="0"
+        r="8"
+        fill="none"
+        stroke={COLORS.combo}
+        strokeWidth="1.5"
+      />
+      <text x="236" y="5" fontSize="14" fill="#0f172a">
+        Combo allocation
+      </text>
+
+      <circle
+        cx="420"
+        cy="0"
+        r="8"
+        fill="white"
+        stroke={COLORS.grey}
+        strokeWidth="1"
+      />
+      <text x="436" y="5" fontSize="14" fill="#0f172a">
+        Unfunded under both
+      </text>
+    </g>
+
+    <g transform={`translate(${VIEW.width / 2 - 240}, ${VIEW.height - 56})`}>
+      <text x="0" y="5" fontSize="18" fill={COLORS.gold}>
+        ★
+      </text>
+      <text x="18" y="5" fontSize="14" fill="#0f172a">
+        Combinatorial pair
+      </text>
+
+      <circle
+        cx="210"
+        cy="0"
+        r="8"
+        fill={COLORS.blue}
+        stroke="white"
+        strokeWidth="2"
+      />
+      <text x="226" y="5" fontSize="14" fill="#0f172a">
+        Integrated portfolio
+      </text>
+
+      <circle
+        cx="430"
+        cy="0"
+        r="8"
+        fill={COLORS.combo}
+        stroke="white"
+        strokeWidth="2"
+      />
+      <text x="446" y="5" fontSize="14" fill="#0f172a">
+        Combo portfolio
+      </text>
+    </g>
+  </>
+)}
       </svg>
     </div>
   );

@@ -43,6 +43,18 @@ const SCATTERPLOT_SRC = "/integration_scatterplot_concept_v8_preview.svg";
               >
                 Scatterplot
               </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("combinatorial")}
+                className={`rounded-t-2xl border border-slate-300 border-b-0 px-5 py-2 text-sm font-medium transition ${
+                  activeTab === "combinatorial"
+                    ? "bg-white text-slate-900"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                Combinatorial
+              </button>
             </div>
 
             <div className="bg-white rounded-3xl rounded-tl-none shadow-sm border border-slate-300 p-6">
@@ -50,23 +62,18 @@ const SCATTERPLOT_SRC = "/integration_scatterplot_concept_v8_preview.svg";
                 SystemVisualization ? (
                   <SystemVisualization />
                 ) : (
-                  <p className="text-sm text-slate-600">
-                    System visualization not loaded.
-                  </p>
+                  <p className="text-sm text-slate-600">System visualization not loaded.</p>
+                )
+              ) : activeTab === "scatterplot" ? (
+                IntegrationScatterplot ? (
+                  <IntegrationScatterplot mode="standard" />
+                ) : (
+                  <p className="text-sm text-slate-600">Scatterplot visualization not loaded.</p>
                 )
               ) : IntegrationScatterplot ? (
-                <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-3">
-                    <IntegrationScatterplot />
-                    {/* <img
-                      src={SCATTERPLOT_SRC}
-                      alt="Integration scatterplot"
-                      className="w-full h-auto rounded-2xl"
-                    /> */}
-                  </div>
+                <IntegrationScatterplot mode="combinatorial" />
               ) : (
-                <p className="text-sm text-slate-600">
-                  Scatterplot visualization not loaded.
-                </p>
+                <p className="text-sm text-slate-600">Combinatorial visualization not loaded.</p>
               )}
             </div>
           </div>
