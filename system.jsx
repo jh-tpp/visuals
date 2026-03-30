@@ -16,7 +16,7 @@ function Button({ variant = "default", className = "", children, ...props }) {
 }
 
 const FIRMS = ["Firm A", "Firm B", "Firm C", "Firm D"];
-const OUTCOMES = ["Production", "Emissions", "Consumer surplus"];
+const OUTCOMES = ["Production", "Pollution", "Consumer\nsurplus"];
 
 const MODEL = {
   initialInvestorSupply: [8, 3, 6, 2],
@@ -26,8 +26,8 @@ const MODEL = {
     [0.18, 0.22, 1.05, 0.24],
     [0.12, 0.16, 0.24, 0.9],
   ],
-  dDiagonalMultiplier: 10,
-  dOffDiagonalMultiplier: 0.15,
+  dDiagonalMultiplier: 1,
+  dOffDiagonalMultiplier: 0.9,
   returnsKernel: [
     [0.95, 0.18, 0.08, 0.05],
     [0.16, 0.9, 0.14, 0.08],
@@ -35,10 +35,10 @@ const MODEL = {
     [0.05, 0.08, 0.16, 0.92],
   ],
   outcomeKernel: [
-    [0.8, 0.2, 0.6],
-    [0.7, 0.5, 0.4],
-    [0.6, 0.9, 0.7],
-    [0.5, 0.8, 0.9],
+  [2.4, 0.6, 1.8],
+  [2.1, 1.5, 1.2],
+  [1.8, 2.7, 2.1],
+  [1.5, 2.4, 2.7],
   ],
 };
 
@@ -80,7 +80,7 @@ const INVESTOR_NODE = { id: "investor", label: "Investor", x: 90, y: 245, kind: 
 const SUPPLY_NODES = FIRMS.map((label, i) => ({ id: `s-${i}`, label, x: 340, y: 110 + i * 95, kind: "supply" }));
 const PRICE_NODES = FIRMS.map((label, i) => ({ id: `p-${i}`, label, x: 720, y: 110 + i * 95, kind: "price" }));
 const SIZE_NODES = FIRMS.map((label, i) => ({ id: `q-${i}`, label, x: 1100, y: 50 + i * 58, kind: "size" }));
-const RETURN_NODES = FIRMS.map((label, i) => ({ id: `r-${i}`, label, x: 1100, y: 330 + i * 60, kind: "return" }));
+const RETURN_NODES = FIRMS.map((label, i) => ({ id: `r-${i}`, label, x: 1100, y: 390 + i * 60, kind: "return" }));
 const OUTCOME_NODES = OUTCOMES.map((label, i) => ({ id: `o-${i}`, label, x: 1490, y: 130 + i * 110, kind: "outcome" }));
 const ALL_NODES = [
   INVESTOR_NODE,
@@ -91,7 +91,10 @@ const ALL_NODES = [
   ...OUTCOME_NODES,
 ];
 
+const SCATTERPLOT_SRC = "/integration_scatterplot_concept_v8_preview.svg";
+
 function EconomicSystemVisualizationGallery() {
+  const [activeTab, setActiveTab] = useState("system");
   const [naive, setNaive] = useState(false);
   const [investorSupply, setInvestorSupply] = useState(MODEL.initialInvestorSupply);
 
@@ -206,25 +209,63 @@ function EconomicSystemVisualizationGallery() {
       <div className="max-w-[1850px] mx-auto space-y-8">
         <header className="space-y-3">
           <h1 className="text-4xl font-bold tracking-tight">Interactive flow field for a system aware economic model</h1>
-          <p className="text-lg text-slate-700 max-w-6xl">
-            This version uses one explicit pipeline and one explicit visual rule. Path widths are based on path magnitudes. Box sizes are based on the sum of incoming path magnitudes. All non-investor boxes share the same minimum and maximum visual size.
-          </p>
         </header>
 
         <div className="space-y-6">
-          <Panel title="Mode">
-            <p className="text-sm text-slate-600">Switch between the two states.</p>
+          <Panel title="View">
+            <p className="text-sm text-slate-600">Choose which visualization to show.</p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <Button variant={!naive ? "default" : "outline"} onClick={() => setNaive(false)} className="rounded-2xl">
-                System aware
+              <Button
+                variant={activeTab === "system" ? "default" : "outline"}
+                onClick={() => setActiveTab("system")}
+                className="rounded-2xl"
+              >
+                System
               </Button>
-              <Button variant={naive ? "default" : "outline"} onClick={() => setNaive(true)} className="rounded-2xl">
-                Naive
+              <Button
+                variant={activeTab === "scatterplot" ? "default" : "outline"}
+                onClick={() => setActiveTab("scatterplot")}
+                className="rounded-2xl"
+              >
+                Scatterplot
               </Button>
             </div>
           </Panel>
+          {activeTab === "system" && (
+            <>
+              <Panel title="Mode">
+                <p className="text-sm text-slate-600">Switch between the two states.</p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Button variant={!naive ? "default" : "outline"} onClick={() => setNaive(false)} className="rounded-2xl">
+                    System aware
+                  </Button>
+                  <Button variant={naive ? "default" : "outline"} onClick={() => setNaive(true)} className="rounded-2xl">
+                    Naive
+                  </Button>
+                </div>
+              </Panel>
+            </>
+          )}
 
-          <Panel title="Investor supply controls">
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+            <h2 className="text-xl font-semibold text-slate-900">Prototype</h2>
+            {activeTab === "system" ? (
+              <>
+                <div className="mt-6 overflow-x-auto">
+                  <svg viewBox="0 0 1720 860" className="w-full min-w-[1500px]">
+                    <SvgDefs />
+                    <SceneLabels />
+                    <InvestorStage investorSupply={investorSupply} globalFlowMax={globalFlowMax} />
+                    {renderStage(SUPPLY_NODES, PRICE_NODES, flowState.supplyToPrice, "g2", "sp", globalFlowMax, naive)}
+                    {renderStage(PRICE_NODES, SIZE_NODES, flowState.priceToSize, "g3", "pq", globalFlowMax, naive)}
+                    {renderStage(PRICE_NODES, RETURN_NODES, flowState.priceToReturn, "g4", "pr", globalFlowMax, naive)}
+                    {renderStage(SIZE_NODES, OUTCOME_NODES, flowState.sizeToOutcome, "g5", "qo", globalFlowMax, false, true)}
+                    <AllNodes nodeMagnitudes={nodeMagnitudes} globalNodeMax={globalNodeMax} />
+                  </svg>
+                </div>
+
+
+              <Panel title="Investor supply controls">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-slate-600">Drag the handles to reallocate a fixed total supply weight across firms.</p>
               <Button variant="outline" onClick={resetSupply} className="rounded-2xl">
@@ -255,22 +296,19 @@ function EconomicSystemVisualizationGallery() {
               ))}
             </div>
           </Panel>
-
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
-            <h2 className="text-xl font-semibold text-slate-900">Prototype</h2>
-            <p className="text-sm text-slate-600 mt-1">Adjust parameters later by editing the MODEL and VISUAL constants near the top of the file.</p>
-            <div className="mt-6 overflow-x-auto">
-              <svg viewBox="0 0 1720 860" className="w-full min-w-[1500px]">
-                <SvgDefs />
-                <SceneLabels />
-                <InvestorStage investorSupply={investorSupply} globalFlowMax={globalFlowMax} />
-                {renderStage(SUPPLY_NODES, PRICE_NODES, flowState.supplyToPrice, "g2", "sp", globalFlowMax, naive)}
-                {renderStage(PRICE_NODES, SIZE_NODES, flowState.priceToSize, "g3", "pq", globalFlowMax, naive)}
-                {renderStage(PRICE_NODES, RETURN_NODES, flowState.priceToReturn, "g4", "pr", globalFlowMax, naive)}
-                {renderStage(SIZE_NODES, OUTCOME_NODES, flowState.sizeToOutcome, "g5", "qo", globalFlowMax, false, true)}
-                <AllNodes nodeMagnitudes={nodeMagnitudes} globalNodeMax={globalNodeMax} />
-              </svg>
-            </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-slate-600 mt-1">Static reference from the scatterplot generator.</p>
+                <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-3">
+                  <img
+                    src={SCATTERPLOT_SRC}
+                    alt="Integration scatterplot"
+                    className="w-full h-auto rounded-2xl"
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -311,9 +349,9 @@ function SceneLabels() {
       <StageLabel x={90} y={66} text="Investor" />
       <StageLabel x={340} y={66} text="Change in supply of capital" />
       <StageLabel x={720} y={66} text="Price pressure" />
-      <StageLabel x={1100} y={16} text="Equilibrium firm size" />
+      <StageLabel x={1100} y={15} text="Equilibrium firm size" />
       <StageLabel x={1490} y={66} text="Aggregate outcomes" />
-      <StageLabel x={1100} y={280} text="Equilibrium returns" />
+      <StageLabel x={1100} y={340} text="Equilibrium returns" />
     </>
   );
 }
