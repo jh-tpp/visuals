@@ -91,15 +91,21 @@ function IntegrationScatterplot() {
     );
 
     const [yH, setYH] = React.useState(GEOM.yH);
+    const [xV, setXV] = React.useState(GEOM.xV);
+    const [yP, setYP] = React.useState(GEOM.yP);
+
     const [draggingIndex, setDraggingIndex] = React.useState(null);
     const [draggingHurdle, setDraggingHurdle] = React.useState(false);
+    const [draggingPhilVertical, setDraggingPhilVertical] = React.useState(false);
+    const [draggingPhilHorizontal, setDraggingPhilHorizontal] = React.useState(false);
+
     const svgRef = React.useRef(null);
 
   function signedDistanceToIntegrationLine(x, y) {
     return (y - (GEOM.m * x + GEOM.c)) / Math.sqrt(1 + GEOM.m ** 2);
   }
 
-  function traditionalWeights(pointsInput, hurdleY) {
+  function traditionalWeights(pointsInput, hurdleY, philanthropyX, philanthropyY) {
     const investScores = pointsInput.map((p) => (p.y > hurdleY ? p.y - hurdleY : 0));
     const investTotal = investScores.reduce((a, b) => a + b, 0);
     const investWeights =
@@ -108,7 +114,7 @@ function IntegrationScatterplot() {
         : investScores.map(() => 0);
 
     const philScores = pointsInput.map((p) =>
-      p.y <= GEOM.yP && p.x > GEOM.xV ? 1 : 0
+      p.y <= philanthropyY && p.x > philanthropyX ? 1 : 0
     );
     const philTotal = philScores.reduce((a, b) => a + b, 0);
     const philWeights =
@@ -262,7 +268,10 @@ function IntegrationScatterplot() {
     return VIEW.top + PLOT.height - ((y - GEOM.yMin) / (GEOM.yMax - GEOM.yMin)) * PLOT.height;
   }
 
-  const tradW = React.useMemo(() => traditionalWeights(points, yH), [points, yH]);
+  const tradW = React.useMemo(
+    () => traditionalWeights(points, yH, xV, yP),
+    [points, yH, xV, yP]
+    );
   const intW = React.useMemo(() => integratedWeights(points), [points]);
 
   const backgroundUrl = React.useMemo(() => {
@@ -323,40 +332,68 @@ function IntegrationScatterplot() {
     };
 
     const beginHurdleDrag = (e) => {
-    setDraggingHurdle(true);
-    if (e.currentTarget.setPointerCapture) {
-        e.currentTarget.setPointerCapture(e.pointerId);
-    }
+        setDraggingHurdle(true);
+        if (e.currentTarget.setPointerCapture) {
+            e.currentTarget.setPointerCapture(e.pointerId);
+        }
+    };
+
+    const beginPhilVerticalDrag = (e) => {
+        setDraggingPhilVertical(true);
+        if (e.currentTarget.setPointerCapture) {
+            e.currentTarget.setPointerCapture(e.pointerId);
+        }
+    };
+
+    const beginPhilHorizontalDrag = (e) => {
+        setDraggingPhilHorizontal(true);
+        if (e.currentTarget.setPointerCapture) {
+            e.currentTarget.setPointerCapture(e.pointerId);
+        }
     };
 
     const updateDrag = (e) => {
-    if (!svgRef.current) return;
+        if (!svgRef.current) return;
 
-    const nextPoint = svgClientToDataPoint(
-        svgRef.current,
-        e.clientX,
-        e.clientY,
-        GEOM,
-        VIEW,
-        PLOT
-    );
+        const nextPoint = svgClientToDataPoint(
+            svgRef.current,
+            e.clientX,
+            e.clientY,
+            GEOM,
+            VIEW,
+            PLOT
+        );
 
-    if (draggingHurdle) {
-        const clippedY = Math.max(GEOM.yMin + 0.03, Math.min(GEOM.yMax - 0.03, nextPoint.y));
-        setYH(clippedY);
-        return;
-    }
+        if (draggingHurdle) {
+            const clippedY = Math.max(GEOM.yMin + 0.03, Math.min(GEOM.yMax - 0.03, nextPoint.y));
+            setYH(clippedY);
+            return;
+        }
 
-    if (draggingIndex === null) return;
+        if (draggingPhilVertical) {
+            const clippedX = Math.max(GEOM.xMin + 0.03, Math.min(GEOM.xMax - 0.03, nextPoint.x));
+            setXV(clippedX);
+            return;
+        }
 
-    setPoints((prev) =>
-        prev.map((p, i) => (i === draggingIndex ? nextPoint : p))
-    );
+        if (draggingPhilHorizontal) {
+            const clippedY = Math.max(GEOM.yMin + 0.02, Math.min(yH - 0.03, nextPoint.y));
+            setYP(clippedY);
+            return;
+        }
+
+        if (draggingIndex === null) return;
+
+        setPoints((prev) =>
+            prev.map((p, i) => (i === draggingIndex ? nextPoint : p))
+        );
     };
 
     const endDrag = () => {
         setDraggingIndex(null);
         setDraggingHurdle(false);
+        setDraggingPhilVertical(false);
+        setDraggingPhilHorizontal(false);
     };
 
   return (
@@ -423,22 +460,22 @@ function IntegrationScatterplot() {
           strokeDasharray="9 8"
         />
         <line
-          x1={sx(GEOM.xV)}
-          y1={sy(GEOM.yMin)}
-          x2={sx(GEOM.xV)}
-          y2={sy(GEOM.yP)}
-          stroke={COLORS.orange}
-          strokeWidth="2.2"
-          strokeDasharray="9 8"
+            x1={sx(xV)}
+            y1={sy(GEOM.yMin)}
+            x2={sx(xV)}
+            y2={sy(yP)}
+            stroke={COLORS.orange}
+            strokeWidth="2.2"
+            strokeDasharray="9 8"
         />
         <line
-          x1={sx(GEOM.xV)}
-          y1={sy(GEOM.yP)}
-          x2={sx(GEOM.xMax)}
-          y2={sy(GEOM.yP)}
-          stroke={COLORS.orange}
-          strokeWidth="2.2"
-          strokeDasharray="9 8"
+            x1={sx(xV)}
+            y1={sy(yP)}
+            x2={sx(GEOM.xMax)}
+            y2={sy(yP)}
+            stroke={COLORS.orange}
+            strokeWidth="2.2"
+            strokeDasharray="9 8"
         />
 
         {/* draggable hit area for traditional hurdle */}
@@ -451,6 +488,30 @@ function IntegrationScatterplot() {
         strokeWidth="18"
         style={{ cursor: draggingHurdle ? "grabbing" : "ns-resize" }}
         onPointerDown={beginHurdleDrag}
+        />
+
+        {/* draggable hit area for philanthropy vertical line */}
+        <line
+        x1={sx(xV)}
+        y1={sy(GEOM.yMin)}
+        x2={sx(xV)}
+        y2={sy(yP)}
+        stroke="transparent"
+        strokeWidth="18"
+        style={{ cursor: draggingPhilVertical ? "grabbing" : "ew-resize" }}
+        onPointerDown={beginPhilVerticalDrag}
+        />
+
+        {/* draggable hit area for philanthropy horizontal line */}
+        <line
+        x1={sx(xV)}
+        y1={sy(yP)}
+        x2={sx(GEOM.xMax)}
+        y2={sy(yP)}
+        stroke="transparent"
+        strokeWidth="18"
+        style={{ cursor: draggingPhilHorizontal ? "grabbing" : "ns-resize" }}
+        onPointerDown={beginPhilHorizontalDrag}
         />
 
         {/* integration line */}
@@ -560,10 +621,10 @@ function IntegrationScatterplot() {
           Integrated hurdle rate
         </text>
 
-        <text x={sx(0.9)} y={sy(0.58)} fontSize="17" fill={COLORS.darkGreen}>
+        {/* <text x={sx(0.9)} y={sy(0.58)} fontSize="17" fill={COLORS.darkGreen}>
           <tspan x={sx(0.9)} dy="0">Zone of opportunities missed</tspan>
           <tspan x={sx(0.9)} dy="20">without integration</tspan>
-        </text>
+        </text> */}
 
         {/* drag handles */}
         {points.map((p, i) => (
