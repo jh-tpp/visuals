@@ -99,8 +99,8 @@ function IntegrationScatterplot() {
     return (y - (GEOM.m * x + GEOM.c)) / Math.sqrt(1 + GEOM.m ** 2);
   }
 
-  function traditionalWeights(pointsInput) {
-    const investScores = pointsInput.map((p) => (p.y > yH ? p.y - yH : 0));
+  function traditionalWeights(pointsInput, hurdleY) {
+    const investScores = pointsInput.map((p) => (p.y > hurdleY ? p.y - hurdleY : 0));
     const investTotal = investScores.reduce((a, b) => a + b, 0);
     const investWeights =
       investTotal > 0
@@ -262,12 +262,12 @@ function IntegrationScatterplot() {
     return VIEW.top + PLOT.height - ((y - GEOM.yMin) / (GEOM.yMax - GEOM.yMin)) * PLOT.height;
   }
 
-  const tradW = React.useMemo(() => traditionalWeights(points), [points]);
+  const tradW = React.useMemo(() => traditionalWeights(points, yH), [points, yH]);
   const intW = React.useMemo(() => integratedWeights(points), [points]);
 
   const backgroundUrl = React.useMemo(() => {
     return buildKernelBackground(points, tradW, intW, GEOM, COLORS, 700, 500);
-  }, [points, tradW, intW]);
+  }, [points, tradW, intW, yH]);
 
   const tradMask = tradW.map((w) => w > 1e-12);
   const intMask = intW.map((w) => w > 1e-12);
