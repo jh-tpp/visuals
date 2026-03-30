@@ -94,16 +94,23 @@ function IntegrationScatterplot() {
     const [xV, setXV] = React.useState(GEOM.xV);
     const [yP, setYP] = React.useState(GEOM.yP);
 
+    const [blueYIntercept, setBlueYIntercept] = React.useState(GEOM.c);
+    const [blueXIntercept, setBlueXIntercept] = React.useState(-GEOM.c / GEOM.m);
+
     const [draggingIndex, setDraggingIndex] = React.useState(null);
     const [draggingHurdle, setDraggingHurdle] = React.useState(false);
     const [draggingPhilVertical, setDraggingPhilVertical] = React.useState(false);
     const [draggingPhilHorizontal, setDraggingPhilHorizontal] = React.useState(false);
+    const [draggingBlueY, setDraggingBlueY] = React.useState(false);
+    const [draggingBlueX, setDraggingBlueX] = React.useState(false);
 
     const svgRef = React.useRef(null);
 
-  function signedDistanceToIntegrationLine(x, y) {
-    return (y - (GEOM.m * x + GEOM.c)) / Math.sqrt(1 + GEOM.m ** 2);
-  }
+    function signedDistanceToIntegrationLine(x, y, xIntercept, yIntercept) {
+        const m = -yIntercept / xIntercept;
+        const c = yIntercept;
+        return (y - (m * x + c)) / Math.sqrt(1 + m ** 2);
+    }
 
   function traditionalWeights(pointsInput, hurdleY, philanthropyX, philanthropyY) {
     const investScores = pointsInput.map((p) => (p.y > hurdleY ? p.y - hurdleY : 0));
@@ -125,9 +132,9 @@ function IntegrationScatterplot() {
     return investWeights.map((w, i) => w + philWeights[i]);
   }
 
-  function integratedWeights(pointsInput) {
+  function integratedWeights(pointsInput, xIntercept, yIntercept) {
     const scores = pointsInput.map((p) =>
-      Math.max(signedDistanceToIntegrationLine(p.x, p.y), 0)
+        Math.max(signedDistanceToIntegrationLine(p.x, p.y, xIntercept, yIntercept), 0)
     );
     const total = scores.reduce((a, b) => a + b, 0);
     if (total <= 0) return scores.map(() => 0);
@@ -161,7 +168,27 @@ function IntegrationScatterplot() {
     return clipPoint({ x, y });
     }
 
-  function buildKernelBackground(pointsInput, tradW, intW, GEOM, COLORS, width = 700, height = 500) {
+    function isTraditionallyActiveAt(x, y, hurdleY, philanthropyX, philanthropyY) {
+    return y > hurdleY || (y <= philanthropyY && x > philanthropyX);
+    }
+
+    function isIntegratedActiveAt(x, y, blueXIntercept, blueYIntercept) {
+    return signedDistanceToIntegrationLine(x, y, blueXIntercept, blueYIntercept) > 0;
+    }
+
+  function buildKernelBackground(
+    pointsInput,
+    tradW,
+    intW,
+    GEOM,
+    COLORS,
+    hurdleY,
+    philanthropyX,
+    philanthropyY,
+    blueXIntercept,
+    blueYIntercept,
+    width = 700,
+    height = 500) {
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
@@ -181,10 +208,17 @@ function IntegrationScatterplot() {
         const y = GEOM.yMin + (1 - py / (height - 1)) * (GEOM.yMax - GEOM.yMin);
 
         for (let px = 0; px < width; px++) {
-        const x = GEOM.xMin + (px / (width - 1)) * (GEOM.xMax - GEOM.xMin);
+            const x = GEOM.xMin + (px / (width - 1)) * (GEOM.xMax - GEOM.xMin);
 
-        let underVal = 0;
-        let overVal = 0;
+            const tradActive = isTraditionallyActiveAt(x, y, hurdleY, philanthropyX, philanthropyY);
+            const intActive = isIntegratedActiveAt(x, y, blueXIntercept, blueYIntercept);
+
+            if (!tradActive && !intActive) {
+            continue;
+            }
+
+            let underVal = 0;
+            let overVal = 0;
 
         for (let i = 0; i < pointsInput.length; i++) {
             const dx = (x - pointsInput[i].x) / sx;
@@ -268,61 +302,81 @@ function IntegrationScatterplot() {
     return VIEW.top + PLOT.height - ((y - GEOM.yMin) / (GEOM.yMax - GEOM.yMin)) * PLOT.height;
   }
 
-  const tradW = React.useMemo(
-    () => traditionalWeights(points, yH, xV, yP),
-    [points, yH, xV, yP]
+    const tradW = React.useMemo(
+        () => traditionalWeights(points, yH, xV, yP),
+        [points, yH, xV, yP]
     );
-  const intW = React.useMemo(() => integratedWeights(points), [points]);
+    const intW = React.useMemo(
+        () => integratedWeights(points, blueXIntercept, blueYIntercept),
+        [points, blueXIntercept, blueYIntercept]
+    );
+    const integrationParams = React.useMemo(() => {
+        const m = -blueYIntercept / blueXIntercept;
+        const c = blueYIntercept;
+        return { m, c };
+    }, [blueXIntercept, blueYIntercept]);
 
   const backgroundUrl = React.useMemo(() => {
-    return buildKernelBackground(points, tradW, intW, GEOM, COLORS, 700, 500);
-  }, [points, tradW, intW, yH]);
+    return buildKernelBackground(
+    points,
+    tradW,
+    intW,
+    GEOM,
+    COLORS,
+    yH,
+    xV,
+    yP,
+    blueXIntercept,
+    blueYIntercept,
+    700,
+    500);
+  }, [points, tradW, intW, yH, xV, yP, blueXIntercept, blueYIntercept]);
 
   const tradMask = tradW.map((w) => w > 1e-12);
   const intMask = intW.map((w) => w > 1e-12);
   const unfundedMask = tradMask.map((t, i) => !t && !intMask[i]);
 
     const integrationLine = React.useMemo(() => {
-    const candidates = [];
+        const candidates = [];
 
-    const yAtXMin = GEOM.m * GEOM.xMin + GEOM.c;
-    if (yAtXMin >= GEOM.yMin && yAtXMin <= GEOM.yMax) {
-        candidates.push({ x: GEOM.xMin, y: yAtXMin });
-    }
-
-    const yAtXMax = GEOM.m * GEOM.xMax + GEOM.c;
-    if (yAtXMax >= GEOM.yMin && yAtXMax <= GEOM.yMax) {
-        candidates.push({ x: GEOM.xMax, y: yAtXMax });
-    }
-
-    const xAtYMin = (GEOM.yMin - GEOM.c) / GEOM.m;
-    if (xAtYMin >= GEOM.xMin && xAtYMin <= GEOM.xMax) {
-        candidates.push({ x: xAtYMin, y: GEOM.yMin });
-    }
-
-    const xAtYMax = (GEOM.yMax - GEOM.c) / GEOM.m;
-    if (xAtYMax >= GEOM.xMin && xAtYMax <= GEOM.xMax) {
-        candidates.push({ x: xAtYMax, y: GEOM.yMax });
-    }
-
-    const unique = [];
-    for (const p of candidates) {
-        if (!unique.some((q) => Math.abs(q.x - p.x) < 1e-9 && Math.abs(q.y - p.y) < 1e-9)) {
-        unique.push(p);
+        const yAtXMin = integrationParams.m * GEOM.xMin + integrationParams.c;
+        if (yAtXMin >= GEOM.yMin && yAtXMin <= GEOM.yMax) {
+            candidates.push({ x: GEOM.xMin, y: yAtXMin });
         }
-    }
 
-    if (unique.length >= 2) {
-        return {
-        x1: unique[0].x,
-        y1: unique[0].y,
-        x2: unique[1].x,
-        y2: unique[1].y,
-        };
-    }
+        const yAtXMax = integrationParams.m * GEOM.xMax + integrationParams.c;
+        if (yAtXMax >= GEOM.yMin && yAtXMax <= GEOM.yMax) {
+            candidates.push({ x: GEOM.xMax, y: yAtXMax });
+        }
 
-    return null;
-    }, []);
+        const xAtYMin = (GEOM.yMin - integrationParams.c) / integrationParams.m;
+        if (xAtYMin >= GEOM.xMin && xAtYMin <= GEOM.xMax) {
+            candidates.push({ x: xAtYMin, y: GEOM.yMin });
+        }
+
+        const xAtYMax = (GEOM.yMax - integrationParams.c) / integrationParams.m;
+        if (xAtYMax >= GEOM.xMin && xAtYMax <= GEOM.xMax) {
+            candidates.push({ x: xAtYMax, y: GEOM.yMax });
+        }
+
+        const unique = [];
+        for (const p of candidates) {
+            if (!unique.some((q) => Math.abs(q.x - p.x) < 1e-9 && Math.abs(q.y - p.y) < 1e-9)) {
+            unique.push(p);
+            }
+        }
+
+        if (unique.length >= 2) {
+            return {
+            x1: unique[0].x,
+            y1: unique[0].y,
+            x2: unique[1].x,
+            y2: unique[1].y,
+            };
+        }
+
+        return null;
+    }, [integrationParams]);
 
     const beginDrag = (index, e) => {
     setDraggingIndex(index);
@@ -352,41 +406,67 @@ function IntegrationScatterplot() {
         }
     };
 
+    const beginBlueYDrag = (e) => {
+    setDraggingBlueY(true);
+    if (e.currentTarget.setPointerCapture) {
+        e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    };
+
+    const beginBlueXDrag = (e) => {
+    setDraggingBlueX(true);
+    if (e.currentTarget.setPointerCapture) {
+        e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    };
+
     const updateDrag = (e) => {
-        if (!svgRef.current) return;
+    if (!svgRef.current) return;
 
-        const nextPoint = svgClientToDataPoint(
-            svgRef.current,
-            e.clientX,
-            e.clientY,
-            GEOM,
-            VIEW,
-            PLOT
-        );
+    const nextPoint = svgClientToDataPoint(
+        svgRef.current,
+        e.clientX,
+        e.clientY,
+        GEOM,
+        VIEW,
+        PLOT
+    );
 
-        if (draggingHurdle) {
-            const clippedY = Math.max(GEOM.yMin + 0.03, Math.min(GEOM.yMax - 0.03, nextPoint.y));
-            setYH(clippedY);
-            return;
-        }
+    if (draggingHurdle) {
+        const clippedY = Math.max(GEOM.yMin + 0.03, Math.min(GEOM.yMax - 0.03, nextPoint.y));
+        setYH(clippedY);
+        return;
+    }
 
-        if (draggingPhilVertical) {
-            const clippedX = Math.max(GEOM.xMin + 0.03, Math.min(GEOM.xMax - 0.03, nextPoint.x));
-            setXV(clippedX);
-            return;
-        }
+    if (draggingPhilVertical) {
+        const clippedX = Math.max(GEOM.xMin + 0.03, Math.min(GEOM.xMax - 0.03, nextPoint.x));
+        setXV(clippedX);
+        return;
+    }
 
-        if (draggingPhilHorizontal) {
-            const clippedY = Math.max(GEOM.yMin + 0.02, Math.min(yH - 0.03, nextPoint.y));
-            setYP(clippedY);
-            return;
-        }
+    if (draggingPhilHorizontal) {
+        const clippedY = Math.max(GEOM.yMin + 0.02, Math.min(yH - 0.03, nextPoint.y));
+        setYP(clippedY);
+        return;
+    }
 
-        if (draggingIndex === null) return;
+    if (draggingBlueY) {
+        const clippedY = Math.max(GEOM.yMin + 0.03, Math.min(GEOM.yMax - 0.03, nextPoint.y));
+        setBlueYIntercept(clippedY);
+        return;
+    }
 
-        setPoints((prev) =>
-            prev.map((p, i) => (i === draggingIndex ? nextPoint : p))
-        );
+    if (draggingBlueX) {
+        const clippedX = Math.max(0.03, Math.min(GEOM.xMax - 0.03, nextPoint.x));
+        setBlueXIntercept(clippedX);
+        return;
+    }
+
+    if (draggingIndex === null) return;
+
+    setPoints((prev) =>
+        prev.map((p, i) => (i === draggingIndex ? nextPoint : p))
+    );
     };
 
     const endDrag = () => {
@@ -394,6 +474,8 @@ function IntegrationScatterplot() {
         setDraggingHurdle(false);
         setDraggingPhilVertical(false);
         setDraggingPhilHorizontal(false);
+        setDraggingBlueY(false);
+        setDraggingBlueX(false);
     };
 
   return (
@@ -525,6 +607,46 @@ function IntegrationScatterplot() {
             strokeWidth="2.6"
         />
         )}
+
+        {/* blue intercept dots */}
+        <circle
+        cx={sx(0)}
+        cy={sy(blueYIntercept)}
+        r="7"
+        fill={COLORS.blue}
+        style={{ cursor: draggingBlueY ? "grabbing" : "ns-resize" }}
+        onPointerDown={beginBlueYDrag}
+        />
+
+        <circle
+        cx={sx(blueXIntercept)}
+        cy={sy(0)}
+        r="7"
+        fill={COLORS.blue}
+        style={{ cursor: draggingBlueX ? "grabbing" : "ew-resize" }}
+        onPointerDown={beginBlueXDrag}
+        />
+
+        {/* larger invisible hit areas */}
+        <circle
+        cx={sx(0)}
+        cy={sy(blueYIntercept)}
+        r="16"
+        fill="transparent"
+        pointerEvents="all"
+        style={{ cursor: draggingBlueY ? "grabbing" : "ns-resize" }}
+        onPointerDown={beginBlueYDrag}
+        />
+
+        <circle
+        cx={sx(blueXIntercept)}
+        cy={sy(0)}
+        r="16"
+        fill="transparent"
+        pointerEvents="all"
+        style={{ cursor: draggingBlueX ? "grabbing" : "ew-resize" }}
+        onPointerDown={beginBlueXDrag}
+        />
 
         {/* unfunded points */}
         {points.map((p, i) =>
