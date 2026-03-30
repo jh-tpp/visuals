@@ -86,17 +86,21 @@ function IntegrationScatterplot() {
     0.021288,
   ];
 
-  const points = React.useMemo(
-    () => X_POINTS.map((x, i) => ({ x, y: Y_POINTS[i] })),
-    []
-  );
+    const [points, setPoints] = React.useState(
+    X_POINTS.map((x, i) => ({ x, y: Y_POINTS[i] }))
+    );
+
+    const [yH, setYH] = React.useState(GEOM.yH);
+    const [draggingIndex, setDraggingIndex] = React.useState(null);
+    const [draggingHurdle, setDraggingHurdle] = React.useState(false);
+    const svgRef = React.useRef(null);
 
   function signedDistanceToIntegrationLine(x, y) {
     return (y - (GEOM.m * x + GEOM.c)) / Math.sqrt(1 + GEOM.m ** 2);
   }
 
   function traditionalWeights(pointsInput) {
-    const investScores = pointsInput.map((p) => (p.y > GEOM.yH ? p.y - GEOM.yH : 0));
+    const investScores = pointsInput.map((p) => (p.y > yH ? p.y - yH : 0));
     const investTotal = investScores.reduce((a, b) => a + b, 0);
     const investWeights =
       investTotal > 0
@@ -128,6 +132,28 @@ function IntegrationScatterplot() {
     const size = DOT.baseSize + DOT.sizeScale * weight;
     return Math.max(2.2, Math.sqrt(size) * 0.46);
   }
+
+  function clipPoint(point) {
+    return {
+        x: Math.max(GEOM.xMin + 0.03, Math.min(GEOM.xMax - 0.04, point.x)),
+        y: Math.max(GEOM.yMin + 0.01, Math.min(GEOM.yMax - 0.02, point.y)),
+    };
+    }
+
+    function svgClientToDataPoint(svgElement, clientX, clientY, GEOM, VIEW, PLOT) {
+    const rect = svgElement.getBoundingClientRect();
+
+    const xPx = ((clientX - rect.left) / rect.width) * VIEW.width;
+    const yPx = ((clientY - rect.top) / rect.height) * VIEW.height;
+
+    const x =
+        GEOM.xMin + ((xPx - VIEW.left) / PLOT.width) * (GEOM.xMax - GEOM.xMin);
+
+    const y =
+        GEOM.yMax - ((yPx - VIEW.top) / PLOT.height) * (GEOM.yMax - GEOM.yMin);
+
+    return clipPoint({ x, y });
+    }
 
   function buildKernelBackground(pointsInput, tradW, intW, GEOM, COLORS, width = 700, height = 500) {
     const canvas = document.createElement("canvas");
@@ -289,11 +315,60 @@ function IntegrationScatterplot() {
     return null;
     }, []);
 
+    const beginDrag = (index, e) => {
+    setDraggingIndex(index);
+    if (e.currentTarget.setPointerCapture) {
+        e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    };
+
+    const beginHurdleDrag = (e) => {
+    setDraggingHurdle(true);
+    if (e.currentTarget.setPointerCapture) {
+        e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    };
+
+    const updateDrag = (e) => {
+    if (!svgRef.current) return;
+
+    const nextPoint = svgClientToDataPoint(
+        svgRef.current,
+        e.clientX,
+        e.clientY,
+        GEOM,
+        VIEW,
+        PLOT
+    );
+
+    if (draggingHurdle) {
+        const clippedY = Math.max(GEOM.yMin + 0.03, Math.min(GEOM.yMax - 0.03, nextPoint.y));
+        setYH(clippedY);
+        return;
+    }
+
+    if (draggingIndex === null) return;
+
+    setPoints((prev) =>
+        prev.map((p, i) => (i === draggingIndex ? nextPoint : p))
+    );
+    };
+
+    const endDrag = () => {
+        setDraggingIndex(null);
+        setDraggingHurdle(false);
+    };
+
   return (
     <div className="w-full">
       <svg
+        ref={svgRef}
         viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
         className="w-full h-auto rounded-2xl bg-white"
+        style={{ touchAction: "none" }}
+        onPointerMove={updateDrag}
+        onPointerUp={endDrag}
+        onPointerLeave={endDrag}
       >
         <rect x="0" y="0" width={VIEW.width} height={VIEW.height} fill={COLORS.bg} />
         <image
@@ -340,9 +415,9 @@ function IntegrationScatterplot() {
         {/* hurdle lines */}
         <line
           x1={sx(GEOM.xMin)}
-          y1={sy(GEOM.yH)}
+          y1={sy(yH)}
           x2={sx(GEOM.xMax)}
-          y2={sy(GEOM.yH)}
+          y2={sy(yH)}
           stroke={COLORS.orange}
           strokeWidth="2.2"
           strokeDasharray="9 8"
@@ -364,6 +439,18 @@ function IntegrationScatterplot() {
           stroke={COLORS.orange}
           strokeWidth="2.2"
           strokeDasharray="9 8"
+        />
+
+        {/* draggable hit area for traditional hurdle */}
+        <line
+        x1={sx(GEOM.xMin)}
+        y1={sy(yH)}
+        x2={sx(GEOM.xMax)}
+        y2={sy(yH)}
+        stroke="transparent"
+        strokeWidth="18"
+        style={{ cursor: draggingHurdle ? "grabbing" : "ns-resize" }}
+        onPointerDown={beginHurdleDrag}
         />
 
         {/* integration line */}
@@ -447,7 +534,7 @@ function IntegrationScatterplot() {
 
         <text
           x={sx(0.49)}
-          y={sy(1.015)}
+          y={sy(yH) - 10}
           fontSize="15"
           fill={COLORS.orange}
         >
@@ -477,6 +564,20 @@ function IntegrationScatterplot() {
           <tspan x={sx(0.9)} dy="0">Zone of opportunities missed</tspan>
           <tspan x={sx(0.9)} dy="20">without integration</tspan>
         </text>
+
+        {/* drag handles */}
+        {points.map((p, i) => (
+        <circle
+            key={`drag-${i}`}
+            cx={sx(p.x)}
+            cy={sy(p.y)}
+            r="12"
+            fill="rgba(0,0,0,0.001)"
+            pointerEvents="all"
+            style={{ cursor: draggingIndex === i ? "grabbing" : "grab" }}
+            onPointerDown={(e) => beginDrag(i, e)}
+        />
+        ))}
 
         {/* legend */}
         <g transform={`translate(${VIEW.width / 2 - 280}, ${VIEW.height - 92})`}>
