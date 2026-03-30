@@ -13,6 +13,12 @@ function IntegrationScatterplot({ mode = "standard" }) {
     c: 1.25,
   };
 
+  const COMBO = {
+    pair: [25, 94],
+    xmultiplier: 2,
+    ymultiplier: 2,
+  };
+
   const COLORS = {
     orange: "rgb(255, 140, 0)",
     pointOrange: "rgba(255, 191, 77, 0.42)",
@@ -33,11 +39,6 @@ function IntegrationScatterplot({ mode = "standard" }) {
   const DOT = {
     baseSize: 18,
     sizeScale: 2800,
-  };
-
-  const COMBO = {
-    pair: [140, 94],
-    multiplier: 5,
   };
 
   const VIEW = {
@@ -243,8 +244,8 @@ function IntegrationScatterplot({ mode = "standard" }) {
             const tradActive = isTraditionallyActiveAt(x, y, hurdleY, philanthropyX, philanthropyY);
             const intActive = isIntegratedActiveAt(x, y, blueXIntercept, blueYIntercept);
 
-            if (!tradActive && !intActive) {
-            continue;
+            if (mode === "combinatorial" ? !intActive : (!tradActive && !intActive)) {
+              continue;
             }
 
             let underVal = 0;
@@ -343,15 +344,22 @@ function IntegrationScatterplot({ mode = "standard" }) {
 
     const intW = React.useMemo(() => normalizeScores(intScores), [intScores]);
 
-    const comboScores = React.useMemo(() => {
-      const next = [...intScores];
-      COMBO.pair.forEach((i) => {
-        if (next[i] !== undefined) {
-          next[i] *= COMBO.multiplier;
+    const comboEffectivePoints = React.useMemo(() => {
+      return points.map((p, i) => {
+        if (COMBO.pair.includes(i)) {
+          return {
+            x: p.x * COMBO.xmultiplier,
+            y: p.y * COMBO.ymultiplier,
+          };
         }
+        return p;
       });
-      return next;
-    }, [intScores]);
+    }, [points]);
+
+    const comboScores = React.useMemo(
+      () => integratedScores(comboEffectivePoints, blueXIntercept, blueYIntercept),
+      [comboEffectivePoints, blueXIntercept, blueYIntercept]
+    );
 
     const comboW = React.useMemo(() => normalizeScores(comboScores), [comboScores]);
 
@@ -363,13 +371,13 @@ function IntegrationScatterplot({ mode = "standard" }) {
     const unfundedMask = leftMask.map((l, i) => !l && !rightMask[i]);
 
     const integratedPortfolio = React.useMemo(
-      () => weightedPortfolioPoint(points, intW),
-      [points, intW]
+      () => weightedPortfolioPoint(comboEffectivePoints, intW),
+      [comboEffectivePoints, intW]
     );
 
     const comboPortfolio = React.useMemo(
-      () => weightedPortfolioPoint(points, comboW),
-      [points, comboW]
+      () => weightedPortfolioPoint(comboEffectivePoints, comboW),
+      [comboEffectivePoints, comboW]
     );
 
     const integrationParams = React.useMemo(() => {
@@ -765,8 +773,8 @@ function IntegrationScatterplot({ mode = "standard" }) {
 
         {/* labels */}
         <text
-          x={sx(0.03)}
-          y={VIEW.top - 6}
+          x={sx(0.01)}
+          y={VIEW.top - 16}
           textAnchor="start"
           fontSize="18"
           fill="#0f172a"
