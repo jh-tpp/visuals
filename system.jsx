@@ -91,7 +91,6 @@ const ALL_NODES = [
   ...OUTCOME_NODES,
 ];
 
-const SCATTERPLOT_SRC = "/integration_scatterplot_concept_v8_preview.svg";
 
 function EconomicSystemVisualizationGallery() {
   const [activeTab, setActiveTab] = useState("system");
@@ -167,7 +166,9 @@ function EconomicSystemVisualizationGallery() {
   }, [flowState]);
 
   const globalNodeMax = useMemo(() => {
-    const values = ALL_NODES.filter((node) => node.kind !== "investor").map((node) => nodeMagnitudes[node.id] ?? 0);
+    const values = ALL_NODES
+      .filter((node) => node.kind !== "investor")
+      .map((node) => nodeMagnitudes[node.id] ?? 0);
     return Math.max(1e-9, ...values);
   }, [nodeMagnitudes]);
 
@@ -207,39 +208,24 @@ function EconomicSystemVisualizationGallery() {
   return (
     <div key={naive ? "root-naive" : "root-system"} className="min-h-screen bg-slate-50 text-slate-900 p-8">
       <div className="max-w-[1850px] mx-auto space-y-8">
-        <header className="space-y-3">
-          <h1 className="text-4xl font-bold tracking-tight">Interactive flow field for a system aware economic model</h1>
-        </header>
-
         <div className="space-y-6">
-          <Panel title="View">
-            <p className="text-sm text-slate-600">Choose which visualization to show.</p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Button
-                variant={activeTab === "system" ? "default" : "outline"}
-                onClick={() => setActiveTab("system")}
-                className="rounded-2xl"
-              >
-                System
-              </Button>
-              <Button
-                variant={activeTab === "scatterplot" ? "default" : "outline"}
-                onClick={() => setActiveTab("scatterplot")}
-                className="rounded-2xl"
-              >
-                Scatterplot
-              </Button>
-            </div>
-          </Panel>
           {activeTab === "system" && (
             <>
               <Panel title="Mode">
                 <p className="text-sm text-slate-600">Switch between the two states.</p>
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <Button variant={!naive ? "default" : "outline"} onClick={() => setNaive(false)} className="rounded-2xl">
+                  <Button
+                    variant={!naive ? "default" : "outline"}
+                    onClick={() => setNaive(false)}
+                    className="rounded-2xl"
+                  >
                     System aware
                   </Button>
-                  <Button variant={naive ? "default" : "outline"} onClick={() => setNaive(true)} className="rounded-2xl">
+                  <Button
+                    variant={naive ? "default" : "outline"}
+                    onClick={() => setNaive(true)}
+                    className="rounded-2xl"
+                  >
                     Naive
                   </Button>
                 </div>
@@ -247,69 +233,78 @@ function EconomicSystemVisualizationGallery() {
             </>
           )}
 
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
-            <h2 className="text-xl font-semibold text-slate-900">Prototype</h2>
-            {activeTab === "system" ? (
-              <>
-                <div className="mt-6 overflow-x-auto">
-                  <svg viewBox="0 0 1720 860" className="w-full min-w-[1500px]">
-                    <SvgDefs />
-                    <SceneLabels />
-                    <InvestorStage investorSupply={investorSupply} globalFlowMax={globalFlowMax} />
-                    {renderStage(SUPPLY_NODES, PRICE_NODES, flowState.supplyToPrice, "g2", "sp", globalFlowMax, naive)}
-                    {renderStage(PRICE_NODES, SIZE_NODES, flowState.priceToSize, "g3", "pq", globalFlowMax, naive)}
-                    {renderStage(PRICE_NODES, RETURN_NODES, flowState.priceToReturn, "g4", "pr", globalFlowMax, naive)}
-                    {renderStage(SIZE_NODES, OUTCOME_NODES, flowState.sizeToOutcome, "g5", "qo", globalFlowMax, false, true)}
-                    <AllNodes nodeMagnitudes={nodeMagnitudes} globalNodeMax={globalNodeMax} />
-                  </svg>
-                </div>
+            <div className="bg-white rounded-3xl rounded-tl-none shadow-sm border border-slate-300 p-6">
+              <h2 className="text-xl font-semibold text-slate-900">Prototype</h2>
+
+                  <div className="mt-6 overflow-x-auto">
+                    <svg viewBox="0 0 1720 860" className="w-full min-w-[1500px]">
+                      <SvgDefs />
+                      <SceneLabels />
+                      <InvestorStage investorSupply={investorSupply} globalFlowMax={globalFlowMax} />
+                      {renderStage(SUPPLY_NODES, PRICE_NODES, flowState.supplyToPrice, "g2", "sp", globalFlowMax, naive)}
+                      {renderStage(PRICE_NODES, SIZE_NODES, flowState.priceToSize, "g3", "pq", globalFlowMax, naive)}
+                      {renderStage(PRICE_NODES, RETURN_NODES, flowState.priceToReturn, "g4", "pr", globalFlowMax, naive)}
+                      {renderStage(
+                        SIZE_NODES,
+                        OUTCOME_NODES,
+                        flowState.sizeToOutcome,
+                        "g5",
+                        "qo",
+                        globalFlowMax,
+                        false,
+                        true
+                      )}
+                      <AllNodes nodeMagnitudes={nodeMagnitudes} globalNodeMax={globalNodeMax} />
+                    </svg>
+                  </div>
+
+                  <div className="mt-8">
+                    <Panel title="Investor supply controls">
+                      <div className="flex items-center justify-between gap-4">
+                        <p className="text-sm text-slate-600">
+                          Drag the handles to reallocate a fixed total supply weight across firms.
+                        </p>
+                        <Button variant="outline" onClick={resetSupply} className="rounded-2xl">
+                          Reset
+                        </Button>
+                      </div>
+
+                      <div className="mt-5 space-y-4">
+                        <div className="grid grid-cols-[140px_minmax(0,1fr)_64px] items-center gap-4 text-xs text-slate-500">
+                          <div>Total</div>
+                          <div className="h-px bg-slate-200" />
+                          <div className="text-right font-mono">{TOTAL_INVESTOR_SUPPLY.toFixed(1)}</div>
+                        </div>
+
+                        {FIRMS.map((firm, i) => (
+                          <div
+                            key={firm}
+                            className="grid grid-cols-[140px_minmax(0,1fr)_64px] items-center gap-4"
+                          >
+                            <label className="text-sm font-medium text-slate-700">{firm}</label>
+                            <input
+                              type="range"
+                              min="0"
+                              max={TOTAL_INVESTOR_SUPPLY}
+                              step="0.1"
+                              value={investorSupply[i]}
+                              onChange={(e) => updateSupply(i, e.target.value)}
+                              className="w-full"
+                              aria-label={`${firm} investor supply`}
+                            />
+                            <div className="text-sm font-mono text-slate-600 text-right">
+                              {investorSupply[i].toFixed(1)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </Panel>
+                  </div>
+
+            </div>
 
 
-              <Panel title="Investor supply controls">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-slate-600">Drag the handles to reallocate a fixed total supply weight across firms.</p>
-              <Button variant="outline" onClick={resetSupply} className="rounded-2xl">
-                Reset
-              </Button>
-            </div>
-            <div className="mt-5 space-y-4">
-              <div className="grid grid-cols-[140px_minmax(0,1fr)_64px] items-center gap-4 text-xs text-slate-500">
-                <div>Total</div>
-                <div className="h-px bg-slate-200" />
-                <div className="text-right font-mono">{TOTAL_INVESTOR_SUPPLY.toFixed(1)}</div>
-              </div>
-              {FIRMS.map((firm, i) => (
-                <div key={firm} className="grid grid-cols-[140px_minmax(0,1fr)_64px] items-center gap-4">
-                  <label className="text-sm font-medium text-slate-700">{firm}</label>
-                  <input
-                    type="range"
-                    min="0"
-                    max={TOTAL_INVESTOR_SUPPLY}
-                    step="0.1"
-                    value={investorSupply[i]}
-                    onChange={(e) => updateSupply(i, e.target.value)}
-                    className="w-full"
-                    aria-label={`${firm} investor supply`}
-                  />
-                  <div className="text-sm font-mono text-slate-600 text-right">{investorSupply[i].toFixed(1)}</div>
-                </div>
-              ))}
-            </div>
-          </Panel>
-              </>
-            ) : (
-              <>
-                <p className="text-sm text-slate-600 mt-1">Static reference from the scatterplot generator.</p>
-                <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-3">
-                  <img
-                    src={SCATTERPLOT_SRC}
-                    alt="Integration scatterplot"
-                    className="w-full h-auto rounded-2xl"
-                  />
-                </div>
-              </>
-            )}
-          </div>
+            
         </div>
       </div>
     </div>
@@ -576,5 +571,4 @@ function Node({ node, magnitude = 0, globalNodeMax }) {
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<EconomicSystemVisualizationGallery />);
+window.SystemVisualization = EconomicSystemVisualizationGallery;
