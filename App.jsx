@@ -14,7 +14,7 @@ function App() {
       <div className="max-w-[1850px] mx-auto space-y-8">
         <header className="space-y-3">
           <h1 className="text-4xl font-bold tracking-tight">
-            Interactive flow field for a system aware economic model
+            Visualizing Systemic Finance
           </h1>
         </header>
 
