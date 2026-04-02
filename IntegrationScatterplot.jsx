@@ -13,6 +13,12 @@ function IntegrationScatterplot({ mode = "standard" }) {
     c: 1.25,
   };
 
+  const COMBO = {
+    pair: [25, 94],
+    xmultiplier: 2,
+    ymultiplier: 2,
+  };
+
   const COLORS = {
     orange: "rgb(255, 140, 0)",
     pointOrange: "rgba(255, 191, 77, 0.42)",
@@ -33,11 +39,6 @@ function IntegrationScatterplot({ mode = "standard" }) {
   const DOT = {
     baseSize: 18,
     sizeScale: 2800,
-  };
-
-  const COMBO = {
-    pair: [140, 94],
-    multiplier: 5,
   };
 
   const VIEW = {
