@@ -448,17 +448,6 @@ function addMatrices(a, b) {
   return a.map((row, i) => row.map((value, j) => value + b[i][j]));
 }
 
-function buildNodeMagnitudes({ investorSupply, pricePressureMagnitude, sizeMagnitude, returnMagnitude, outcomeMagnitude }) {
-  return {
-    investor: TOTAL_INVESTOR_SUPPLY,
-    ...Object.fromEntries(SUPPLY_NODES.map((node, i) => [node.id, Math.abs(investorSupply[i])])),
-    ...Object.fromEntries(PRICE_NODES.map((node, i) => [node.id, pricePressureMagnitude[i]])),
-    ...Object.fromEntries(SIZE_NODES.map((node, i) => [node.id, sizeMagnitude[i]])),
-    ...Object.fromEntries(RETURN_NODES.map((node, i) => [node.id, returnMagnitude[i]])),
-    ...Object.fromEntries(OUTCOME_NODES.map((node, i) => [node.id, outcomeMagnitude[i]])),
-  };
-}
-
 function invertMatrix(matrix) {
   const n = matrix.length;
   const augmented = matrix.map((row, i) => [
