@@ -21,7 +21,11 @@ export async function POST(request) {
       headers: {
         Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": process.env.SITE_URL || "http://localhost:3000",
+        "HTTP-Referer": process.env.VERCEL_PROJECT_PRODUCTION_URL
+          ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+          : process.env.VERCEL_URL
+            ? `https://${process.env.VERCEL_URL}`
+            : "http://localhost:3000",
         "X-OpenRouter-Title": "Jon Research Site",
       },
       body: JSON.stringify({
