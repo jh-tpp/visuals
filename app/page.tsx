@@ -3,9 +3,12 @@
 import { useState } from "react";
 import SystemVisualization from "@/components/SystemVisualization";
 import IntegrationScatterplot from "@/components/IntegrationScatterplot";
+import AssistantPanel from "@/components/AssistantPanel";
 
 export default function Page() {
-  const [activeTab, setActiveTab] = useState<"system" | "scatterplot" | "combinatorial">("system");
+  const [activeTab, setActiveTab] = useState<
+  "system" | "scatterplot" | "combinatorial" | "assistant"
+>("system");
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 p-8">
@@ -54,6 +57,18 @@ export default function Page() {
               >
                 Combinatorial
               </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("assistant")}
+                className={`rounded-t-2xl border border-slate-300 border-b-0 px-5 py-2 text-sm font-medium transition ${
+                  activeTab === "assistant"
+                    ? "bg-white text-slate-900"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                Assistant
+              </button>
             </div>
 
             <div className="bg-white rounded-3xl rounded-tl-none shadow-sm border border-slate-300 p-6">
@@ -61,8 +76,10 @@ export default function Page() {
                 <SystemVisualization />
               ) : activeTab === "scatterplot" ? (
                 <IntegrationScatterplot mode="standard" />
-              ) : (
+              ) : activeTab === "combinatorial" ? (
                 <IntegrationScatterplot mode="combinatorial" />
+              ) : (
+                <AssistantPanel />
               )}
             </div>
           </div>
