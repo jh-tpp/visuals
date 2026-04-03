@@ -3,17 +3,26 @@ import path from "path";
 import { PDFParse } from "pdf-parse";
 
 const PDF_DIR = path.join(process.cwd(), "corpus", "pdfs");
-const OUTPUT_PATH = path.join(process.cwd(), "corpus", "generated", "chunks.json");
+const OUTPUT_DIR = path.join(process.cwd(), "corpus", "generated");
+const OUTPUT_PATH = path.join(OUTPUT_DIR, "chunks.json");
 
 function chunkText(text, chunkSize = 1400, overlap = 250) {
-  const cleaned = text.replace(/\s+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
-  const chunks = [];
+  const cleaned = text
+    .replace(/\s+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
+  const chunks = [];
   let start = 0;
+
   while (start < cleaned.length) {
     const end = Math.min(start + chunkSize, cleaned.length);
     const content = cleaned.slice(start, end).trim();
-    if (content) chunks.push(content);
+
+    if (content) {
+      chunks.push(content);
+    }
+
     if (end === cleaned.length) break;
     start = Math.max(end - overlap, start + 1);
   }
@@ -26,36 +35,46 @@ async function extractPagesFromPdf(fullPath) {
   const parser = new PDFParse({ data: dataBuffer });
 
   try {
-    const info = await parser.getInfo();
-    const totalPages = info?.total ?? info?.numpages ?? info?.numPages ?? 1;
+    const fullResult = await parser.getText();
+    const rawText = (fullResult?.text || "").trim();
 
-    const pages = [];
+    if (!rawText) return [];
 
-    for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
-      const result = await parser.getText({ partial: [pageNumber] });
-      const text = (result?.text || "").trim();
-      if (text) {
-        pages.push({ pageNumber, text });
-      }
+    // Try page split on form-feed first
+    const splitPages = rawText
+      .split(/\f/g)
+      .map((text) => text.trim())
+      .filter(Boolean);
+
+    if (splitPages.length > 1) {
+      return splitPages.map((text, index) => ({
+        pageNumber: index + 1,
+        text,
+      }));
     }
 
-    if (pages.length > 0) {
-      return pages;
-    }
-
-    const fallback = await parser.getText();
-    const text = (fallback?.text || "").trim();
-    return text ? [{ pageNumber: null, text }] : [];
+    // Fallback: one whole-document "page" with null page number
+    return [{ pageNumber: null, text: rawText }];
   } finally {
     await parser.destroy();
   }
 }
 
 async function main() {
+  if (!fs.existsSync(PDF_DIR)) {
+    throw new Error(`Missing folder: ${PDF_DIR}`);
+  }
+
+  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+
   const files = fs
     .readdirSync(PDF_DIR)
     .filter((name) => name.toLowerCase().endsWith(".pdf"))
     .sort();
+
+  if (files.length === 0) {
+    throw new Error(`No PDFs found in ${PDF_DIR}`);
+  }
 
   const allChunks = [];
 
@@ -65,6 +84,7 @@ async function main() {
 
     pages.forEach(({ pageNumber, text }) => {
       const pageChunks = chunkText(text);
+
       pageChunks.forEach((content, chunkIndex) => {
         allChunks.push({
           id: pageNumber
