@@ -1,9 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
-const pdf = require("pdf-parse");
+import { PDFParse } from "pdf-parse";
 
 const PDF_DIR = path.join(process.cwd(), "corpus", "pdfs");
 const OUTPUT_PATH = path.join(process.cwd(), "corpus", "generated", "chunks.json");
@@ -24,6 +21,36 @@ function chunkText(text, chunkSize = 1400, overlap = 250) {
   return chunks;
 }
 
+async function extractPagesFromPdf(fullPath) {
+  const dataBuffer = fs.readFileSync(fullPath);
+  const parser = new PDFParse({ data: dataBuffer });
+
+  try {
+    const info = await parser.getInfo();
+    const totalPages = info?.total ?? info?.numpages ?? info?.numPages ?? 1;
+
+    const pages = [];
+
+    for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
+      const result = await parser.getText({ partial: [pageNumber] });
+      const text = (result?.text || "").trim();
+      if (text) {
+        pages.push({ pageNumber, text });
+      }
+    }
+
+    if (pages.length > 0) {
+      return pages;
+    }
+
+    const fallback = await parser.getText();
+    const text = (fallback?.text || "").trim();
+    return text ? [{ pageNumber: null, text }] : [];
+  } finally {
+    await parser.destroy();
+  }
+}
+
 async function main() {
   const files = fs
     .readdirSync(PDF_DIR)
@@ -34,34 +61,17 @@ async function main() {
 
   for (const file of files) {
     const fullPath = path.join(PDF_DIR, file);
-    const dataBuffer = fs.readFileSync(fullPath);
-    const parsed = await pdf(dataBuffer);
+    const pages = await extractPagesFromPdf(fullPath);
 
-    const pages = parsed.text
-      .split(/\f/g)
-      .map((pageText) => pageText.trim())
-      .filter(Boolean);
-
-    if (pages.length === 0) {
-      const fallbackChunks = chunkText(parsed.text);
-      fallbackChunks.forEach((content, index) => {
-        allChunks.push({
-          id: `${file}-chunk-${index + 1}`,
-          source: file,
-          page: null,
-          content,
-        });
-      });
-      continue;
-    }
-
-    pages.forEach((pageText, pageIndex) => {
-      const pageChunks = chunkText(pageText);
+    pages.forEach(({ pageNumber, text }) => {
+      const pageChunks = chunkText(text);
       pageChunks.forEach((content, chunkIndex) => {
         allChunks.push({
-          id: `${file}-p${pageIndex + 1}-c${chunkIndex + 1}`,
+          id: pageNumber
+            ? `${file}-p${pageNumber}-c${chunkIndex + 1}`
+            : `${file}-chunk-${chunkIndex + 1}`,
           source: file,
-          page: pageIndex + 1,
+          page: pageNumber,
           content,
         });
       });
