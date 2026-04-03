@@ -14,8 +14,7 @@ export async function POST(request) {
     }
 
     const safeSessionId = String(sessionId).replace(/[^a-zA-Z0-9-_]/g, "_");
-    const timestamp = updatedAt.replace(/[:.]/g, "-");
-    const pathname = `chat-logs/${safeSessionId}/${timestamp}.json`;
+    const pathname = `chat-logs/${safeSessionId}/latest.json`;
 
     const payload = {
       sessionId,
@@ -27,6 +26,7 @@ export async function POST(request) {
     const blob = await put(pathname, JSON.stringify(payload, null, 2), {
       access: "private",
       addRandomSuffix: false,
+      allowOverwrite: true,
       contentType: "application/json",
     });
 
