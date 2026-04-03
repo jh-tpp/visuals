@@ -1,6 +1,9 @@
 import fs from "fs";
 import path from "path";
-import pdf from "pdf-parse";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+const pdf = require("pdf-parse");
 
 const PDF_DIR = path.join(process.cwd(), "corpus", "pdfs");
 const OUTPUT_PATH = path.join(process.cwd(), "corpus", "generated", "chunks.json");
