@@ -25,6 +25,57 @@ function formatTranscript(messages) {
     .join("\n\n");
 }
 
+function IconButton({ onClick, title, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+    >
+      {children}
+    </button>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="9" y="9" width="10" height="10" rx="2" />
+      <path d="M5 15V7a2 2 0 0 1 2-2h8" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
+  );
+}
+
+function PrintIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M6 9V3h12v6" />
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+      <path d="M6 14h12v7H6z" />
+    </svg>
+  );
+}
+
 export default function AssistantPanel() {
   const [messages, setMessages] = useState(() => {
     if (typeof window !== "undefined") {
@@ -196,13 +247,6 @@ export default function AssistantPanel() {
     window.print();
   }
 
-  const copyLabel =
-    copyStatus === "copied"
-      ? "Copied"
-      : copyStatus === "error"
-      ? "Copy failed"
-      : "Copy all";
-
   return (
     <div className="space-y-6">
       <div className="space-y-2 print:hidden">
@@ -227,68 +271,63 @@ export default function AssistantPanel() {
         ))}
       </div>
 
-      <div className="flex flex-wrap gap-2 print:hidden">
-        <button
-          type="button"
-          onClick={handleCopyAll}
-          className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-        >
-          {copyLabel}
-        </button>
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-        >
-          Download .txt
-        </button>
-        <button
-          type="button"
-          onClick={handlePrint}
-          className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-        >
-          Print
-        </button>
-      </div>
+<div className="rounded-3xl border border-slate-300 bg-slate-50 overflow-hidden">
+  <div className="flex items-center justify-end gap-2 border-b border-slate-200 bg-slate-100/80 px-4 py-3 print:hidden">
+    <IconButton
+      onClick={handleCopyAll}
+      title={copyStatus === "copied" ? "Copied" : copyStatus === "error" ? "Copy failed" : "Copy all"}
+    >
+      {copyStatus === "copied" ? <CheckIcon /> : <CopyIcon />}
+    </IconButton>
 
-      <div className="rounded-3xl border border-slate-300 bg-slate-50 p-4">
-        <div className="space-y-4 max-h-[520px] overflow-y-auto pr-1 print:max-h-none print:overflow-visible">
-          {messages.map((message, index) => {
-            const isUser = message.role === "user";
-            return (
-              <div key={index} className="space-y-1">
-                <div
-                  className={`text-xs font-medium uppercase tracking-wide ${
-                    isUser ? "text-right text-slate-500" : "text-slate-500"
-                  }`}
-                >
-                  {isUser ? "User" : "Assistant"}
-                </div>
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 ${
-                    isUser
-                      ? "ml-auto bg-slate-900 text-white"
-                      : "bg-white text-slate-800 border border-slate-200"
-                  }`}
-                >
-                  {message.content}
-                </div>
-              </div>
-            );
-          })}
+    <IconButton onClick={handleDownload} title="Download .txt">
+      <DownloadIcon />
+    </IconButton>
 
-          {isLoading && (
-            <div className="space-y-1">
-              <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Assistant
-              </div>
-              <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 bg-white text-slate-500 border border-slate-200">
-                Thinking...
-              </div>
+    <IconButton onClick={handlePrint} title="Print">
+      <PrintIcon />
+    </IconButton>
+  </div>
+
+  <div className="p-4">
+    <div className="space-y-4 max-h-[520px] overflow-y-auto pr-1 print:max-h-none print:overflow-visible">
+      {messages.map((message, index) => {
+        const isUser = message.role === "user";
+        return (
+          <div key={index} className="space-y-1">
+            <div
+              className={`text-xs font-medium uppercase tracking-wide ${
+                isUser ? "text-right text-slate-500" : "text-slate-500"
+              }`}
+            >
+              {isUser ? "User" : "Assistant"}
             </div>
-          )}
+            <div
+              className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 ${
+                isUser
+                  ? "ml-auto bg-slate-900 text-white"
+                  : "bg-white text-slate-800 border border-slate-200"
+              }`}
+            >
+              {message.content}
+            </div>
+          </div>
+        );
+      })}
+
+      {isLoading && (
+        <div className="space-y-1">
+          <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Assistant
+          </div>
+          <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 bg-white text-slate-500 border border-slate-200">
+            Thinking...
+          </div>
         </div>
-      </div>
+      )}
+    </div>
+  </div>
+</div>
 
       <form
         onSubmit={(e) => {
