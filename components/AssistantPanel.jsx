@@ -182,7 +182,11 @@ export default function AssistantPanel() {
 
       const finalMessages = [
         ...nextMessages,
-        { role: "assistant", content: data.content },
+        {
+          role: "assistant",
+          content: data.content,
+          citations: Array.isArray(data.citations) ? data.citations : [],
+        },
       ];
 
       setMessages(finalMessages);
@@ -310,6 +314,14 @@ export default function AssistantPanel() {
               }`}
             >
               {message.content}
+
+              {!isUser && Array.isArray(message.citations) && message.citations.length > 0 && (
+                <div className="mt-3 space-y-1 border-t border-slate-200 pt-3 text-xs text-slate-500">
+                  {message.citations.map((citation, citationIndex) => (
+                    <div key={citationIndex}>{citation}</div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         );
