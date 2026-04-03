@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const EXAMPLE_QUESTIONS = [
   "What is this project about?",
@@ -94,6 +96,31 @@ function PrintIcon() {
     </svg>
   );
 }
+
+const markdownComponents = {
+  p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+  ul: ({ children }) => <ul className="mb-3 list-disc pl-5 last:mb-0">{children}</ul>,
+  ol: ({ children }) => <ol className="mb-3 list-decimal pl-5 last:mb-0">{children}</ol>,
+  li: ({ children }) => <li className="mb-1">{children}</li>,
+  strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+  em: ({ children }) => <em className="italic">{children}</em>,
+  h1: ({ children }) => <h1 className="mb-3 text-lg font-semibold">{children}</h1>,
+  h2: ({ children }) => <h2 className="mb-3 text-base font-semibold">{children}</h2>,
+  h3: ({ children }) => <h3 className="mb-2 text-sm font-semibold">{children}</h3>,
+  code: ({ children }) => (
+    <code className="rounded bg-slate-100 px-1 py-0.5 text-[0.95em]">{children}</code>
+  ),
+  a: ({ href, children }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="underline underline-offset-2"
+    >
+      {children}
+    </a>
+  ),
+};
 
 export default function AssistantPanel() {
   const [messages, setMessages] = useState(() => {
@@ -332,7 +359,14 @@ export default function AssistantPanel() {
                   : "bg-white text-slate-800 border border-slate-200"
               }`}
             >
-              {message.content}
+              <div className="markdown-body">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
+                  {message.content}
+                </ReactMarkdown>
+              </div>
 
               {!isUser &&
                 Array.isArray(message.citations) &&
