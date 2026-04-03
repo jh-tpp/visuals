@@ -24,3 +24,14 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media print {
+  body {
+    background: white !important;
+  }
+
+  button,
+  input {
+    box-shadow: none !important;
+  }
+}
