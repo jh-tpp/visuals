@@ -20,7 +20,26 @@ function formatTranscript(messages) {
   return messages
     .map((message) => {
       const speaker = message.role === "user" ? "User" : "Assistant";
-      return `${speaker}: ${message.content}`;
+
+      let citationBlock = "";
+
+      if (
+        message.role === "assistant" &&
+        Array.isArray(message.citations) &&
+        message.citations.length > 0
+      ) {
+        citationBlock =
+          "\n\nSources:\n" +
+          message.citations
+            .map((c) => {
+              const pagePart = c.page ? `, page ${c.page}` : "";
+              const snippetPart = c.snippet ? `\n  ${c.snippet}` : "";
+              return `- ${c.source}${pagePart}${snippetPart}`;
+            })
+            .join("\n");
+      }
+
+      return `${speaker}: ${message.content}${citationBlock}`;
     })
     .join("\n\n");
 }
@@ -200,6 +219,7 @@ export default function AssistantPanel() {
             error instanceof Error
               ? `Error: ${error.message}`
               : "Error: Something went wrong.",
+          citations: [],
         },
       ];
 
@@ -256,8 +276,7 @@ export default function AssistantPanel() {
       <div className="space-y-2 print:hidden">
         <h2 className="text-xl font-semibold text-slate-900">Assistant</h2>
         <p className="text-sm text-slate-600 max-w-3xl">
-          Early live assistant. This version has real model replies but is not yet connected
-          to your document set.
+           Early live assistant. This version is now in strict mode and will prefer uncertainty over guessing.
         </p>
       </div>
 
@@ -315,13 +334,23 @@ export default function AssistantPanel() {
             >
               {message.content}
 
-              {!isUser && Array.isArray(message.citations) && message.citations.length > 0 && (
-                <div className="mt-3 space-y-1 border-t border-slate-200 pt-3 text-xs text-slate-500">
-                  {message.citations.map((citation, citationIndex) => (
-                    <div key={citationIndex}>{citation}</div>
-                  ))}
-                </div>
-              )}
+              {!isUser &&
+                Array.isArray(message.citations) &&
+                message.citations.length > 0 && (
+                  <div className="mt-3 space-y-2 border-t border-slate-200 pt-3 text-xs text-slate-500">
+                    {message.citations.map((citation, citationIndex) => (
+                      <div key={citationIndex} className="space-y-1">
+                        <div className="font-medium text-slate-600">
+                          {citation.source}
+                          {citation.page ? `, page ${citation.page}` : ""}
+                        </div>
+                        {citation.snippet && (
+                          <div className="italic text-slate-500">{citation.snippet}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
             </div>
           </div>
         );
