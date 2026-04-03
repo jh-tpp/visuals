@@ -83,7 +83,8 @@ function getSourceInfos(corpus) {
 }
 
 function detectSourceControls(messages, sourceInfos) {
-  const recentUserText = collectRecentUserTurns(messages, 4).join("\n").toLowerCase();
+  const recentUserTurns = collectRecentUserTurns(messages, 8);
+  const recentUserText = recentUserTurns.join("\n").toLowerCase();
 
   const controls = {
     onlyGuide: false,
@@ -93,20 +94,65 @@ function detectSourceControls(messages, sourceInfos) {
     exactSourceMentions: [],
   };
 
-  if (/\bonly (the )?guide\b|\bguide only\b/.test(recentUserText)) {
-    controls.onlyGuide = true;
-  }
+  for (const turn of recentUserTurns) {
+    const lower = turn.toLowerCase();
 
-  if (/\bonly (the )?paper\b|\bpaper only\b/.test(recentUserText)) {
-    controls.onlyPaper = true;
-  }
+    // Reset broad source restrictions
+    if (
+      /\b(use|include|allow|cite|reference|talk about)\s+both\b/.test(lower) ||
+      /\b(use|include|allow)\s+all sources\b/.test(lower) ||
+      /\ball sources are allowed again\b/.test(lower)
+    ) {
+      controls.onlyGuide = false;
+      controls.onlyPaper = false;
+      controls.excludeGuide = false;
+      controls.excludePaper = false;
+    }
 
-  if (/\bignore (the )?guide\b|\bexclude (the )?guide\b|\bstop citing (the )?guide\b/.test(recentUserText)) {
-    controls.excludeGuide = true;
-  }
+    // Re-allow guide / paper
+    if (
+      /\b(guide)\s+(is\s+)?(allowed|ok|okay)\s+again\b/.test(lower) ||
+      /\b(use|include|allow|cite|reference|talk about)\s+(the\s+)?guide\s+again\b/.test(lower)
+    ) {
+      controls.excludeGuide = false;
+      if (controls.onlyPaper) controls.onlyPaper = false;
+    }
 
-  if (/\bignore (the )?paper\b|\bexclude (the )?paper\b|\bstop citing (the )?paper\b/.test(recentUserText)) {
-    controls.excludePaper = true;
+    if (
+      /\b(paper)\s+(is\s+)?(allowed|ok|okay)\s+again\b/.test(lower) ||
+      /\b(use|include|allow|cite|reference|talk about)\s+(the\s+)?paper\s+again\b/.test(lower)
+    ) {
+      controls.excludePaper = false;
+      if (controls.onlyGuide) controls.onlyGuide = false;
+    }
+
+    // Only-guide / only-paper modes
+    if (/\bguide only\b|\bonly the guide\b|\buse only the guide\b/.test(lower)) {
+      controls.onlyGuide = true;
+      controls.onlyPaper = false;
+      controls.excludePaper = true;
+    }
+
+    if (/\bpaper only\b|\bonly the paper\b|\buse only the paper\b/.test(lower)) {
+      controls.onlyPaper = true;
+      controls.onlyGuide = false;
+      controls.excludeGuide = true;
+    }
+
+    // Exclusions
+    if (
+      /\bignore (the )?guide\b|\bexclude (the )?guide\b|\bstop citing (the )?guide\b/.test(lower)
+    ) {
+      controls.excludeGuide = true;
+      if (controls.onlyGuide) controls.onlyGuide = false;
+    }
+
+    if (
+      /\bignore (the )?paper\b|\bexclude (the )?paper\b|\bstop citing (the )?paper\b/.test(lower)
+    ) {
+      controls.excludePaper = true;
+      if (controls.onlyPaper) controls.onlyPaper = false;
+    }
   }
 
   for (const info of sourceInfos) {
@@ -126,24 +172,22 @@ function getAllowedSources(sourceInfos, controls) {
 
   if (controls.onlyGuide) {
     allowed = sourceInfos.filter((info) => info.isGuide).map((info) => info.source);
-  }
-
-  if (controls.onlyPaper) {
+  } else if (controls.onlyPaper) {
     allowed = sourceInfos.filter((info) => info.isPaper).map((info) => info.source);
   }
 
   if (controls.excludeGuide) {
-    const guideSources = new Set(
+    const excluded = new Set(
       sourceInfos.filter((info) => info.isGuide).map((info) => info.source)
     );
-    allowed = allowed.filter((source) => !guideSources.has(source));
+    allowed = allowed.filter((source) => !excluded.has(source));
   }
 
   if (controls.excludePaper) {
-    const paperSources = new Set(
+    const excluded = new Set(
       sourceInfos.filter((info) => info.isPaper).map((info) => info.source)
     );
-    allowed = allowed.filter((source) => !paperSources.has(source));
+    allowed = allowed.filter((source) => !excluded.has(source));
   }
 
   return new Set(allowed);
@@ -379,7 +423,12 @@ export async function POST(request) {
       "Label inferred synthesis explicitly as 'Inference'.",
       "Treat user-supplied names as hypotheses, not facts.",
       "Do not confirm that a person is mentioned unless the exact name appears in the retrieved excerpts.",
-      "Obey hard source constraints from the user, such as ignoring the paper or using only the guide.",
+      "Source constraints are enforced by the system. Do not claim that citation control is outside your control.",
+      "If a source has been excluded by the user, behave as if it is unavailable.",
+      "Return plain markdown only.",
+      "Use short paragraphs and bullet lists when helpful.",
+      "Do not use tables unless they clearly help.",
+      "Do not use code fences unless you are actually giving code.",
       "Prefer saying 'I can't confidently answer that from the retrieved excerpts' over guessing.",
     ].join(" ");
 
@@ -405,26 +454,22 @@ export async function POST(request) {
 
     if (controls.excludePaper) {
       taskHints.push(
-        "The user has asked to ignore the paper. Do not discuss or cite the paper."
+        "The paper is currently excluded by user instruction. Do not retrieve from it, discuss it, or cite it unless the user explicitly re-allows it."
       );
     }
-
+    
     if (controls.excludeGuide) {
       taskHints.push(
-        "The user has asked to ignore the guide. Do not discuss or cite the guide."
+        "The guide is currently excluded by user instruction. Do not retrieve from it, discuss it, or cite it unless the user explicitly re-allows it."
       );
     }
-
+    
     if (controls.onlyPaper) {
-      taskHints.push(
-        "The user has asked to use only the paper."
-      );
+      taskHints.push("Use only the paper.");
     }
-
+    
     if (controls.onlyGuide) {
-      taskHints.push(
-        "The user has asked to use only the guide."
-      );
+      taskHints.push("Use only the guide.");
     }
 
     if (candidateNames.length > 0) {
