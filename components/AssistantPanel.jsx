@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const EXAMPLE_QUESTIONS = [
   "What is this project about?",
@@ -47,6 +47,8 @@ export default function AssistantPanel() {
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("idle");
+  const copyTimeoutRef = useRef(null);
 
   const [sessionId] = useState(() => {
     if (typeof window !== "undefined") {
@@ -71,6 +73,14 @@ export default function AssistantPanel() {
     sessionStorage.setItem("assistant-created-at", createdAt);
     sessionStorage.setItem("assistant-messages", JSON.stringify(messages));
   }, [sessionId, createdAt, messages]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   async function persistTranscript(nextMessages) {
     try {
@@ -148,8 +158,26 @@ export default function AssistantPanel() {
   async function handleCopyAll() {
     try {
       await navigator.clipboard.writeText(transcriptText);
+      setCopyStatus("copied");
+
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+
+      copyTimeoutRef.current = setTimeout(() => {
+        setCopyStatus("idle");
+      }, 1600);
     } catch (error) {
       console.error("Copy failed", error);
+      setCopyStatus("error");
+
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+
+      copyTimeoutRef.current = setTimeout(() => {
+        setCopyStatus("idle");
+      }, 2000);
     }
   }
 
@@ -167,6 +195,13 @@ export default function AssistantPanel() {
   function handlePrint() {
     window.print();
   }
+
+  const copyLabel =
+    copyStatus === "copied"
+      ? "Copied"
+      : copyStatus === "error"
+      ? "Copy failed"
+      : "Copy all";
 
   return (
     <div className="space-y-6">
@@ -198,7 +233,7 @@ export default function AssistantPanel() {
           onClick={handleCopyAll}
           className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
         >
-          Copy all
+          {copyLabel}
         </button>
         <button
           type="button"
@@ -221,7 +256,7 @@ export default function AssistantPanel() {
           {messages.map((message, index) => {
             const isUser = message.role === "user";
             return (
-              <div key={index} className={`space-y-1 ${isUser ? "items-end" : "items-start"}`}>
+              <div key={index} className="space-y-1">
                 <div
                   className={`text-xs font-medium uppercase tracking-wide ${
                     isUser ? "text-right text-slate-500" : "text-slate-500"
