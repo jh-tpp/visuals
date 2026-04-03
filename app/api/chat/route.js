@@ -3,6 +3,14 @@ import path from "path";
 
 const CORPUS_PATH = path.join(process.cwd(), "corpus", "generated", "corpus.json");
 
+function normalizeText(text) {
+  return (text || "")
+    .toLowerCase()
+    .replace(/\.pdf$/i, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
 function cosineSimilarity(a, b) {
   let dot = 0;
   let normA = 0;
@@ -28,6 +36,7 @@ async function embedText(text) {
       model:
         process.env.OPENROUTER_EMBEDDING_MODEL || "openai/text-embedding-3-small",
       input: text,
+      encoding_format: "float",
     }),
   });
 
@@ -39,14 +48,131 @@ async function embedText(text) {
   return data.data[0].embedding;
 }
 
-function searchCorpus(queryEmbedding, corpus, topK = 6) {
-  const scored = corpus.map((item) => ({
-    ...item,
-    score: cosineSimilarity(queryEmbedding, item.embedding),
-  }));
+function classifyQuestion(question) {
+  const q = question.toLowerCase();
+
+  const isListQuery =
+    /\b(list|enumerate|outline|all|complete list|every)\b/.test(q) ||
+    /\bwhat are the (insights|sections|steps|claims|principles|themes)\b/.test(q);
+
+  const isCrossDocQuery =
+    /\b(compare|comparison|connections|relationship|relate|between|both)\b/.test(q) ||
+    (/\bguide\b/.test(q) && /\bpaper\b/.test(q));
+
+  return { isListQuery, isCrossDocQuery };
+}
+
+function getSourceInfos(corpus) {
+  const uniqueSources = [...new Set(corpus.map((item) => item.source))];
+
+  return uniqueSources.map((source) => {
+    const normSource = normalizeText(source);
+    const normBase = normalizeText(source.replace(/\.pdf$/i, ""));
+    return {
+      source,
+      normSource,
+      normBase,
+      isGuide: /\bguide\b/i.test(source),
+      isPaper: /\bpaper\b/i.test(source),
+    };
+  });
+}
+
+function scoreSourceBias(item, latestUserMessage, sourceInfos) {
+  const qNorm = normalizeText(latestUserMessage);
+  const sourceInfo = sourceInfos.find((info) => info.source === item.source);
+
+  if (!sourceInfo) return 0;
+
+  let boost = 0;
+
+  // Strong-ish soft bias for exact filename / basename mention
+  if (
+    sourceInfo.normSource &&
+    (qNorm.includes(sourceInfo.normSource) || qNorm.includes(sourceInfo.normBase))
+  ) {
+    boost += 0.08;
+  }
+
+  // Gentle soft bias for vague guide / paper phrasing
+  if (/\bguide\b/i.test(latestUserMessage) && sourceInfo.isGuide) {
+    boost += 0.025;
+  }
+
+  if (/\bpaper\b/i.test(latestUserMessage) && sourceInfo.isPaper) {
+    boost += 0.025;
+  }
+
+  return boost;
+}
+
+function pickHits(scored, latestUserMessage, sourceInfos, topK = 8) {
+  const { isCrossDocQuery } = classifyQuestion(latestUserMessage);
+
+  if (!isCrossDocQuery) {
+    return scored.slice(0, topK);
+  }
+
+  const selected = [];
+  const selectedIds = new Set();
+
+  // For cross-doc questions, softly encourage coverage from both guide-like and paper-like sources.
+  const wantsGuide = /\bguide\b/i.test(latestUserMessage);
+  const wantsPaper = /\bpaper\b/i.test(latestUserMessage);
+
+  if (wantsGuide) {
+    const guideHits = scored.filter((hit) => {
+      const info = sourceInfos.find((s) => s.source === hit.source);
+      return info?.isGuide;
+    });
+    for (const hit of guideHits.slice(0, 3)) {
+      selected.push(hit);
+      selectedIds.add(hit.id);
+    }
+  }
+
+  if (wantsPaper) {
+    const paperHits = scored.filter((hit) => {
+      const info = sourceInfos.find((s) => s.source === hit.source);
+      return info?.isPaper;
+    });
+    for (const hit of paperHits.slice(0, 3)) {
+      if (!selectedIds.has(hit.id)) {
+        selected.push(hit);
+        selectedIds.add(hit.id);
+      }
+    }
+  }
+
+  for (const hit of scored) {
+    if (selected.length >= topK) break;
+    if (!selectedIds.has(hit.id)) {
+      selected.push(hit);
+      selectedIds.add(hit.id);
+    }
+  }
+
+  return selected.slice(0, topK);
+}
+
+function searchCorpus(queryEmbedding, corpus, latestUserMessage, topK = 8) {
+  const sourceInfos = getSourceInfos(corpus);
+
+  const scored = corpus.map((item) => {
+    const semanticScore = cosineSimilarity(queryEmbedding, item.embedding);
+    const sourceBias = scoreSourceBias(item, latestUserMessage, sourceInfos);
+
+    return {
+      ...item,
+      score: semanticScore + sourceBias,
+      semanticScore,
+      sourceBias,
+    };
+  });
 
   scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, topK);
+
+  return pickHits(scored, latestUserMessage, sourceInfos, topK);
 }
 
 function buildContext(hits) {
@@ -55,24 +181,32 @@ function buildContext(hits) {
       const citation = hit.page
         ? `${hit.source}, page ${hit.page}`
         : `${hit.source}`;
+
       return `[Source ${index + 1}: ${citation}]\n${hit.content}`;
     })
     .join("\n\n");
 }
 
-function buildCitationList(hits) {
+function cleanSnippet(text, maxLength = 220) {
+  const cleaned = (text || "").replace(/\s+/g, " ").trim();
+  if (cleaned.length <= maxLength) return cleaned;
+  return `${cleaned.slice(0, maxLength).trim()}…`;
+}
+
+function buildCitationData(hits) {
   const seen = new Set();
   const citations = [];
 
   for (const hit of hits) {
-    const citation = hit.page
-      ? `${hit.source}, page ${hit.page}`
-      : `${hit.source}`;
+    const key = `${hit.source}::${hit.page ?? "na"}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
 
-    if (!seen.has(citation)) {
-      seen.add(citation);
-      citations.push(citation);
-    }
+    citations.push({
+      source: hit.source,
+      page: hit.page,
+      snippet: cleanSnippet(hit.content),
+    });
   }
 
   return citations;
@@ -106,20 +240,46 @@ export async function POST(request) {
       return Response.json({ error: "No user message found." }, { status: 400 });
     }
 
+    const { isListQuery, isCrossDocQuery } = classifyQuestion(latestUserMessage);
+
     const queryEmbedding = await embedText(latestUserMessage);
-    const hits = searchCorpus(queryEmbedding, corpus, 6);
+    const hits = searchCorpus(queryEmbedding, corpus, latestUserMessage, 10);
     const context = buildContext(hits);
-    const citations = buildCitationList(hits);
+    const citations = buildCitationData(hits);
+
+    const strictModeInstruction = [
+      "You are a strict, risk-averse assistant for Jon's research site.",
+      "Use only the retrieved excerpts and the visible conversation history.",
+      "Do not use outside knowledge, even if you think you know the answer.",
+      "If support in the retrieved excerpts is partial, weak, or ambiguous, say so plainly.",
+      "Do not complete patterns or infer a full list from partial evidence.",
+      "If asked for a list, outline, or 'all' items, only list items explicitly supported in the retrieved excerpts.",
+      "If you cannot confidently provide a complete list from the retrieved excerpts, say that clearly.",
+      "If asked about connections, comparisons, or relationships, separate direct textual support from inference.",
+      "Label inferred synthesis explicitly as 'Inference' and keep it modest.",
+      "Do not fabricate citations, page numbers, or document structure.",
+      "Prefer saying 'I can't confidently answer that from the retrieved excerpts' over guessing.",
+    ].join(" ");
+
+    const taskHint = [
+      isListQuery
+        ? "This is a high-risk list/outline question. Be especially strict. If the retrieved excerpts may not be complete, say you cannot confidently provide a complete list."
+        : null,
+      isCrossDocQuery
+        ? "This is a cross-document question. Only compare documents when the retrieved excerpts support the comparison. If support comes mainly from one document, say so."
+        : null,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     const systemMessage = {
       role: "system",
-      content:
-        "You are a helpful assistant for Jon's research site. Answer clearly, concisely, and honestly. Use only the provided source context when making factual claims about the documents. If the answer is not supported by the provided context, say so plainly. Do not fabricate citations.",
+      content: `${strictModeInstruction} ${taskHint}`.trim(),
     };
 
     const contextMessage = {
       role: "system",
-      content: `Use the following source material:\n\n${context}`,
+      content: `Retrieved source excerpts:\n\n${context}`,
     };
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -132,7 +292,7 @@ export async function POST(request) {
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
         messages: [systemMessage, contextMessage, ...messages],
-        temperature: 0.2,
+        temperature: 0.05,
       }),
     });
 
