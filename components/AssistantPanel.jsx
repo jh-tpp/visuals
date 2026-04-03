@@ -9,10 +9,6 @@ const EXAMPLE_QUESTIONS = [
   "What are the main ideas behind this work?",
 ];
 
-function makeMockReply(message) {
-  return `Mock reply for now: you asked "${message}". The next step is to connect this panel to a real backend route and then to your document set.`;
-}
-
 export default function AssistantPanel() {
   const [messages, setMessages] = useState([
     {
@@ -22,18 +18,55 @@ export default function AssistantPanel() {
     },
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  function sendMessage(text) {
+  async function sendMessage(text) {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || isLoading) return;
 
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", content: trimmed },
-      { role: "assistant", content: makeMockReply(trimmed) },
-    ]);
-
+    const nextMessages = [...messages, { role: "user", content: trimmed }];
+    setMessages(nextMessages);
     setInput("");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: nextMessages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Request failed");
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.content },
+      ]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            error instanceof Error
+              ? `Error: ${error.message}`
+              : "Error: Something went wrong.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -41,8 +74,8 @@ export default function AssistantPanel() {
       <div className="space-y-2">
         <h2 className="text-xl font-semibold text-slate-900">Assistant</h2>
         <p className="text-sm text-slate-600 max-w-3xl">
-          Early chat shell for the research assistant. This version is frontend-only and
-          uses mock replies so we can get the interface right first.
+          Early live assistant. This version has real model replies but is not yet connected
+          to your document set.
         </p>
       </div>
 
@@ -53,6 +86,7 @@ export default function AssistantPanel() {
             type="button"
             onClick={() => sendMessage(question)}
             className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            disabled={isLoading}
           >
             {question}
           </button>
@@ -73,6 +107,12 @@ export default function AssistantPanel() {
               {message.content}
             </div>
           ))}
+
+          {isLoading && (
+            <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 bg-white text-slate-500 border border-slate-200">
+              Thinking...
+            </div>
+          )}
         </div>
       </div>
 
@@ -89,10 +129,12 @@ export default function AssistantPanel() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about the work..."
           className="flex-1 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-slate-500"
+          disabled={isLoading}
         />
         <button
           type="submit"
-          className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800"
+          className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+          disabled={isLoading}
         >
           Send
         </button>
