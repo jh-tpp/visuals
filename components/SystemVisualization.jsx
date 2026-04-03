@@ -226,7 +226,7 @@ function EconomicSystemVisualizationGallery() {
                     onClick={() => setNaive(true)}
                     className="rounded-2xl"
                   >
-                    Naive
+                    System unaware
                   </Button>
                 </div>
               </Panel>
