@@ -237,7 +237,7 @@ export default function AssistantPanel() {
 
   async function persistTranscript(nextMessages) {
     try {
-      await fetch("/api/save-chat", {
+      const response = await fetch("/api/save-chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -248,6 +248,16 @@ export default function AssistantPanel() {
           messages: nextMessages,
         }),
       });
+  
+      const data = await response.json().catch(() => null);
+  
+      if (!response.ok) {
+        throw new Error(
+          data?.error || `Save failed with status ${response.status}`
+        );
+      }
+  
+      console.log("Transcript saved", data);
     } catch (error) {
       console.error("Failed to save chat transcript", error);
     }
