@@ -19,7 +19,8 @@ export const POST = auth(async function POST(request) {
     }
 
     const safeSessionId = String(sessionId).replace(/[^a-zA-Z0-9-_]/g, "_");
-    const pathname = `chat-logs/${safeSessionId}/latest.json`;
+    const stamp = new Date(createdAt).toISOString().replace(/[:.]/g, "-");
+    const pathname = `chat-logs/${stamp}_${safeSessionId}.json`;
 
     const payload = {
       sessionId,
