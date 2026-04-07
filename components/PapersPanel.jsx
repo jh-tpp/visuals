@@ -65,7 +65,7 @@ function PdfPreview({ title, previewUrl }) {
   const pdfSrc = `${previewUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-slate-100 shadow-sm max-w-[680px]">
+    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-slate-100 shadow-sm max-w-[720px]">
       <div className="aspect-[3/4] w-full bg-white">
         <object data={pdfSrc} type="application/pdf" className="h-full w-full">
           <div className="flex h-full items-center justify-center p-6 text-center text-sm text-slate-600">
