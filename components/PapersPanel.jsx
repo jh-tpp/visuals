@@ -8,7 +8,7 @@ const PAPERS = [
     status: "Working paper",
     // description:
     //   "Preview the opening page here. Use the main link for the full paper when ready.",
-    // previewUrl: "/papers/impact-frontier-preview.pdf",
+    previewUrl: "/papers/impact-frontier-preview.pdf",
     primaryLabel: "Download from SSRN",
     primaryHref: "", // add SSRN link when ready
     // secondaryLabel: "Open preview PDF",
@@ -21,7 +21,7 @@ const PAPERS = [
     status: "In development",
     // description:
     //   "This currently shows the title and abstract page only.",
-    // previewUrl: "/papers/shifting-frontier-preview.pdf",
+    previewUrl: "/papers/shifting-frontier-preview.pdf",
     primaryLabel: "Download from SSRN",
     primaryHref: "", // add SSRN link when ready
     // secondaryLabel: "Open preview PDF",
@@ -100,7 +100,6 @@ function PaperCard({
 }) {
   return (
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
-
       <div className="flex flex-col justify-between rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="space-y-4">
           <div className="inline-flex w-fit items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
@@ -113,17 +112,10 @@ function PaperCard({
             </h3>
             <p className="text-sm font-medium text-slate-500">{status}</p>
           </div>
-
-          <p className="max-w-xl text-sm leading-6 text-slate-600">
-            {description}
-          </p>
-        </div>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <ActionLink href={primaryHref}>{primaryLabel}</ActionLink>
-          <ActionLink href={secondaryHref} variant="secondary">
-            {secondaryLabel}
-          </ActionLink>
+  
+          <div className="mt-6 flex flex-wrap gap-3">
+            <ActionLink href={primaryHref}>{primaryLabel}</ActionLink>
+          </div>
         </div>
 
         <PdfPreview title={title} previewUrl={previewUrl} />
