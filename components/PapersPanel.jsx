@@ -96,8 +96,8 @@ function PaperCard({
   primaryHref,
 }) {
   return (
-    <section className="grid gap-6">
-      <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="grid gap-6 justify-start">
+      <div className="w-fit max-w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="inline-flex w-fit items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
             {label}
@@ -136,9 +136,11 @@ export default function PapersPanel() {
         </p>
       </div>
 
-      <div className="space-y-8">
+      <div className="flex flex-wrap items-start gap-8">
         {PAPERS.map((paper) => (
-          <PaperCard key={paper.id} {...paper} />
+          <div key={paper.id} className="flex-none">
+            <PaperCard {...paper} />
+          </div>
         ))}
       </div>
     </div>
