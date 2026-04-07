@@ -7,7 +7,7 @@ import { signIn } from "next-auth/react";
 
 const EXAMPLE_QUESTIONS = [
   "What is CSP?",
-  "What is the guide about",
+  "What is the guide about?",
   "What is The Impact Frontier paper about?"
 ];
 
