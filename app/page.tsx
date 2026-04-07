@@ -4,8 +4,9 @@ import { useState } from "react";
 import SystemVisualization from "@/components/SystemVisualization";
 import IntegrationScatterplot from "@/components/IntegrationScatterplot";
 import AssistantPanel from "@/components/AssistantPanel";
+import PapersPanel from "@/components/PapersPanel";
 
-type Tab = "system" | "scatterplot" | "combinatorial" | "assistant";
+type Tab = "system" | "scatterplot" | "combinatorial" | "assistant" | "papers";
 
 function getInitialTab(): Tab {
   if (typeof window === "undefined") return "system";
@@ -16,7 +17,8 @@ function getInitialTab(): Tab {
     tab === "system" ||
     tab === "scatterplot" ||
     tab === "combinatorial" ||
-    tab === "assistant"
+    tab === "assistant" ||
+    tab === "papers"
   ) {
     return tab;
   }
@@ -93,6 +95,18 @@ export default function Page() {
 
               <button
                 type="button"
+                onClick={() => setActiveTab("papers")}
+                className={`rounded-t-2xl border border-slate-300 border-b-0 px-5 py-2 text-sm font-medium transition ${
+                  activeTab === "papers"
+                    ? "bg-white text-slate-900"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                Papers
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setActiveTab("assistant")}
                 className={`rounded-t-2xl border border-slate-300 border-b-0 px-5 py-2 text-sm font-medium transition ${
                   activeTab === "assistant"
@@ -102,6 +116,7 @@ export default function Page() {
               >
                 Assistant
               </button>
+
             </div>
 
             <div className="bg-white rounded-3xl rounded-tl-none shadow-sm border border-slate-300 p-6">
@@ -124,6 +139,8 @@ export default function Page() {
                     mode={activeTab === "scatterplot" ? "standard" : "combinatorial"}
                   />
                 </div>
+              ) : activeTab === "papers" ? (
+                <PapersPanel />
               ) : (
                 <AssistantPanel />
               )}
