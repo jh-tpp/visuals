@@ -65,7 +65,7 @@ function PdfPreview({ title, previewUrl }) {
   const pdfSrc = `${previewUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-slate-100 shadow-sm">
+    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-slate-100 shadow-sm max-w-[720px]">
       <div className="aspect-[3/4] w-full bg-white">
         <object data={pdfSrc} type="application/pdf" className="h-full w-full">
           <div className="flex h-full items-center justify-center p-6 text-center text-sm text-slate-600">
@@ -91,36 +91,34 @@ function PaperCard({
   label,
   title,
   status,
-  description,
   previewUrl,
   primaryLabel,
   primaryHref,
-  secondaryLabel,
-  secondaryHref,
 }) {
   return (
     <section className="grid gap-6">
-      <div className="flex flex-col justify-between rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="space-y-4">
+      <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
           <div className="inline-flex w-fit items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
             {label}
           </div>
 
-          <div className="space-y-2">
-            <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
-              {title}
-            </h3>
-            <p className="text-sm font-medium text-slate-500">{status}</p>
-          </div>
-  
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="shrink-0">
             <ActionLink href={primaryHref}>{primaryLabel}</ActionLink>
           </div>
         </div>
 
-        <PdfPreview title={title} previewUrl={previewUrl} />
-      </div>
+        <div className="mt-4 space-y-2">
+          <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
+            {title}
+          </h3>
+          <p className="text-sm font-medium text-slate-500">{status}</p>
+        </div>
 
+        <div className="mt-8">
+          <PdfPreview title={title} previewUrl={previewUrl} />
+        </div>
+      </div>
     </section>
   );
 }
