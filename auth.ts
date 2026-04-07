@@ -26,22 +26,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     strategy: "jwt",
   },
-  callbacks: {
+callbacks: {
     async signIn({ account, profile }) {
-      if (account?.provider !== "google") return false;
-
       const email =
         typeof profile?.email === "string" ? profile.email.toLowerCase() : "";
 
       const emailVerified = profile?.email_verified === true;
-      const allowedEmails = getAllowedEmails();
+      const allowedEmails = [...getAllowedEmails()];
       const allowedDomains = getAllowedDomains();
+
+      console.log("[auth][signIn-debug]", {
+        provider: account?.provider,
+        email,
+        emailVerified,
+        allowedEmails,
+        allowedDomains,
+      });
+
+      if (account?.provider !== "google") return false;
 
       return Boolean(
         email &&
           emailVerified &&
-          (allowedEmails.has(email) ||
-            emailMatchesAllowedDomain(email, allowedDomains))
+          (allowedEmails.includes(email) ||
+            allowedDomains.some((domain) => email.endsWith(`@${domain}`)))
       );
     },
   },
