@@ -150,7 +150,7 @@ export default function AssistantPanel() {
     
         const result = await signIn("google", {
           redirect: false,
-          redirectTo: "/?tab=assistant",
+          redirectTo: "/auth/popup-close?tab=assistant",
         });
     
         if (!result?.url) {
@@ -204,6 +204,22 @@ export default function AssistantPanel() {
   });
 
   const transcriptText = useMemo(() => formatTranscript(messages), [messages]);
+
+  useEffect(() => {
+    function handleAuthMessage(event) {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type !== "auth-success") return;
+  
+      const tab = event.data?.tab || "assistant";
+      window.location.href = `/?tab=${encodeURIComponent(tab)}`;
+    }
+  
+    window.addEventListener("message", handleAuthMessage);
+  
+    return () => {
+      window.removeEventListener("message", handleAuthMessage);
+    };
+  }, []);
 
   useEffect(() => {
     sessionStorage.setItem("assistant-session-id", sessionId);
