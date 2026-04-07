@@ -99,7 +99,7 @@ function PaperCard({
   secondaryHref,
 }) {
   return (
-    <section className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
+    <section className="grid gap-6">
       <div className="flex flex-col justify-between rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="space-y-4">
           <div className="inline-flex w-fit items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
