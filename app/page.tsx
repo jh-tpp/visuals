@@ -5,11 +5,44 @@ import SystemVisualization from "@/components/SystemVisualization";
 import IntegrationScatterplot from "@/components/IntegrationScatterplot";
 import AssistantPanel from "@/components/AssistantPanel";
 
-export default function Page() {
-  const [activeTab, setActiveTab] = useState<
-  "system" | "scatterplot" | "combinatorial" | "assistant"
->("system");
+type Tab = "system" | "scatterplot" | "combinatorial" | "assistant";
 
+function getInitialTab(): Tab {
+  if (typeof window === "undefined") return "system";
+
+  const tab = new URLSearchParams(window.location.search).get("tab");
+
+  if (
+    tab === "system" ||
+    tab === "scatterplot" ||
+    tab === "combinatorial" ||
+    tab === "assistant"
+  ) {
+    return tab;
+  }
+
+  return "system";
+}
+
+export default function Page() {
+  const [activeTab, setActiveTab] = useState<Tab>(getInitialTab);
+
+  function switchTab(tab: Tab) {
+    setActiveTab(tab);
+
+    if (typeof window === "undefined") return;
+
+    const url = new URL(window.location.href);
+
+    if (tab === "system") {
+      url.searchParams.delete("tab");
+    } else {
+      url.searchParams.set("tab", tab);
+    }
+
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+  
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 p-8">
       <div className="max-w-[1850px] mx-auto space-y-8">

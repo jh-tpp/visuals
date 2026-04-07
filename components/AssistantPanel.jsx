@@ -312,8 +312,8 @@ export default function AssistantPanel() {
         </div>
 
         <a
-          href="/api/auth/signin"
-          className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          href="/api/auth/signin?callbackUrl=%2F%3Ftab%3Dassistant"
+          className="inline-flex items-center justify-center rounded-2xl border border-[#7C3AED] bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:border-[#6D28D9] hover:bg-[#6D28D9]"
         >
           Sign in with Google
         </a>
