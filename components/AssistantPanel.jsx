@@ -5,10 +5,9 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 const EXAMPLE_QUESTIONS = [
-  "What is this project about?",
-  "What does the system visualization show?",
-  "How should I interpret the scatterplot?",
-  "What are the main ideas behind this work?",
+  "What is CSP?",
+  "What does the guide about",
+  "What is The Impact Frontier paper about?"
 ];
 
 function createSessionId() {
@@ -137,7 +136,7 @@ export default function AssistantPanel() {
       {
         role: "assistant",
         content:
-          "Welcome. This is the early assistant shell. Ask a question or start with one of the example prompts below.",
+          "Welcome. This is an early prototype just to spark discussion. It has limited context and memory.",
       },
     ];
   });

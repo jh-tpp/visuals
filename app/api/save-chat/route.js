@@ -1,7 +1,12 @@
+import { auth } from "@/auth";
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 
-export async function POST(request) {
+export const POST = auth(async function POST(request) {
+  if (!request.auth) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const sessionId = body?.sessionId;
@@ -43,4 +48,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

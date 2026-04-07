@@ -212,7 +212,7 @@ function EconomicSystemVisualizationGallery() {
       <div className="max-w-[1850px] mx-auto space-y-8">
         <div className="space-y-6">
               <Panel title="Mode">
-                <p className="text-sm text-slate-600">Switch between the two states.</p>
+                <p className="text-sm text-slate-600">Try switching between the states.</p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <Button
                     variant={!naive ? "default" : "outline"}
@@ -260,7 +260,7 @@ function EconomicSystemVisualizationGallery() {
                     <Panel title="Investor supply controls">
                       <div className="flex items-center justify-between gap-4">
                         <p className="text-sm text-slate-600">
-                          Drag the handles to reallocate a fixed total supply weight across firms.
+                          Drag the handles to reallocate a fixed amount of capital across the firms.
                         </p>
                         <Button variant="outline" onClick={resetSupply} className="rounded-2xl">
                           Reset

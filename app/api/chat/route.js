@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import fs from "fs";
 import path from "path";
 
@@ -334,7 +335,46 @@ function findExactNameHits(corpus, candidateNames, allowedSources) {
   });
 }
 
-function searchCorpus(queryEmbedding, corpus, latestUserMessage, messages, topK = 10) {
+function selectFinalHits(candidates, finalK = 12) {
+  const remaining = [...candidates];
+  const selected = [];
+  const sourceCounts = {};
+
+  while (selected.length < finalK && remaining.length > 0) {
+    let bestIndex = 0;
+    let bestAdjustedScore = -Infinity;
+
+    for (let i = 0; i < remaining.length; i += 1) {
+      const hit = remaining[i];
+      const repeats = sourceCounts[hit.source] || 0;
+
+      // No penalty for the first two chunks from a source.
+      // After that, apply a small diminishing-return penalty.
+      const penalty = repeats <= 1 ? 0 : (repeats - 1) * 0.035;
+      const adjustedScore = hit.score - penalty;
+
+      if (adjustedScore > bestAdjustedScore) {
+        bestAdjustedScore = adjustedScore;
+        bestIndex = i;
+      }
+    }
+
+    const [chosen] = remaining.splice(bestIndex, 1);
+    selected.push(chosen);
+    sourceCounts[chosen.source] = (sourceCounts[chosen.source] || 0) + 1;
+  }
+
+  return selected;
+}
+
+function searchCorpus(
+  queryEmbedding,
+  corpus,
+  latestUserMessage,
+  messages,
+  candidatePoolSize = 30,
+  finalK = 12
+) {
   const sourceInfos = getSourceInfos(corpus);
   const controls = detectSourceControls(messages, sourceInfos);
   const { isCrossDocQuery } = classifyQuestion(latestUserMessage);
@@ -377,8 +417,11 @@ function searchCorpus(queryEmbedding, corpus, latestUserMessage, messages, topK 
     ...scored.filter((hit) => !exactIds.has(hit.id)),
   ];
 
+  const candidatePool = merged.slice(0, candidatePoolSize);
+  const finalHits = selectFinalHits(candidatePool, finalK);
+
   return {
-    hits: merged.slice(0, topK),
+    hits: finalHits,
     controls,
     candidateNames,
   };
@@ -461,7 +504,10 @@ async function embedText(text) {
   return data.data[0].embedding;
 }
 
-export async function POST(request) {
+export const POST = auth(async function POST(request) {
+  if (!request.auth) {
+    return Response.json({ error: "Not authenticated" }, { status: 401 });
+  }
   try {
     if (!process.env.OPENROUTER_API_KEY) {
       return Response.json(
@@ -494,13 +540,7 @@ export async function POST(request) {
     const retrievalQuery = buildRetrievalQuery(messages);
     const queryEmbedding = await embedText(retrievalQuery);
 
-    const { hits, controls, candidateNames } = searchCorpus(
-      queryEmbedding,
-      corpus,
-      latestUserMessage,
-      messages,
-      10
-    );
+npm run build
 
     const { isListQuery, isCrossDocQuery, isNameQuery } =
       classifyQuestion(latestUserMessage);
@@ -650,4 +690,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});
