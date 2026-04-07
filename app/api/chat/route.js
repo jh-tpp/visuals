@@ -3,6 +3,28 @@ import path from "path";
 
 const CORPUS_PATH = path.join(process.cwd(), "corpus", "generated", "corpus.json");
 
+const SOURCE_ALIAS_MAP = {
+  "guide-1-IGGv3.pdf": [
+    "guide",
+    "the guide",
+    "investor's guide",
+    "investors guide",
+    "investor’s guide",
+    "goals-based investing and philanthropy",
+    "investor's guide to goals-based investing and philanthropy",
+    "investor’s guide to goals-based investing and philanthropy",
+  ],
+  "paper-1-IFfeb26.pdf": [
+    "paper",
+    "the paper",
+    "impact frontier",
+    "the impact frontier",
+    "impact frontier paper",
+    "the impact frontier paper",
+    "jonathan harris paper",
+  ],
+};
+
 function normalizeText(text) {
   return (text || "")
     .toLowerCase()
@@ -77,14 +99,16 @@ function getSourceInfos(corpus) {
     source,
     normSource: normalizeText(source),
     normBase: normalizeText(source.replace(/\.pdf$/i, "")),
-    isGuide: /\bguide\b/i.test(source),
-    isPaper: /\bpaper\b/i.test(source),
+    aliases: (SOURCE_ALIAS_MAP[source] || []).map(normalizeText),
+    isGuide:
+      source === "guide-1-IGGv3.pdf" || /\bguide\b/i.test(source),
+    isPaper:
+      source === "paper-1-IFfeb26.pdf" || /\bpaper\b/i.test(source),
   }));
 }
 
 function detectSourceControls(messages, sourceInfos) {
   const recentUserTurns = collectRecentUserTurns(messages, 8);
-  const recentUserText = recentUserTurns.join("\n").toLowerCase();
 
   const controls = {
     onlyGuide: false,
@@ -96,8 +120,9 @@ function detectSourceControls(messages, sourceInfos) {
 
   for (const turn of recentUserTurns) {
     const lower = turn.toLowerCase();
+    const lowerNorm = normalizeText(turn);
 
-    // Reset broad source restrictions
+    // Reset broad restrictions
     if (
       /\b(use|include|allow|cite|reference|talk about)\s+both\b/.test(lower) ||
       /\b(use|include|allow)\s+all sources\b/.test(lower) ||
@@ -111,16 +136,16 @@ function detectSourceControls(messages, sourceInfos) {
 
     // Re-allow guide / paper
     if (
-      /\b(guide)\s+(is\s+)?(allowed|ok|okay)\s+again\b/.test(lower) ||
-      /\b(use|include|allow|cite|reference|talk about)\s+(the\s+)?guide\s+again\b/.test(lower)
+      /\bguide\b.*\b(allowed|ok|okay)\b.*\bagain\b/.test(lower) ||
+      /\b(use|include|allow|cite|reference|talk about)\b.*\bguide\b.*\bagain\b/.test(lower)
     ) {
       controls.excludeGuide = false;
       if (controls.onlyPaper) controls.onlyPaper = false;
     }
 
     if (
-      /\b(paper)\s+(is\s+)?(allowed|ok|okay)\s+again\b/.test(lower) ||
-      /\b(use|include|allow|cite|reference|talk about)\s+(the\s+)?paper\s+again\b/.test(lower)
+      /\bpaper\b.*\b(allowed|ok|okay)\b.*\bagain\b/.test(lower) ||
+      /\b(use|include|allow|cite|reference|talk about)\b.*\bpaper\b.*\bagain\b/.test(lower)
     ) {
       controls.excludePaper = false;
       if (controls.onlyGuide) controls.onlyGuide = false;
@@ -153,16 +178,21 @@ function detectSourceControls(messages, sourceInfos) {
       controls.excludePaper = true;
       if (controls.onlyPaper) controls.onlyPaper = false;
     }
-  }
 
-  for (const info of sourceInfos) {
-    if (
-      info.normSource &&
-      (recentUserText.includes(info.normSource) || recentUserText.includes(info.normBase))
-    ) {
-      controls.exactSourceMentions.push(info.source);
+    // Alias-based exact source mentions
+    for (const info of sourceInfos) {
+      const aliasMatched =
+        info.aliases.some((alias) => lowerNorm.includes(alias)) ||
+        lowerNorm.includes(info.normSource) ||
+        lowerNorm.includes(info.normBase);
+
+      if (aliasMatched) {
+        controls.exactSourceMentions.push(info.source);
+      }
     }
   }
+
+  controls.exactSourceMentions = [...new Set(controls.exactSourceMentions)];
 
   return controls;
 }
@@ -202,14 +232,15 @@ function scoreSourceBias(item, latestUserMessage, controls, sourceInfos) {
   let boost = 0;
 
   if (
-    sourceInfo.normSource &&
-    (qNorm.includes(sourceInfo.normSource) || qNorm.includes(sourceInfo.normBase))
+    sourceInfo.aliases.some((alias) => qNorm.includes(alias)) ||
+    qNorm.includes(sourceInfo.normSource) ||
+    qNorm.includes(sourceInfo.normBase)
   ) {
-    boost += 0.1;
+    boost += 0.14;
   }
 
   if (controls.exactSourceMentions.includes(item.source)) {
-    boost += 0.08;
+    boost += 0.10;
   }
 
   if (/\bguide\b/i.test(latestUserMessage) && sourceInfo.isGuide) {
@@ -221,6 +252,48 @@ function scoreSourceBias(item, latestUserMessage, controls, sourceInfos) {
   }
 
   return boost;
+}
+
+function chunkPenalty(item) {
+  const text = item.content || "";
+  const lower = text.toLowerCase();
+
+  let penalty = 0;
+
+  if (/\breferences?\b|\bbibliography\b/.test(lower)) {
+    penalty += 0.45;
+  }
+
+  if (/\backnowledg(e)?ments?\b|\breviewers?\b|\bauthors?\b/.test(lower)) {
+    penalty += 0.20;
+  }
+
+  if (
+    /publication, either in whole or in part|stored in a data retrieval system|transmitted or redistributed/.test(
+      lower
+    )
+  ) {
+    penalty += 0.25;
+  }
+
+  const yearMatches = text.match(/\b(19|20)\d{2}[a-z]?\b/g) || [];
+  const journalish =
+    /\breview\b|\bjournal\b|\bproceedings\b|\bworking paper\b|\buniversity press\b/.test(
+      lower
+    );
+
+  if (yearMatches.length >= 6 && journalish) {
+    penalty += 0.30;
+  }
+
+  if (
+    /\blead author\b|\bsenior fellow\b|\bresearch affiliation\b/.test(lower) &&
+    /\bauthors?\b/.test(lower)
+  ) {
+    penalty += 0.12;
+  }
+
+  return penalty;
 }
 
 function extractCandidateNames(text) {
@@ -264,9 +337,18 @@ function findExactNameHits(corpus, candidateNames, allowedSources) {
 function searchCorpus(queryEmbedding, corpus, latestUserMessage, messages, topK = 10) {
   const sourceInfos = getSourceInfos(corpus);
   const controls = detectSourceControls(messages, sourceInfos);
+  const { isCrossDocQuery } = classifyQuestion(latestUserMessage);
+
   const allowedSources = getAllowedSources(sourceInfos, controls);
 
-  const filteredCorpus = corpus.filter((item) => allowedSources.has(item.source));
+  let filteredCorpus = corpus.filter((item) => allowedSources.has(item.source));
+
+  // If the user clearly means exactly one source and is not asking for a comparison,
+  // force retrieval to stay inside that source.
+  if (!isCrossDocQuery && controls.exactSourceMentions.length === 1) {
+    const targetSource = controls.exactSourceMentions[0];
+    filteredCorpus = filteredCorpus.filter((item) => item.source === targetSource);
+  }
 
   const scored = filteredCorpus.map((item) => {
     const semanticScore = cosineSimilarity(queryEmbedding, item.embedding);
@@ -276,10 +358,11 @@ function searchCorpus(queryEmbedding, corpus, latestUserMessage, messages, topK 
       controls,
       sourceInfos
     );
+    const penalty = chunkPenalty(item);
 
     return {
       ...item,
-      score: semanticScore + sourceBias,
+      score: semanticScore + sourceBias - penalty,
     };
   });
 
@@ -303,12 +386,21 @@ function searchCorpus(queryEmbedding, corpus, latestUserMessage, messages, topK 
 
 function buildContext(hits) {
   return hits
-    .map((hit, index) => {
-      const citation = hit.page
-        ? `${hit.source}, page ${hit.page}`
-        : `${hit.source}`;
+    .map((hit) => {
+      const parts = [
+        "BEGIN EXCERPT",
+        `Source file: ${hit.source}`,
+      ];
 
-      return `[Source ${index + 1}: ${citation}]\n${hit.content}`;
+      if (hit.page) {
+        parts.push(`Page: ${hit.page}`);
+      }
+
+      parts.push("Excerpt:");
+      parts.push(hit.content);
+      parts.push("END EXCERPT");
+
+      return parts.join("\n");
     })
     .join("\n\n");
 }
@@ -336,6 +428,14 @@ function buildCitationData(hits) {
   }
 
   return citations;
+}
+
+function stripTrailingSourcesSection(text) {
+  if (!text) return text;
+
+  return text
+    .replace(/\n{1,}(?:Sources?|Citations?)\s*:\s*(?:\n|$)[\s\S]*$/i, "")
+    .trim();
 }
 
 async function embedText(text) {
@@ -411,26 +511,29 @@ export async function POST(request) {
     const priorUserContext = recentUserTurns.slice(0, -1);
 
     const strictModeInstruction = [
-      "You are a strict, risk-averse assistant for Jon's research site.",
-      "Use only the retrieved excerpts and the recent user-side context provided below.",
-      "Do not use outside knowledge.",
-      "Do not rely on prior assistant answers, because they may have been wrong.",
-      "If support in the retrieved excerpts is partial, weak, or ambiguous, say so plainly.",
-      "Do not complete patterns or infer a full list from partial evidence.",
-      "For list questions, only list items explicitly supported in the retrieved excerpts.",
-      "If you cannot confidently provide a complete list from the retrieved excerpts, say that clearly.",
-      "If asked about comparisons or overlaps, separate direct textual support from inference.",
-      "Label inferred synthesis explicitly as 'Inference'.",
-      "Treat user-supplied names as hypotheses, not facts.",
-      "Do not confirm that a person is mentioned unless the exact name appears in the retrieved excerpts.",
-      "Source constraints are enforced by the system. Do not claim that citation control is outside your control.",
-      "If a source has been excluded by the user, behave as if it is unavailable.",
-      "Return plain markdown only.",
-      "Use short paragraphs and bullet lists when helpful.",
-      "Do not use tables unless they clearly help.",
-      "Do not use code fences unless you are actually giving code.",
-      "Prefer saying 'I can't confidently answer that from the retrieved excerpts' over guessing.",
-    ].join(" ");
+    "You are a strict, risk-averse assistant for Jon's research site.",
+    "Use only the retrieved excerpts and the recent user-side context provided below.",
+    "Do not use outside knowledge.",
+    "Do not rely on prior assistant answers, because they may have been wrong.",
+    "If support in the retrieved excerpts is partial, weak, or ambiguous, say so plainly.",
+    "Do not complete patterns or infer a full list from partial evidence.",
+    "For list questions, only list items explicitly supported in the retrieved excerpts.",
+    "If you cannot confidently provide a complete list from the retrieved excerpts, say that clearly.",
+    "If asked about comparisons or overlaps, separate direct textual support from inference.",
+    "Label inferred synthesis explicitly as 'Inference'.",
+    "Treat user-supplied names as hypotheses, not facts.",
+    "Do not confirm that a person is mentioned unless the exact name appears in the retrieved excerpts.",
+    "Source constraints are enforced by the system. Do not claim that citation control is outside your control.",
+    "If a source has been excluded by the user, behave as if it is unavailable.",
+    "Do not mention internal source ids, source numbers, or retrieval labels.",
+    "Do not append your own 'Sources:' or 'Citations:' section.",
+    "The UI will display citations separately.",
+    "Return plain markdown only.",
+    "Use short paragraphs and bullet lists when helpful.",
+    "Do not use tables unless they clearly help.",
+    "Do not use code fences unless you are actually giving code.",
+    "Prefer saying 'I can't confidently answer that from the retrieved excerpts' over guessing.",
+  ].join(" ");
 
     const taskHints = [];
 
@@ -530,8 +633,10 @@ export async function POST(request) {
     }
 
     const data = await response.json();
-    const content =
+    let content =
       data?.choices?.[0]?.message?.content || "No response content returned.";
+    
+    content = stripTrailingSourcesSection(content);
 
     return Response.json({
       content,
