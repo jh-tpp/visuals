@@ -6,26 +6,26 @@ const PAPERS = [
     label: "Paper 1",
     title: "The Impact Frontier",
     status: "Working paper",
-    description:
-      "Preview the opening page here. Use the main link for the full paper when ready.",
-    previewUrl: "/papers/impact-frontier-preview.pdf",
+    // description:
+    //   "Preview the opening page here. Use the main link for the full paper when ready.",
+    // previewUrl: "/papers/impact-frontier-preview.pdf",
     primaryLabel: "Download from SSRN",
     primaryHref: "", // add SSRN link when ready
-    secondaryLabel: "Open preview PDF",
-    secondaryHref: "/papers/impact-frontier-preview.pdf",
+    // secondaryLabel: "Open preview PDF",
+    // secondaryHref: "/papers/impact-frontier-preview.pdf",
   },
   {
     id: "paper-2",
     label: "Paper 2",
     title: "Shifting the Frontier",
-    status: "Abstract available",
-    description:
-      "This currently shows the title and abstract page only.",
-    previewUrl: "/papers/shifting-frontier-preview.pdf",
+    status: "In development",
+    // description:
+    //   "This currently shows the title and abstract page only.",
+    // previewUrl: "/papers/shifting-frontier-preview.pdf",
     primaryLabel: "Download from SSRN",
     primaryHref: "", // add SSRN link when ready
-    secondaryLabel: "Open preview PDF",
-    secondaryHref: "/papers/shifting-frontier-preview.pdf",
+    // secondaryLabel: "Open preview PDF",
+    // secondaryHref: "/papers/shifting-frontier-preview.pdf",
   },
 ];
 
@@ -125,9 +125,10 @@ function PaperCard({
             {secondaryLabel}
           </ActionLink>
         </div>
+
+        <PdfPreview title={title} previewUrl={previewUrl} />
       </div>
 
-      <PdfPreview title={title} previewUrl={previewUrl} />
     </section>
   );
 }
