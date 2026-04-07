@@ -100,7 +100,6 @@ function PaperCard({
 }) {
   return (
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
-      <PdfPreview title={title} previewUrl={previewUrl} />
 
       <div className="flex flex-col justify-between rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="space-y-4">
@@ -127,6 +126,8 @@ function PaperCard({
           </ActionLink>
         </div>
       </div>
+
+      <PdfPreview title={title} previewUrl={previewUrl} />
     </section>
   );
 }
