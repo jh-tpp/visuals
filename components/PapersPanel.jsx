@@ -65,7 +65,7 @@ function PdfPreview({ title, previewUrl }) {
   const pdfSrc = `${previewUrl}#navpanes=0&scrollbar=0&view=FitH`;
 
   return (
-    <div className="w-[640px] max-w-full overflow-hidden rounded-[28px] border border-slate-200 bg-slate-100 shadow-sm">
+    <div className="w-[600px] max-w-full overflow-hidden rounded-[28px] border border-slate-200 bg-slate-100 shadow-sm">
       <div className="aspect-[3/4] w-full bg-white">
         <object data={pdfSrc} type="application/pdf" className="h-full w-full">
           <div className="flex h-full items-center justify-center p-6 text-center text-sm text-slate-600">
@@ -97,7 +97,7 @@ function PaperCard({
 }) {
   return (
     <section className="grid gap-6 justify-start">
-      <div className="w-[688px] max-w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="w-[648px] max-w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="inline-flex w-fit items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
             {label}
