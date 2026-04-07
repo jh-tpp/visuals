@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { signIn } from "next-auth/react";
 
 const EXAMPLE_QUESTIONS = [
   "What is CSP?",
@@ -140,6 +141,46 @@ export default function AssistantPanel() {
       },
     ];
   });
+
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+    
+    async function handleGoogleSignInPopup() {
+      try {
+        setIsAuthLoading(true);
+    
+        const result = await signIn("google", {
+          redirect: false,
+          redirectTo: "/?tab=assistant",
+        });
+    
+        if (!result?.url) {
+          throw new Error("Could not start Google sign-in.");
+        }
+    
+        const popup = window.open(
+          result.url,
+          "google-sign-in",
+          "popup=yes,width=520,height=740,left=100,top=80"
+        );
+    
+        if (!popup) {
+          window.location.href = result.url;
+          return;
+        }
+    
+        const timer = window.setInterval(() => {
+          if (popup.closed) {
+            window.clearInterval(timer);
+            window.location.href = "/?tab=assistant";
+          }
+        }, 500);
+      } catch (error) {
+        console.error(error);
+        alert("Could not start Google sign-in.");
+      } finally {
+        setIsAuthLoading(false);
+      }
+    }
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -311,12 +352,14 @@ export default function AssistantPanel() {
           </p>
         </div>
 
-        <a
-          href="/api/auth/signin?callbackUrl=%2F%3Ftab%3Dassistant"
-          className="inline-flex items-center justify-center rounded-2xl border border-[#7C3AED] bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:border-[#6D28D9] hover:bg-[#6D28D9]"
+        <button
+          type="button"
+          onClick={handleGoogleSignInPopup}
+          disabled={isAuthLoading}
+          className="inline-flex items-center justify-center rounded-2xl border border-[#7C3AED] bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:border-[#6D28D9] hover:bg-[#6D28D9] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Sign in with Google
-        </a>
+          {isAuthLoading ? "Opening Google..." : "Sign in with Google"}
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-2 print:hidden">
