@@ -540,7 +540,14 @@ export const POST = auth(async function POST(request) {
     const retrievalQuery = buildRetrievalQuery(messages);
     const queryEmbedding = await embedText(retrievalQuery);
 
-npm run build
+    const { hits, controls, candidateNames } = searchCorpus(
+      queryEmbedding,
+      corpus,
+      latestUserMessage,
+      messages,
+      30,
+      12
+    );
 
     const { isListQuery, isCrossDocQuery, isNameQuery } =
       classifyQuestion(latestUserMessage);
