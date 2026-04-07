@@ -74,10 +74,23 @@ export default function Page() {
             <div className="bg-white rounded-3xl rounded-tl-none shadow-sm border border-slate-300 p-6">
               {activeTab === "system" ? (
                 <SystemVisualization />
-              ) : activeTab === "scatterplot" ? (
-                <IntegrationScatterplot mode="standard" />
-              ) : activeTab === "combinatorial" ? (
-                <IntegrationScatterplot mode="combinatorial" />
+              ) : activeTab === "scatterplot" || activeTab === "combinatorial" ? (
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <h2 className="text-2xl font-semibold tracking-tight">
+                      {activeTab === "scatterplot"
+                        ? "Integration scatterplot"
+                        : "Combinatorial view"}
+                    </h2>
+                    <p className="text-sm text-slate-600">
+                      Try moving the opportunity dots.
+                    </p>
+                  </div>
+
+                  <IntegrationScatterplot
+                    mode={activeTab === "scatterplot" ? "standard" : "combinatorial"}
+                  />
+                </div>
               ) : (
                 <AssistantPanel />
               )}
