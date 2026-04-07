@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 
 const EXAMPLE_QUESTIONS = [
   "What is CSP?",
-  "What does the guide about",
+  "What is the guide about",
   "What is The Impact Frontier paper about?"
 ];
 
