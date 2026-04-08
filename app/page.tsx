@@ -5,8 +5,9 @@ import SystemVisualization from "@/components/SystemVisualization";
 import IntegrationScatterplot from "@/components/IntegrationScatterplot";
 import AssistantPanel from "@/components/AssistantPanel";
 import PapersPanel from "@/components/PapersPanel";
+import GuidesPanel from "@/components/GuidesPanel";
 
-type Tab = "system" | "scatterplot" | "combinatorial" | "assistant" | "papers";
+type Tab = "system" | "scatterplot" | "combinatorial" | "assistant" | "papers" | "guides" ;
 
 function getInitialTab(): Tab {
   if (typeof window === "undefined") return "system";
@@ -18,7 +19,8 @@ function getInitialTab(): Tab {
     tab === "scatterplot" ||
     tab === "combinatorial" ||
     tab === "assistant" ||
-    tab === "papers"
+    tab === "papers"||
+    tab === "guides"
   ) {
     return tab;
   }
@@ -107,6 +109,18 @@ export default function Page() {
 
               <button
                 type="button"
+                onClick={() => setActiveTab("guides")}
+                className={`rounded-t-2xl border border-slate-300 border-b-0 px-5 py-2 text-sm font-medium transition ${
+                  activeTab === "guides"
+                    ? "bg-white text-slate-900"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                Guides
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setActiveTab("assistant")}
                 className={`rounded-t-2xl border border-slate-300 border-b-0 px-5 py-2 text-sm font-medium transition ${
                   activeTab === "assistant"
@@ -155,6 +169,8 @@ export default function Page() {
                   </div>
               ) : activeTab === "papers" ? (
                 <PapersPanel />
+              ) : activeTab === "guides" ? (
+                <GuidesPanel />
               ) : (
                 <AssistantPanel />
               )}
