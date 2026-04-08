@@ -128,61 +128,62 @@ export default function Page() {
               {activeTab === "system" ? (
                 <SystemVisualization />
               ) : activeTab === "scatterplot" ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="space-y-1">
-                        <h2 className="text-2xl font-semibold tracking-tight">
-                          {activeTab === "scatterplot"
-                            ? "Integration scatterplot"
-                            : "Combinatorial view"}
-                        </h2>
-                    
-                        <p className="text-sm text-slate-600">
-                          Scatterplots are a key way to visualize and think about the relationship between impact and financial return.{" "}
-                          <a
-                            href="https://impactfrontiers.org/norms/impact-financial-integration/relationships-between-impact-financial-return/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline underline-offset-2 hover:text-slate-900"
-                          >
-                            Learn more
-                          </a>
-                          .
-                        </p>
-                    
-                        <p className="text-sm text-slate-600">
-                          Try moving the opportunity dots.
-                        </p>
-                      </div>
-
-                      <div className="inline-flex rounded-2xl border border-slate-300 bg-slate-100 p-1">
-                        <button
-                          type="button"
-                          onClick={() => setScatterplotMode("standard")}
-                          className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
-                            scatterplotMode === "standard"
-                              ? "bg-white text-slate-900 shadow-sm"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <h2 className="text-2xl font-semibold tracking-tight">
+                        {scatterplotMode === "standard"
+                          ? "Integration scatterplot"
+                          : "Combinatorial view"}
+                      </h2>
+              
+                      <p className="text-sm text-slate-600">
+                        Scatterplots are a key way to visualize and think about the relationship between impact and financial return.{" "}
+                        <a
+                          href="https://impactfrontiers.org/norms/impact-financial-integration/relationships-between-impact-financial-return/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline underline-offset-2 hover:text-slate-900"
                         >
-                          Standard
-                        </button>
-                        
-                        <button
-                          type="button"
-                          onClick={() => setScatterplotMode("combinatorial")}
-                          className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
-                            scatterplotMode === "combinatorial"
-                              ? "bg-white text-slate-900 shadow-sm"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
-                        >
-                          Combinatorial
-                        </button>
-                      </div>
-                      
-                    <IntegrationScatterplot mode={scatterplotMode} />
+                          Learn more
+                        </a>
+                        .
+                      </p>
+              
+                      <p className="text-sm text-slate-600">
+                        Try moving the opportunity dots.
+                      </p>
+                    </div>
+              
+                    <div className="inline-flex rounded-2xl border border-slate-300 bg-slate-100 p-1">
+                      <button
+                        type="button"
+                        onClick={() => setScatterplotMode("standard")}
+                        className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                          scatterplotMode === "standard"
+                            ? "bg-white text-slate-900 shadow-sm"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        Standard
+                      </button>
+              
+                      <button
+                        type="button"
+                        onClick={() => setScatterplotMode("combinatorial")}
+                        className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                          scatterplotMode === "combinatorial"
+                            ? "bg-white text-slate-900 shadow-sm"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        Combinatorial
+                      </button>
+                    </div>
                   </div>
+              
+                  <IntegrationScatterplot mode={scatterplotMode} />
+                </div>
               ) : activeTab === "papers" ? (
                 <PapersPanel />
               ) : activeTab === "guides" ? (
