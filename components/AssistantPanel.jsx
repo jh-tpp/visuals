@@ -8,7 +8,9 @@ import { signIn } from "next-auth/react";
 const EXAMPLE_QUESTIONS = [
   "What is CSP?",
   "What is the guide about?",
-  "What is The Impact Frontier paper about?"
+  "What is The Impact Frontier paper about?",
+  "What programs does CSP offer?",
+  "How does the guide relate to CSP programs?"
 ];
 
 function createSessionId() {
@@ -474,7 +476,7 @@ export default function AssistantPanel() {
       {isLoading && (
         <div className="space-y-1">
           <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
-            Assistant
+            CCSP Research Engagement Assistant
           </div>
           <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 bg-white text-slate-500 border border-slate-200">
             Thinking...
