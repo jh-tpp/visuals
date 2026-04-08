@@ -152,7 +152,7 @@ export default function Page() {
                         Use the button on the top right to switch between a standard mode, where opportunities are scored individually, and a combinatorial mode, where one pair of opportunities generates combined scores that are better than the sum of the parts.
                       </p>
               
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="inline-block rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-900">
                         Try moving the opportunity dots.
                       </p>
                     </div>
