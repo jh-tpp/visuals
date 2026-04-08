@@ -374,7 +374,7 @@ export default function AssistantPanel() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 print:hidden">
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-slate-900">Assistant</h2>
+          <h2 className="text-xl font-semibold text-slate-900">AskCCSP Assistant</h2>
           <p className="text-sm text-slate-600 max-w-3xl">
             Early prototype 'talk with the research' assistant. Has limited context and memory.
           </p>
