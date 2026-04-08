@@ -114,7 +114,7 @@ export default function Page() {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                Assistant
+                AskCCSP
               </button>
 
             </div>
