@@ -7,7 +7,7 @@ import AssistantPanel from "@/components/AssistantPanel";
 import PapersPanel from "@/components/PapersPanel";
 import GuidesPanel from "@/components/GuidesPanel";
 
-type Tab = "system" | "scatterplot" | "combinatorial" | "assistant" | "papers" | "guides" ;
+type Tab = "system" | "scatterplot" | "assistant" | "papers" | "guides" ;
 
 function getInitialTab(): Tab {
   if (typeof window === "undefined") return "system";
@@ -17,7 +17,6 @@ function getInitialTab(): Tab {
   if (
     tab === "system" ||
     tab === "scatterplot" ||
-    tab === "combinatorial" ||
     tab === "assistant" ||
     tab === "papers"||
     tab === "guides"
@@ -30,6 +29,10 @@ function getInitialTab(): Tab {
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState<Tab>(getInitialTab);
+
+  const [scatterplotMode, setScatterplotMode] = useState<
+    "standard" | "combinatorial"
+  >("standard");
 
   function switchTab(tab: Tab) {
     setActiveTab(tab);
@@ -85,18 +88,6 @@ export default function Page() {
 
               <button
                 type="button"
-                onClick={() => setActiveTab("combinatorial")}
-                className={`rounded-t-2xl border border-slate-300 border-b-0 px-5 py-2 text-sm font-medium transition ${
-                  activeTab === "combinatorial"
-                    ? "bg-white text-slate-900"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                Combinatorial
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setActiveTab("papers")}
                 className={`rounded-t-2xl border border-slate-300 border-b-0 px-5 py-2 text-sm font-medium transition ${
                   activeTab === "papers"
@@ -136,36 +127,61 @@ export default function Page() {
             <div className="bg-white rounded-3xl rounded-tl-none shadow-sm border border-slate-300 p-6">
               {activeTab === "system" ? (
                 <SystemVisualization />
-              ) : activeTab === "scatterplot" || activeTab === "combinatorial" ? (
+              ) : activeTab === "scatterplot" ? (
                   <div className="space-y-4">
-                    <div className="space-y-1">
-                      <h2 className="text-2xl font-semibold tracking-tight">
-                        {activeTab === "scatterplot"
-                          ? "Integration scatterplot"
-                          : "Combinatorial view"}
-                      </h2>
-                  
-                      <p className="text-sm text-slate-600">
-                        Scatterplots are a key way to visualize and think about the relationship between impact and financial return.{" "}
-                        <a
-                          href="https://impactfrontiers.org/norms/impact-financial-integration/relationships-between-impact-financial-return/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline underline-offset-2 hover:text-slate-900"
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <h2 className="text-2xl font-semibold tracking-tight">
+                          {activeTab === "scatterplot"
+                            ? "Integration scatterplot"
+                            : "Combinatorial view"}
+                        </h2>
+                    
+                        <p className="text-sm text-slate-600">
+                          Scatterplots are a key way to visualize and think about the relationship between impact and financial return.{" "}
+                          <a
+                            href="https://impactfrontiers.org/norms/impact-financial-integration/relationships-between-impact-financial-return/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline underline-offset-2 hover:text-slate-900"
+                          >
+                            Learn more
+                          </a>
+                          .
+                        </p>
+                    
+                        <p className="text-sm text-slate-600">
+                          Try moving the opportunity dots.
+                        </p>
+                      </div>
+
+                      <div className="inline-flex rounded-2xl border border-slate-300 bg-slate-100 p-1">
+                        <button
+                          type="button"
+                          onClick={() => setScatterplotMode("standard")}
+                          className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                            scatterplotMode === "standard"
+                              ? "bg-white text-slate-900 shadow-sm"
+                              : "text-slate-600 hover:text-slate-900"
+                          }`}
                         >
-                          Learn more
-                        </a>
-                        .
-                      </p>
-                  
-                      <p className="text-sm text-slate-600">
-                        Try moving the opportunity dots.
-                      </p>
-                    </div>
-                  
-                    <IntegrationScatterplot
-                      mode={activeTab === "scatterplot" ? "standard" : "combinatorial"}
-                    />
+                          Standard
+                        </button>
+                        
+                        <button
+                          type="button"
+                          onClick={() => setScatterplotMode("combinatorial")}
+                          className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                            scatterplotMode === "combinatorial"
+                              ? "bg-white text-slate-900 shadow-sm"
+                              : "text-slate-600 hover:text-slate-900"
+                          }`}
+                        >
+                          Combinatorial
+                        </button>
+                      </div>
+                      
+                    <IntegrationScatterplot mode={scatterplotMode} />
                   </div>
               ) : activeTab === "papers" ? (
                 <PapersPanel />
