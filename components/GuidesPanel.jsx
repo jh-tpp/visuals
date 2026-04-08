@@ -4,7 +4,7 @@ const GUIDES = [
   {
     id: "goals-based-guide",
     title: "Investor’s Guide to Goals-based Investing and Philanthropy",
-    status: "Preview page only. Full guide not yet public.",
+    status: "Preview cover only. Full guide not yet public.",
     previewSrc: "/guides/goals-based-preview.png",
     previewType: "image",
     downloadHref: "",
@@ -66,14 +66,6 @@ function GuideCard({ guide }) {
   return (
     <section className="grid gap-6 justify-start">
       <div className="w-[648px] max-w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-            {guide.title}
-          </h2>
-          <p className="text-sm text-slate-600">
-            {guide.status}
-          </p>
-        </div>
 
         <div className="shrink-0">
           <ActionButton
@@ -83,9 +75,20 @@ function GuideCard({ guide }) {
             {guide.downloadLabel}
           </ActionButton>
         </div>
-      </div>
+        
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+            {guide.title}
+          </h2>
+          <p className="text-sm text-slate-600">
+            {guide.status}
+          </p>
+        </div>
 
-      <GuidePreview guide={guide} />
+        <div className="mt-8">
+          <GuidePreview guide={guide} />
+        </div>
+      </div>
     </section>
   );
 }
