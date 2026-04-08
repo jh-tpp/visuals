@@ -123,22 +123,36 @@ export default function Page() {
               {activeTab === "system" ? (
                 <SystemVisualization />
               ) : activeTab === "scatterplot" || activeTab === "combinatorial" ? (
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <h2 className="text-2xl font-semibold tracking-tight">
-                      {activeTab === "scatterplot"
-                        ? "Integration scatterplot"
-                        : "Combinatorial view"}
-                    </h2>
-                    <p className="text-sm text-slate-600">
-                      Try moving the opportunity dots.
-                    </p>
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <h2 className="text-2xl font-semibold tracking-tight">
+                        {activeTab === "scatterplot"
+                          ? "Integration scatterplot"
+                          : "Combinatorial view"}
+                      </h2>
+                  
+                      <p className="text-sm text-slate-600">
+                        Scatterplots are a key way to visualize and think about the relationship between impact and financial return.{" "}
+                        <a
+                          href="https://impactfrontiers.org/norms/impact-financial-integration/relationships-between-impact-financial-return/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline underline-offset-2 hover:text-slate-900"
+                        >
+                          Learn more
+                        </a>
+                        .
+                      </p>
+                  
+                      <p className="text-sm text-slate-600">
+                        Try moving the opportunity dots.
+                      </p>
+                    </div>
+                  
+                    <IntegrationScatterplot
+                      mode={activeTab === "scatterplot" ? "standard" : "combinatorial"}
+                    />
                   </div>
-
-                  <IntegrationScatterplot
-                    mode={activeTab === "scatterplot" ? "standard" : "combinatorial"}
-                  />
-                </div>
               ) : activeTab === "papers" ? (
                 <PapersPanel />
               ) : (
