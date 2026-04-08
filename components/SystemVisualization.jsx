@@ -211,8 +211,12 @@ function EconomicSystemVisualizationGallery() {
     <div key={naive ? "root-naive" : "root-system"} className="min-h-screen bg-slate-50 text-slate-900 p-8">
       <div className="max-w-[1850px] mx-auto space-y-8">
         <div className="space-y-6">
+              <Panel title="System visualization">
+                <p className="text-sm text-slate-600">This is a visualization of the financial system connecting investor capital allocation to companies and real-world outcomes. It is based on the model in 'The Impact Frontier' paper.</p>
+              </Panel>
+          
               <Panel title="Mode">
-                <p className="text-sm text-slate-600">Try switching between the states.</p>
+                <p className="text-sm text-slate-600">Try switching between the states to see the difference.</p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <Button
                     variant={!naive ? "default" : "outline"}
@@ -260,7 +264,7 @@ function EconomicSystemVisualizationGallery() {
                     <Panel title="Investor supply controls">
                       <div className="flex items-center justify-between gap-4">
                         <p className="text-sm text-slate-600">
-                          Drag the handles to reallocate a fixed amount of capital across the firms.
+                          Drag the handles to reallocate capital across the firms.
                         </p>
                         <Button variant="outline" onClick={resetSupply} className="rounded-2xl">
                           Reset
