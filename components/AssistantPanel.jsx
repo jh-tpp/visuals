@@ -139,7 +139,7 @@ export default function AssistantPanel() {
       {
         role: "assistant",
         content:
-          "Welcome. This is an early prototype just to spark discussion. It has limited context and memory.",
+          "Welcome. Ask me about CSP and CCSP Research...",
       },
     ];
   });
@@ -376,7 +376,7 @@ export default function AssistantPanel() {
         <div className="space-y-2">
           <h2 className="text-xl font-semibold text-slate-900">AskCCSP Assistant</h2>
           <p className="text-sm text-slate-600 max-w-3xl">
-            Early prototype 'talk with the research' assistant. Has limited context and memory.
+            Early prototype 'talk with the research' assistant just to spark discussion. It has limited context and memory. You need to sign in to use it. Email Jonathan to request access.
           </p>
         </div>
 
