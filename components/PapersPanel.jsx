@@ -11,6 +11,7 @@ const PAPERS = [
     previewUrl: "/papers/impact-frontier-preview.pdf",
     primaryLabel: "Download from SSRN",
     primaryHref: "", // add SSRN link when ready
+    downloadDisabled: true,
     // secondaryLabel: "Open preview PDF",
     // secondaryHref: "/papers/impact-frontier-preview.pdf",
   },
@@ -24,29 +25,32 @@ const PAPERS = [
     previewUrl: "/papers/shifting-frontier-preview.pdf",
     primaryLabel: "Download from SSRN",
     primaryHref: "", // add SSRN link when ready
+    downloadDisabled: true,
     // secondaryLabel: "Open preview PDF",
     // secondaryHref: "/papers/shifting-frontier-preview.pdf",
   },
 ];
 
-function ActionLink({ href, children, variant = "primary" }) {
-  const base =
-    "inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium transition border";
-
-  const styles =
-    variant === "secondary"
-      ? "bg-white text-slate-900 border-slate-300 hover:bg-slate-50"
-      : "bg-slate-900 text-white border-slate-900 hover:bg-slate-800";
-
-  if (!href) {
-    return (
-      <span
-        className={`${base} ${styles} cursor-default opacity-50`}
-        aria-disabled="true"
-      >
-        {children}
-      </span>
-    );
+function ActionLink({ href, 
+  disabled = false, children, variant = "primary" 
+}) {
+  if (disabled || !href) {
+    const base =
+      "inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium transition border";
+  
+    const styles =
+      variant === "secondary"
+        ? "bg-white text-slate-900 border-slate-300 hover:bg-slate-50"
+        : "bg-slate-900 text-white border-slate-900 hover:bg-slate-800";
+  
+      return (
+        <span
+          className={`${base} ${styles} cursor-default opacity-50`}
+          aria-disabled="true"
+        >
+          {children}
+        </span>
+      );
   }
 
   return (
@@ -54,7 +58,7 @@ function ActionLink({ href, children, variant = "primary" }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`${base} ${styles}`}
+      className="inline-flex items-center justify-center rounded-2xl border border-slate-900 bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
     >
       {children}
     </a>
