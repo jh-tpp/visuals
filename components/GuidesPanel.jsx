@@ -48,7 +48,7 @@ function GuidePreview({ guide }) {
       <img
         src={guide.previewSrc}
         alt={guide.title}
-        className="h-[760px] w-full rounded-2xl border border-slate-200 object-contain bg-white"
+        className="h-[600px] w-full rounded-2xl border border-slate-200 object-contain bg-white"
       />
     );
   }
@@ -57,15 +57,15 @@ function GuidePreview({ guide }) {
     <iframe
       src={guide.previewSrc}
       title={guide.title}
-      className="h-[760px] w-full rounded-2xl border border-slate-200 bg-white"
+      className="h-[600px] w-full rounded-2xl border border-slate-200 bg-white"
     />
   );
 }
 
 function GuideCard({ guide }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-slate-50 p-5 md:p-6">
-      <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+    <section className="grid gap-6 justify-start">
+      <div className="w-[648px] max-w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="space-y-2">
           <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             Guide
@@ -78,7 +78,7 @@ function GuideCard({ guide }) {
           </p>
         </div>
 
-        <div className="flex shrink-0 flex-wrap gap-3">
+        <div className="shrink-0">
           <ActionButton
             href={guide.downloadHref}
             disabled={guide.downloadDisabled}
@@ -95,12 +95,12 @@ function GuideCard({ guide }) {
 
 export default function GuidesPanel() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+    <div className="space-y-8">
+      <div className="max-w-3xl space-y-2">
+        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
           Guides
-        </h1>
-        <p className="text-sm text-slate-600">
+        </h2>
+        <p className="text-sm leading-6 text-slate-600">
           Preview pages for practitioner-facing publications.
         </p>
       </div>
