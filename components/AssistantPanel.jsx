@@ -10,7 +10,7 @@ const EXAMPLE_QUESTIONS = [
   "What is the guide about?",
   "What is The Impact Frontier paper about?",
   "What programs does CSP offer?",
-  "How does the guide relate to CSP programs?"
+  "How does the guide relate to CSP's programs?"
 ];
 
 function createSessionId() {
