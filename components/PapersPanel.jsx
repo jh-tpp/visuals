@@ -40,17 +40,19 @@ function ActionLink({ href,
   
     const styles =
       variant === "secondary"
-        ? "bg-white text-slate-900 border-slate-300 hover:bg-slate-50"
-        : "bg-slate-900 text-white border-slate-900 hover:bg-slate-800";
+        ? "bg-white text-slate-900 border-slate-300"
+        : "bg-slate-900 text-white border-slate-900";
   
-      return (
-        <span
-          className={`${base} ${styles} cursor-default opacity-50`}
-          aria-disabled="true"
-        >
-          {children}
-        </span>
-      );
+    return (
+      <button
+        type="button"
+        disabled
+        className={`${base} ${styles} cursor-not-allowed opacity-50`}
+        aria-disabled="true"
+      >
+        {children}
+      </button>
+    );
   }
 
   return (
