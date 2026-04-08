@@ -129,16 +129,14 @@ export default function Page() {
                 <SystemVisualization />
               ) : activeTab === "scatterplot" ? (
                 <div className="space-y-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div className="space-y-2 max-w-3xl">
                       <h2 className="text-2xl font-semibold tracking-tight">
-                        {scatterplotMode === "standard"
-                          ? "Integration scatterplot"
-                          : "Combinatorial view"}
+                        Impact-Financial Scatterplots
                       </h2>
               
                       <p className="text-sm text-slate-600">
-                        Scatterplots are a key way to visualize and think about the relationship between impact and financial return.{" "}
+                        These scatterplots are a key tool for visualizing and thinking about the integration of impact and financial performance.{" "}
                         <a
                           href="https://impactfrontiers.org/norms/impact-financial-integration/relationships-between-impact-financial-return/"
                           target="_blank"
@@ -151,6 +149,10 @@ export default function Page() {
                       </p>
               
                       <p className="text-sm text-slate-600">
+                        Use the button on the top right to switch between a standard mode, where opportunities are scored individually, and a combinatorial mode, where one pair of opportunities generates combined scores that are better than the sum of the parts.
+                      </p>
+              
+                      <p className="text-sm font-semibold text-slate-900">
                         Try moving the opportunity dots.
                       </p>
                     </div>
