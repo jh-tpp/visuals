@@ -48,7 +48,7 @@ function GuidePreview({ guide }) {
       <img
         src={guide.previewSrc}
         alt={guide.title}
-        className="h-[600px] w-full rounded-2xl border border-slate-200 object-contain bg-white"
+        className="h-[720px] w-full rounded-2xl border border-slate-200 object-contain bg-white"
       />
     );
   }
@@ -57,7 +57,7 @@ function GuidePreview({ guide }) {
     <iframe
       src={guide.previewSrc}
       title={guide.title}
-      className="h-[600px] w-full rounded-2xl border border-slate-200 bg-white"
+      className="h-[720px] w-full rounded-2xl border border-slate-200 bg-white"
     />
   );
 }
@@ -65,7 +65,7 @@ function GuidePreview({ guide }) {
 function GuideCard({ guide }) {
   return (
     <section className="grid gap-6 justify-start">
-      <div className="w-[648px] max-w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="w-[768px] max-w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
 
         <div className="shrink-0">
           <ActionButton
