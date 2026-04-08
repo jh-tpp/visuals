@@ -83,7 +83,7 @@ export default function Page() {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                Scatterplot
+                Scatterplots
               </button>
 
               <button
