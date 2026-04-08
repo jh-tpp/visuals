@@ -67,20 +67,22 @@ function GuideCard({ guide }) {
     <section className="grid gap-6 justify-start">
       <div className="w-[768px] max-w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
 
-        <div className="shrink-0">
-          <ActionButton
-            href={guide.downloadHref}
-            disabled={guide.downloadDisabled}
-          >
-            {guide.downloadLabel}
-          </ActionButton>
+        <div className="flex items-center gap-3">
+          <div className="shrink-0">
+            <ActionButton
+              href={guide.downloadHref}
+              disabled={guide.downloadDisabled}
+            >
+              {guide.downloadLabel}
+            </ActionButton>
+          </div>
         </div>
         
-        <div className="space-y-2">
+        <div className="mt-4 space-y-2">
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
             {guide.title}
           </h2>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm font-medium text-slate-500">
             {guide.status}
           </p>
         </div>
