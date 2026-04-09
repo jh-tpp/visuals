@@ -4,3 +4,4 @@ node_modules
 .env.local
 public/.DS_Store
 .DS_Store
+.DS_Store
