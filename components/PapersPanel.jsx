@@ -137,8 +137,8 @@ export default function PapersPanel() {
           Papers
         </h2>
         <p className="text-sm leading-6 text-slate-600">
-          Preview the opening page of each paper here. Use the main paper links
-          for full downloads when available.
+          Preview the opening page of each paper here. Use the links
+          for downloads when available.
         </p>
       </div>
 
