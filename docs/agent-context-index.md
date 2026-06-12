@@ -19,6 +19,7 @@ The canonical brief is the source of truth for the product idea. The files here 
 5. `implementation-notes.md` - practical build guidance.
 6. `agent-challenge-prompt.md` - challenge prompt for prototype agents.
 7. `prototype-evaluation-scorecard.md` - how to compare prototype outputs.
+8.  `model-engine/lake_economy_model_prototype.R` - tested R reference implementation for the economic engine. Use it for model structure and parameter examples, not for visual design.
 
 ## What agents should understand
 

@@ -124,14 +124,31 @@ Delta blended = nu * Delta lake + (1 - nu) * Delta prosperity
 6. Compute financial result:
 
 ```text
-financialCost = 0.5 * b' A b
+financialCost = using CE(b) in the brief
 businessPayoff = mu' Delta K
 riskPenalty = optional quadratic term
 ```
 
 7. Compute frontier score using the same feasible offer set.
 
+## R model reference
+
+The file `lake_economy_model_prototype.R` is the current tested reference for the game engine.
+
+Implementation agents should port the model logic into the website stack rather than inventing a new economic engine. The R file defines the initial six-entity economy, scenario templates, player offers, other-investor supply, issuer demand, equilibrium solving, outcomes, and approximate frontier calculation.
+
+The R file is not binding for UI design. Its plotting choices should not be copied unless they fit the website.
+
+The visible website chart should use:
+
+- x-axis: expected outcome change
+- y-axis: risk-adjusted return
+
+The internal math may use CE value or CE loss. The UI should prefer risk-adjusted return language, where higher is better.
+
 ## Frontier computation
+
+Chart convention: plot expected outcome change on the x-axis and a plain-language risk-adjusted return result, on the y-axis. It is fine to compute frontier scores internally using CE loss, but the visible chart should not be drawn as "cost vs outcome".
 
 For MVP, a grid search or simple numerical optimization is fine. There are only six entities.
 

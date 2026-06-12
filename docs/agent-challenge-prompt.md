@@ -16,7 +16,17 @@ docs/paper1-short-context.md
 docs/gatsby-aquaculture-context.md
 docs/paper2-short-context.md
 docs/implementation-notes.md
+docs/goals-guide-game-integration.md
 ```
+
+Also read `lake_economy_model_prototype.R`. This is the tested R prototype for the economic engine. Treat it as the current source of truth for the model structure and a useful starting point for parameter values. Do not treat its plotting code as the website design.
+
+The website chart should use the project convention:
+
+- x-axis: expected outcome change
+- y-axis: risk-adjusted return
+
+The R file may compute CE values or CE loss internally. Convert this to a risk-adjusted-return framing for the UI if practical. For an initial prototype, it is acceptable to keep the current internal calculations while using the correct chart orientation and clear labels.
 
 The core idea is simple:
 
@@ -44,6 +54,10 @@ Build or design an MVP with:
 - a frontier chart or frontier score,
 - a visible distinction between player offers and actual capital added.
 
+On the blended objective: the player should choose the goal before setting offers; changing the goal recomputes the frontier for that goal.
+
+Start fresh clears the sliders to an unallocated 100-token pool. The player must reallocate all 100 tokens before running the economy.
+
 The six investable entities are:
 
 1. Scalable fish farm
@@ -54,6 +68,8 @@ The six investable entities are:
 6. Lakefront industry
 
 Other investors should be visible in the world, even if not interactive.
+
+Use the standard Impact Frontier chart convention: outcome change on the horizontal axis and risk-adjusted return on the vertical axis.
 
 ## Economic model requirements
 
@@ -68,6 +84,8 @@ Delta X = g' Delta K
 ```
 
 The player sees expected business payoff, risk, lake health intensity, and local prosperity intensity. The player should not initially see hidden responsiveness or contribution multipliers.
+
+DeltaK may be negative for some entities after market clearing, but K0 + DeltaK should remain non-negative in normal play.
 
 Use scenario templates rather than unrestricted random generation:
 
@@ -90,6 +108,8 @@ Preferred stack:
 
 Keep model logic separate from visuals.
 
+Do not implement coalition, policy, stewardship, or multi-period modes in the MVP. Structure the model so these can be added later.
+
 ## Creative direction
 
 Tone: charming, toy-like, serious enough for a research site.
@@ -104,14 +124,13 @@ Avoid:
 
 The page should still make Paper 1 and Paper 2 easy to access.
 
+Public UI should say "inspired by real lake-economy and aquaculture cases", not "based on Gatsby". Gatsby context is for internal design grounding unless the user explicitly asks for a case note.
+
 ## Deliverable options
 
-Depending on the agent's abilities, produce one of the following:
-
-1. A working prototype.
-2. A high-fidelity design concept plus component plan.
-3. A technical implementation plan with starter code.
-
+Primary deliverable: a working playable prototype.
+If a working prototype is impossible, produce a high-fidelity design concept and explain what prevented implementation.
+Do not stop at a plan unless explicitly instructed.
 The best response should prioritize a playable core loop over visual polish.
 
 ## Evaluation criteria

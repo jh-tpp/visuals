@@ -45,7 +45,7 @@ The hidden system that maps offers into actual firm-capital changes. It reflects
 
 ### Impact Frontier
 
-The best achievable trade-off between financial cost and expected outcome change, given the same rules and constraints as the player faces.
+The best achievable trade-off between risk-adjusted return and expected outcome change, given the same rules and constraints as the player faces.
 
 In the game, the frontier should be the playable constrained frontier, not the fully unconstrained analytical frontier from the paper.
 

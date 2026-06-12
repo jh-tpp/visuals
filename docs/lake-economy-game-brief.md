@@ -380,16 +380,18 @@ Internally, “spray and pray” can describe equal offers, but the UI should pr
 
 ## 15. Frontier scoring
 
+Chart convention: the Impact Frontier chart should put expected outcome change on the horizontal axis and certainty-equivalent return, or a plain-language risk-adjusted return result, on the vertical axis. The UI should not plot "financial cost" as the main vertical variable. Financial cost can be used internally for scoring, but the visible chart should follow the standard convention: more outcome to the right, better financial result upward.
+
 The game should report whether the player reached the Impact Frontier.
 
 A simple user-facing message:
 
-> You reached 63 percent of the frontier at this financial cost.
+> You reached 63 percent of the frontier at this risk-adjusted return.
 
 The exact MVP scoring can be:
 
 1. Compute the player's chosen offer vector `b`.
-2. Compute the resulting financial certainty-equivalent score `CE(b)`.
+2. Compute the resulting financial certainty-equivalent score `CE(b)`. This should be called risk-adjusted return in all player-facing communications.
 3. Compute the outcome score `O(b)` for the chosen blended outcome.
 4. Compute the best feasible outcome at the same financial cost.
 5. Report the ratio:
@@ -397,6 +399,11 @@ The exact MVP scoring can be:
 ```text
 frontier_score = O(b) / O_star(CE cost of b)
 ```
+
+If O_star <= 0, do not report a percentage. Show a text result instead.
+If O(b) < 0, report that the offer moved against the chosen goal.
+Cap displayed frontier scores at 100% unless explicitly showing approximation error.
+Use "about" or "roughly" for approximate grid-based frontier scores.
 
 A clean reference formulation:
 
@@ -673,6 +680,7 @@ Recommended page structure:
 - buttons:
   - Read Paper 1,
   - Read Paper 2,
+  - Read Investors' Guide,
   - Play the model.
 
 ### Interactive area

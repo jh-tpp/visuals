@@ -1,3 +1,28 @@
+# # Lake Economy model engine reference
+# 
+# This folder contains a tested R prototype for the Lake Economy game engine.
+# 
+# Use `lake_economy_model_prototype.R` as the current mathematical reference for:
+#   
+#   - the six-entity Lake Economy setup
+# - player offers / bid strengths
+# - other-investor supply
+# - issuer demand
+# - equilibrium prices and capital quantities
+# - lake health and local prosperity outcomes
+# - frontier approximation
+# 
+# The R file is not a visual-design spec. It is a working prototype of the economic engine.
+# 
+# Important chart convention:
+#   
+#   - X-axis: expected outcome change
+# - Y-axis: risk-adjusted return
+# 
+# The current R prototype may compute or plot a CE value / CE loss internally. That is fine for testing. For the website UI, convert this into a plain-language risk-adjusted return where higher is better if practical. If this conversion slows down the first prototype, keep the current internal calculation but label the UI carefully and do not reverse the axes.
+# 
+# For the first web prototype, it is acceptable to use the current parameter values while getting the interaction and visuals working. Parameter tuning can happen later.
+
 # Lake Economy model prototype
 # ------------------------------------------------------------
 # Purpose:
@@ -86,7 +111,7 @@ build_lake_params <- function(
     supply_scale = 0.045,
     offer_shift_scale = 18,
     player_baseline_share_of_K = 0.10,
-    lake_weight = 0.50
+    lake_outcome_weight = 0.50
 ) {
   entities <- c(
     "Scalable fish farm",
@@ -228,7 +253,7 @@ build_lake_params <- function(
     q_other = q_other,
     g_lake = g_lake,
     g_prosperity = g_prosperity,
-    lake_weight = lake_weight,
+    lake_outcome_weight = lake_outcome_weight,
     K0 = K0,
     P0 = P0,
     b0_share = b0_share,
@@ -292,14 +317,14 @@ solve_lake_equilibrium <- function(b_share, params) {
   )
 }
 
-compute_lake_metrics <- function(eq, params, lake_weight = params$lake_weight) {
+compute_lake_metrics <- function(eq, params, lake_outcome_weight = params$lake_outcome_weight) {
   K <- eq$K
   K_player <- eq$K_player
   P <- eq$P
 
   lake <- sum(params$g_lake * K)
   prosperity <- sum(params$g_prosperity * K)
-  blended <- lake_weight * lake + (1 - lake_weight) * prosperity
+  blended <- lake_outcome_weight * lake + (1 - lake_outcome_weight) * prosperity
 
   player_expected_payoff <- sum(P * K_player)
   player_variance <- as.numeric(t(K_player) %*% params$Sigma %*% K_player)
@@ -317,9 +342,9 @@ compute_lake_metrics <- function(eq, params, lake_weight = params$lake_weight) {
   )
 }
 
-run_lake <- function(b_share, params, lake_weight = params$lake_weight) {
+run_lake <- function(b_share, params, lake_outcome_weight = params$lake_outcome_weight) {
   eq <- solve_lake_equilibrium(b_share, params)
-  metrics <- compute_lake_metrics(eq, params, lake_weight)
+  metrics <- compute_lake_metrics(eq, params, lake_outcome_weight)
   c(eq, metrics = list(metrics))
 }
 
@@ -327,11 +352,11 @@ run_lake <- function(b_share, params, lake_weight = params$lake_weight) {
 # Preset offer vectors
 # -----------------------------
 
-make_presets <- function(params, lake_weight = params$lake_weight) {
+make_presets <- function(params, lake_outcome_weight = params$lake_outcome_weight) {
   n <- params$n
   entities <- params$entities
 
-  blended_g <- lake_weight * params$g_lake + (1 - lake_weight) * params$g_prosperity
+  blended_g <- lake_outcome_weight * params$g_lake + (1 - lake_outcome_weight) * params$g_prosperity
 
   equal <- rep(1 / n, n)
   highest_payoff <- rep(0, n); highest_payoff[which.max(params$mu_business)] <- 1
@@ -360,12 +385,12 @@ make_presets <- function(params, lake_weight = params$lake_weight) {
 # Frontier by grid search over feasible offer shares
 # -----------------------------
 
-frontier_grid <- function(params, lake_weight = params$lake_weight, n_grid = 10000, seed = 1) {
+frontier_grid <- function(params, lake_outcome_weight = params$lake_outcome_weight, n_grid = 10000, seed = 1) {
   set.seed(seed)
   entities <- params$entities
   n <- params$n
 
-  presets <- make_presets(params, lake_weight)
+  presets <- make_presets(params, lake_outcome_weight)
   Bgrid <- random_simplex(n, n_grid)
   colnames(Bgrid) <- entities
   Bgrid <- rbind(
@@ -376,7 +401,7 @@ frontier_grid <- function(params, lake_weight = params$lake_weight, n_grid = 100
   res <- vector("list", nrow(Bgrid))
   for (i in seq_len(nrow(Bgrid))) {
     eq <- solve_lake_equilibrium(Bgrid[i, ], params)
-    m <- compute_lake_metrics(eq, params, lake_weight)
+    m <- compute_lake_metrics(eq, params, lake_outcome_weight)
     res[[i]] <- c(
       as.list(Bgrid[i, ]),
       list(
@@ -395,7 +420,7 @@ frontier_grid <- function(params, lake_weight = params$lake_weight, n_grid = 100
   rownames(df) <- NULL
 
   # Add baseline-relative quantities using equal offers as baseline.
-  base <- run_lake(presets$equal_offers, params, lake_weight)
+  base <- run_lake(presets$equal_offers, params, lake_outcome_weight)
   base_m <- base$metrics
   df$ce_loss_vs_equal <- base_m$player_ce - df$player_ce
   df$blended_gain_vs_equal <- df$blended - base_m$blended
@@ -412,11 +437,11 @@ frontier_grid <- function(params, lake_weight = params$lake_weight, n_grid = 100
   df
 }
 
-score_offer_against_grid <- function(b_share, params, lake_weight = params$lake_weight, grid = NULL) {
-  if (is.null(grid)) grid <- frontier_grid(params, lake_weight, n_grid = 5000)
+score_offer_against_grid <- function(b_share, params, lake_outcome_weight = params$lake_outcome_weight, grid = NULL) {
+  if (is.null(grid)) grid <- frontier_grid(params, lake_outcome_weight, n_grid = 5000)
 
-  current <- run_lake(b_share, params, lake_weight)
-  base <- run_lake(params$b0_share, params, lake_weight)
+  current <- run_lake(b_share, params, lake_outcome_weight)
+  base <- run_lake(params$b0_share, params, lake_outcome_weight)
 
   cur_gain <- current$metrics$blended - base$metrics$blended
   cur_loss <- base$metrics$player_ce - current$metrics$player_ce
@@ -473,8 +498,8 @@ validate_lake_params <- function(params, verbose = TRUE) {
   invisible(list(matrix_checks = checks, preset_checks = preset_checks))
 }
 
-entity_card_table <- function(params, lake_weight = params$lake_weight) {
-  blended_g <- lake_weight * params$g_lake + (1 - lake_weight) * params$g_prosperity
+entity_card_table <- function(params, lake_outcome_weight = params$lake_outcome_weight) {
+  blended_g <- lake_outcome_weight * params$g_lake + (1 - lake_outcome_weight) * params$g_prosperity
   data.frame(
     entity = params$entities,
     current_size_K0 = as.numeric(params$K0),
@@ -505,7 +530,7 @@ result_table <- function(run) {
 # Example run
 # -----------------------------
 
-params <- build_lake_params(lake_weight = 0.50)
+params <- build_lake_params(lake_outcome_weight = 0.50)
 validate_lake_params(params)
 
 cat("\nVisible entity card table\n")
@@ -517,7 +542,7 @@ cat("\nPreset results\n")
 for (nm in names(presets)) {
   run <- run_lake(presets[[nm]], params)
   cat("\n---", nm, "---\n")
-  print(round(result_table(run), 4))
+  print(result_table(run))
   print(round(unlist(run$metrics), 4))
 }
 
@@ -538,19 +563,19 @@ print(round(c(
 # Basic plot if running interactively.
 if (interactive()) {
   plot(
-    grid$ce_loss_vs_equal,
     grid$blended_gain_vs_equal,
+   -grid$ce_loss_vs_equal,
     pch = 16,
     cex = 0.35,
-    xlab = "CE loss vs equal offers",
-    ylab = "Blended outcome gain vs equal offers",
+    ylab = "CE loss vs equal offers",
+    xlab = "Blended outcome gain vs equal offers",
     main = "Approximate playable Impact Frontier"
   )
   points(
-    grid$ce_loss_vs_equal[grid$is_frontier_point],
     grid$blended_gain_vs_equal[grid$is_frontier_point],
+ -   grid$ce_loss_vs_equal[grid$is_frontier_point],
     pch = 16,
-    cex = 0.6
+    cex = 0.6, col='green'
   )
 }
 
