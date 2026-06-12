@@ -87,6 +87,7 @@ function init() {
   scene.setFrameCallback(() => positionEntityPopup());
   scene.setLake(params);
   scene.updateState({ offers: state.tokens, lastRun: null });
+  scene.updateLakeColor(0);
 
   bindEvents();
   renderAll();
@@ -137,6 +138,7 @@ function setGoal(weight) {
     state.lastScore = scoreCurrentOffers();
     state.bestScore = state.lastScore;
     scene.updateState({ offers: state.tokens, lastRun: state.lastScore.current });
+    scene.updateLakeColor(state.lastScore.lakeGainVsEqual);
   } else {
     state.bestScore = null;
   }
@@ -180,6 +182,7 @@ function adjustToken(index, value) {
 function clearStaleRun(message) {
   state.lastScore = null;
   scene.updateState({ offers: state.tokens, lastRun: null });
+  scene.updateLakeColor(0);
   elements.statusLine.textContent = message;
   renderAll();
 }
@@ -205,6 +208,7 @@ function runEconomy() {
     state.bestScore = state.lastScore;
   }
   scene.updateState({ offers: state.tokens, lastRun: state.lastScore.current });
+  scene.updateLakeColor(state.lastScore.lakeGainVsEqual);
   elements.statusLine.textContent = 'Economy cleared. Compare your offers with total capital change and other-investor response.';
   renderAll();
 }
@@ -214,6 +218,7 @@ function startFresh() {
   state.lastScore = null;
   closeEntityPopup();
   scene.updateState({ offers: state.tokens, lastRun: null });
+  scene.updateLakeColor(0);
   elements.statusLine.textContent = state.goalChosen
     ? 'Same harbor economy, fresh offer sheet. Allocate 100 tokens before running.'
     : 'Same harbor economy. Choose a goal first, then allocate offers.';
@@ -233,6 +238,7 @@ function newLake() {
   params = buildLakeParams({ seed: state.seed, templateKey: state.templateKey, lakeOutcomeWeight: state.goalChosen ? state.goalWeight : 0.5 });
   scene.setLake(params);
   scene.updateState({ offers: state.tokens, lastRun: null });
+  scene.updateLakeColor(0);
   elements.statusLine.textContent = state.goalChosen
     ? 'New harbor economy generated. The goal is unchanged, but the hidden response system is new.'
     : 'New harbor economy generated. Choose a goal to begin.';

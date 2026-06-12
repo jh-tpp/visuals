@@ -52,6 +52,7 @@ function mulberry32(a) {
 
 let seedNumber = 1;
 let rng = mulberry32(1);
+let waterMaterial;
 function rand(min = 0, max = 1) { return min + (max - min) * rng(); }
 function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
 function chance(p) { return rng() < p; }
@@ -316,10 +317,10 @@ export class LakeScene {
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xf7f7f3);
-    this.scene.fog = new THREE.FogExp2(0xdce8eb, 0.008);
+    this.scene.fog = new THREE.FogExp2(0xdce8eb, 0.001);
 
     this.camera = new THREE.PerspectiveCamera(52, 1, 0.1, 500);
-    this.camera.position.set(0, 60, -90);
+    this.camera.position.set(130, 170, -70);
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -414,6 +415,7 @@ export class LakeScene {
     this.movingBoats = [];
     this.smokePuffs = [];
     this.waterMesh = null;
+    waterMaterial = null;
   }
 
   buildWorld(params) {
@@ -460,15 +462,15 @@ export class LakeScene {
 
     const waterGeo = new THREE.PlaneGeometry(150, 118, 110, 90);
     waterGeo.rotateX(-Math.PI / 2);
-    const waterMat = new THREE.MeshStandardMaterial({
-      color: COLORS.water,
-      roughness: 0.22,
-      metalness: 0.05,
+    waterMaterial = new THREE.MeshStandardMaterial({
+      color: 0x4aa7c8,
+      roughness: 0.55,
+      metalness: 0.0,
       transparent: true,
-      opacity: 0.70,
+      opacity: 0.88,
       envMapIntensity: 0.7
     });
-    this.waterMesh = new THREE.Mesh(waterGeo, waterMat);
+    this.waterMesh = new THREE.Mesh(waterGeo, waterMaterial);
     this.waterMesh.position.set(0, 0.055, -27);
     this.waterMesh.receiveShadow = true;
     this.world.add(this.waterMesh);
@@ -802,6 +804,33 @@ export class LakeScene {
       left: (this.tmpVec.x * 0.5 + 0.5) * width,
       top: (-this.tmpVec.y * 0.5 + 0.5) * height
     };
+  }
+
+  updateLakeColor(netLakeOutcome = 0) {
+    if (!waterMaterial) return;
+
+    const clean = new THREE.Color(0x4aa7c8);
+    const neutral = new THREE.Color(0x6f9fb0);
+    const dirty = new THREE.Color(0x2d3a32);
+    const ugly = new THREE.Color(0x1d1f1b);
+
+    let color;
+
+    if (netLakeOutcome >= 0) {
+      const t = Math.min(netLakeOutcome / 20, 1);
+      color = neutral.clone().lerp(clean, t);
+    } else {
+      const t = Math.min(Math.abs(netLakeOutcome) / 20, 1);
+      color = neutral.clone().lerp(dirty, t);
+    }
+
+    if (netLakeOutcome < -35) {
+      const t = Math.min((Math.abs(netLakeOutcome) - 35) / 25, 1);
+      color = dirty.clone().lerp(ugly, t);
+    }
+
+    waterMaterial.color.copy(color);
+    waterMaterial.opacity = netLakeOutcome < 0 ? 0.92 : 0.84;
   }
 
   updateLabels() {

@@ -409,6 +409,10 @@ A good MVP includes:
 - visible distinction between offers and capital changes,
 - frontier chart or score,
 - Papers and Guides access.
+- Starting view facing town from lake
+- Lake gets darker and uglier for more negative outcomes
+- Entities visually react to more or less investment
+- Visual negative effect of less prosperity
 
 ## 20. Deferred features
 
