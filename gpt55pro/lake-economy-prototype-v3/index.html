@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Impact Frontier — Harbor Economy Prototype</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="appShell">
+    <header class="topbar" aria-label="Research navigation">
+      <div class="logo-strip" aria-label="Project logos">
+        <span class="logo-chip logo-tpp" title="Replace with TPP logo">TPP</span>
+        <span class="logo-chip logo-csp" title="Replace with CSP logo">CSP</span>
+        <span class="logo-chip logo-hsg" title="Replace with HSG logo">HSG</span>
+      </div>
+      <div class="brand-block">
+        <strong>The Impact Frontier</strong>
+        <span>Research on capital, goals, and real-economy response</span>
+      </div>
+      <nav class="top-nav" aria-label="Research panels">
+        <button type="button" data-panel="papers">Papers</button>
+        <button type="button" data-panel="guides">Guides</button>
+        <button type="button" data-panel="methods">Methods</button>
+      </nav>
+      <div class="top-help">Drag to orbit · scroll to zoom</div>
+    </header>
+
+    <main class="world-shell" aria-label="Interactive harbor economy">
+      <div class="sky-gradient" aria-hidden="true"></div>
+      <canvas id="lakeCanvas"></canvas>
+      <div id="labels" aria-hidden="false"></div>
+      <div id="entityPopup" class="entity-popup hidden" role="dialog" aria-label="Entity characteristics"></div>
+    </main>
+
+    <button id="panelToggle" class="panel-toggle" type="button" aria-controls="playPanel" aria-expanded="false">Play</button>
+
+    <aside id="playPanel" class="play-panel collapsed" aria-label="Lake Economy controls">
+      <div class="panel-topline">
+        <div>
+          <span class="eyebrow">Interactive demo</span>
+          <h1>Set offers. Watch the economy clear.</h1>
+        </div>
+        <button id="minimizePanel" type="button" class="icon-button" aria-label="Minimize controls">–</button>
+      </div>
+
+      <section class="scenario-card" aria-label="Current scenario">
+        <div class="scenario-heading">
+          <strong id="scenarioName">Scenario</strong>
+          <span id="lakeSeed">seed</span>
+        </div>
+        <p id="scenarioText"></p>
+        <small id="scenarioNote"></small>
+      </section>
+
+      <section class="control-section goal-section" aria-label="Choose your goal" data-step="1">
+        <div class="section-title">
+          <span class="step-dot">1</span>
+          <div><strong>What are you trying to improve?</strong><small id="goalHint">Choose a goal to unlock the offer sheet.</small></div>
+        </div>
+        <div class="goal-pills" role="group" aria-label="Goal presets">
+          <button type="button" class="goal-pill" data-goal="100">Lake health</button>
+          <button type="button" class="goal-pill" data-goal="50">Balanced</button>
+          <button type="button" class="goal-pill" data-goal="0">Local prosperity</button>
+        </div>
+        <label class="range-label" for="goalSlider"><span>Lake health</span><b id="goalReadout">No goal selected</b><span>Prosperity</span></label>
+        <input id="goalSlider" class="wide-range" type="range" min="0" max="100" value="50" step="5">
+        <details id="voiceToggle" class="voices">
+          <summary>Optional local voices</summary>
+          <div class="voice-grid">
+            <p><b>Fish farmers</b> Reliable feed and market access would help us produce more and earn steadier incomes.</p>
+            <p><b>Families</b> We need affordable local food and jobs that last.</p>
+            <p><b>Lake stewards</b> The water supports the whole economy. Growth that damages it will not last.</p>
+          </div>
+        </details>
+      </section>
+
+      <section id="offerSection" class="control-section offer-section locked" aria-label="Set offer tokens" data-step="2" aria-disabled="true">
+        <div class="lock-scrim">Complete Step 1 to set offers.</div>
+        <div class="section-title">
+          <span class="step-dot">2</span>
+          <div><strong>Allocate 100 offer tokens</strong><small>Offers shift supply. The market decides actual capital.</small></div>
+        </div>
+        <div class="token-row">
+          <span><b id="totalTokens">0</b>/100 allocated</span>
+          <span class="token-pool" id="unallocatedTokens">100</span>
+        </div>
+        <div class="preset-row" aria-label="Offer presets">
+          <button type="button" class="preset-btn" data-preset="equal">Equal</button>
+          <button type="button" class="preset-btn" data-preset="payoff">Highest payoff</button>
+          <button type="button" class="preset-btn" data-preset="outcome">Highest raw outcome</button>
+          <button type="button" class="preset-btn subtle" data-preset="soft-outcome">Soft outcome tilt</button>
+        </div>
+        <div id="offersList" class="offers-list"></div>
+      </section>
+
+      <section class="action-strip" aria-label="Economy actions">
+        <button id="runBtn" type="button" class="primary-action" disabled>Run economy</button>
+        <button id="freshBtn" type="button">Start fresh</button>
+        <button id="newLakeBtn" type="button">New lake</button>
+        <button id="resetViewBtn" type="button">Reset view</button>
+      </section>
+
+      <section id="resultSection" class="result-section locked" aria-label="Results and frontier" data-step="3" aria-disabled="true">
+        <div class="lock-scrim">Run the economy to reveal the cleared result.</div>
+        <div class="section-title compact-title">
+          <span class="step-dot">3</span>
+          <div><strong>Cleared result</strong><small id="bestReadout">No run yet</small></div>
+        </div>
+        <div id="resultSummary"></div>
+        <div id="frontierChart" class="frontier-chart"></div>
+        <details class="response-details" open>
+          <summary>Offers vs. actual capital change</summary>
+          <div class="actual-explainer">
+            “Actual capital” means total firm capital after market clearing, measured as a change from this lake’s equal-offer baseline. Other investors remain in the market and may increase or decrease their positions as prices and firm demand change.
+          </div>
+          <div id="resultTable"></div>
+        </details>
+      </section>
+
+      <footer class="status-line" id="statusLine">Open the play panel when you want to test the harbor economy. The research tabs remain available at all times.</footer>
+    </aside>
+
+    <section id="contentPanel" class="content-panel hidden" aria-label="Research content panel">
+      <div class="content-card">
+        <div class="content-header">
+          <span class="eyebrow">Research</span>
+          <h2 id="contentTitle">Papers</h2>
+          <button id="closeContent" type="button" class="icon-button" aria-label="Close research panel">×</button>
+        </div>
+        <div id="contentBody" class="content-body"></div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

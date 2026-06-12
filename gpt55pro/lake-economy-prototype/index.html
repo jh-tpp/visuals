@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lake Economy · Impact Frontier Prototype</title>
+  <meta name="description" content="A working homepage MVP for the Lake Economy interactive game.">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="page-shell" aria-label="Lake Economy interactive homepage prototype">
+    <canvas id="lake-canvas" aria-label="Stylized lake economy with six investable entities" role="img"></canvas>
+
+    <header class="topbar" aria-label="Top navigation">
+      <a class="brand" href="#" aria-label="Lake Economy home">
+        <span class="brand-mark"></span>
+        <span>
+          <strong>Lake Economy</strong>
+          <small>Impact Frontier homepage game</small>
+        </span>
+      </a>
+      <nav class="top-actions" aria-label="Research and help">
+        <button id="how-works" class="ghost-button" type="button">How it works</button>
+        <button id="open-research" class="research-button" type="button" aria-controls="research-panel" aria-expanded="false">Research</button>
+      </nav>
+    </header>
+
+    <button id="open-offers" class="floating-cta" type="button" hidden>Adjust offers</button>
+    <div id="toast" class="toast" hidden></div>
+  </main>
+
+  <aside id="research-panel" class="research-panel" aria-hidden="true" aria-label="Research panel">
+    <div class="research-panel__inner">
+      <header class="research-panel__header">
+        <div>
+          <p class="eyebrow">Research layer</p>
+          <h2>Impact Frontier · Shifting the Frontier</h2>
+          <p>This overlay is intentionally separate from the game. Replace this content with your normal HTML, paper screenshots, abstracts, links, embeds, or downloads.</p>
+        </div>
+        <button id="close-research" class="icon-button" type="button" aria-label="Close research panel">×</button>
+      </header>
+
+      <div class="research-grid">
+        <article class="research-card">
+          <span>Paper 1</span>
+          <h3>The Impact Frontier</h3>
+          <p>Portfolio offers shift capital supply; the economy clears; real outcomes depend on the response system.</p>
+          <a href="#paper-1-placeholder">Replace with paper link</a>
+        </article>
+        <article class="research-card">
+          <span>Paper 2</span>
+          <h3>Shifting the Frontier</h3>
+          <p>Future layers can add coalitions, stewardship, policy wedges, and investor-size changes.</p>
+          <a href="#paper-2-placeholder">Replace with paper link</a>
+        </article>
+        <article class="research-card">
+          <span>Guide</span>
+          <h3>Goals-Based Investing</h3>
+          <p>The game starts by asking what the investor is trying to improve before strategy choices appear.</p>
+          <a href="#guide-placeholder">Replace with guide link</a>
+        </article>
+      </div>
+
+      <section class="research-html-slot" id="research-html-slot">
+        <h3>Drop your research HTML here</h3>
+        <p>Use this panel for paper screenshots, expandable methods notes, download buttons, or citations. It sits above the lake scene, so the game becomes background when the research layer is open.</p>
+        <div class="paper-preview-placeholder">
+          <div></div><div></div><div></div>
+          <span>paper screenshot / figure placeholder</span>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <section id="goal-modal" class="modal-backdrop" aria-modal="true" role="dialog" aria-labelledby="goal-title"> -->
+    <div class="modal modal--goal">
+      <p class="eyebrow">Step 1 · choose the goal first</p>
+      <h1 id="goal-title">What are you trying to improve?</h1>
+      <p class="lead">Local leaders have invited you to help finance the next stage of the lake economy. You set offer strengths; the market-clearing response decides what actually scales.</p>
+
+      <div class="goal-cards" aria-label="Goal presets">
+        <button type="button" class="goal-card" data-goal-preset="1">
+          <strong>Lake health</strong>
+          <span>Prioritize water quality, resilience, and the ecosystem that supports the economy.</span>
+        </button>
+        <button type="button" class="goal-card is-selected" data-goal-preset="0.5">
+          <strong>Balanced</strong>
+          <span>Look for a coherent blend of lake health and local prosperity.</span>
+        </button>
+        <button type="button" class="goal-card" data-goal-preset="0">
+          <strong>Local prosperity</strong>
+          <span>Prioritize jobs, incomes, food supply, and durable local businesses.</span>
+        </button>
+      </div>
+
+      <label class="goal-slider" for="goal-slider">
+        <span id="goal-slider-label">50% lake health · 50% local prosperity</span>
+        <input id="goal-slider" type="range" min="0" max="100" step="5" value="50">
+        <i><span>Local prosperity</span><span>Lake health</span></i>
+      </label>
+
+      <div class="perspectives" aria-label="Local perspective cards"> -->
+        <article><strong>Fish farmers</strong><span>Reliable feed and market access would help us produce more and earn steadier incomes.</span></article>
+        <article><strong>Families</strong><span>We need affordable local food and jobs that last.</span></article>
+        <article><strong>Lake stewards</strong><span>The lake supports the whole economy. Growth that damages the water will not last.</span></article>
+        <article><strong>Entrepreneurs</strong><span>Some businesses are ready to grow, but need capital and a stronger system around them.</span></article>
+      </div>
+
+      <footer class="modal-actions">
+        <button id="goal-continue" class="primary-button" type="button">Continue to offers</button>
+      </footer>
+    </div>
+  </section>
+
+  <section id="offer-modal" class="modal-backdrop" aria-modal="true" role="dialog" aria-labelledby="offer-title" hidden>
+    <div class="modal modal--offers">
+      <header class="modal-header">
+        <div>
+          <p id="offer-goal-label" class="eyebrow">Balanced goal</p>
+          <h2 id="offer-title">Set 100 offer tokens</h2>
+          <p id="offer-scenario" class="lead">The same offers can clear differently in different lakes.</p>
+        </div>
+        <div class="budget-pill" aria-live="polite">
+          <span id="budget-remaining">100 tokens unallocated</span>
+          <i><b id="budget-bar"></b></i>
+        </div>
+      </header>
+
+      <div class="preset-row" aria-label="Preset offer strategies">
+        <button class="chip-button" type="button" data-preset="business">Highest business payoff</button>
+        <button class="chip-button" type="button" data-preset="rawOutcome">Highest raw outcome intensity</button>
+        <button class="chip-button" type="button" data-preset="equal">Equal offers</button>
+        <button class="chip-button" type="button" data-preset="frontierHint" disabled>Frontier hint</button>
+      </div>
+
+      <div id="offer-list" class="offer-list" aria-label="Offer sliders and visible firm cards"></div>
+
+      <footer class="modal-actions modal-actions--split">
+        <div>
+          <button id="change-goal-from-offers" class="text-button" type="button">Change goal</button>
+          <button id="start-fresh-from-offers" class="text-button" type="button">Start fresh</button>
+          <button id="new-lake-from-offers" class="text-button" type="button">New lake</button>
+        </div>
+        <button id="run-economy" class="primary-button" type="button" disabled>Run economy</button>
+      </footer>
+    </div>
+  </section>
+
+  <section id="results-modal" class="modal-backdrop" aria-modal="true" role="dialog" aria-labelledby="results-title" hidden>
+    <div class="modal modal--results">
+      <header class="modal-header">
+        <div>
+          <p class="eyebrow">Step 3 · economy cleared</p>
+          <h2 id="results-title">Result and frontier check</h2>
+        </div>
+        <div class="result-actions">
+          <button id="change-goal-from-results" class="text-button" type="button">Change goal</button>
+          <button id="adjust-offers" class="text-button" type="button">Adjust offers</button>
+        </div>
+      </header>
+
+      <div class="results-layout">
+        <div id="results-body" class="results-body"></div>
+        <section class="chart-panel" aria-label="Impact Frontier chart panel">
+          <svg id="frontier-chart"></svg>
+        </section>
+      </div>
+
+      <footer class="modal-actions modal-actions--split">
+        <p class="subtle-note">Frontier is approximate and constrained to the same feasible 100-token offer set as the player.</p>
+        <div>
+          <button id="start-fresh-from-results" class="secondary-button" type="button">Start fresh</button>
+          <button id="new-lake-from-results" class="primary-button" type="button">New lake</button>
+        </div>
+      </footer>
+    </div>
+  </section>
+
+  <section id="info-modal" class="modal-backdrop" aria-modal="true" role="dialog" aria-labelledby="info-title" hidden>
+    <div class="modal modal--info">
+      <button id="close-info" class="icon-button modal-close" type="button" aria-label="Close">×</button>
+      <p class="eyebrow">How it works</p>
+      <h2 id="info-title">You set offers. The lake economy clears.</h2>
+      <div class="explain-grid">
+        <article><strong>1 · Choose a goal</strong><span>Lake health, local prosperity, or a blend. The frontier is recomputed for that goal.</span></article>
+        <article><strong>2 · Set offers</strong><span>Offer tokens shift your willingness to supply capital. They are not direct final capital.</span></article>
+        <article><strong>3 · Run economy</strong><span>Other investors and firm demand respond through a hidden response matrix.</span></article>
+        <article><strong>4 · Learn the system</strong><span>Compare offers with actual capital added, outcomes, and position relative to the frontier.</span></article>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

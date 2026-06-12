@@ -1,14 +1,38 @@
 # Lake Economy Game - Canonical Design Brief
 
-Version: 0.1 working brief  
-Project context: website front page for the Impact Frontier / Shifting the Frontier project  
-Purpose: provide a comprehensive but refined design brief for agents or developers building the interactive homepage game
+Version: 0.2 working brief  
+Project context: research website front page for The Impact Frontier and Shifting the Frontier project  
+Status: updated after the v3 working prototype
 
-## 1. Core idea
+## 1. Current direction
 
-The homepage should include a small, charming, interactive economy that lets users play with the central idea behind the project.
+The website is a research website first. The interactive economy is the homepage centerpiece, not the identity of the whole site.
 
-This should not feel like an ESG game where the user simply chooses virtuous firms. It should feel like a toy market-clearing economy. The player sets offers to different investable entities. The market responds. Firms scale up or down. External outcomes change. The result is compared with an Impact Frontier.
+The page should feel like:
+
+```text
+A serious research homepage with a beautiful interactive harbor economy in the background.
+```
+
+Use **The Impact Frontier** as the visible research-site title. Do not make the page feel like it is titled **Lake Economy**. Lake Economy can remain the internal name for the playable model and the stylized world.
+
+The current lead visual direction is a clean harbor-front economy:
+
+- a white or off-white top navigation bar,
+- TPP, CSP, and HSG logo positions,
+- visible title text: **The Impact Frontier**,
+- permanent buttons for Papers, Guides, Methods, and Play,
+- a harbor-style 3D economy below the bar,
+- a compact Play panel that opens without covering or darkening the economy,
+- Papers and Guides panels that sit above the economy when opened.
+
+The game should be impressive enough to create a "gee whiz" effect, but the research must remain easy to access.
+
+## 2. Core idea
+
+The homepage should include a small, charming, interactive economy that lets users play with the central idea behind the research.
+
+This should not feel like an ESG ranking game where the user simply chooses virtuous firms. It should feel like a toy market-clearing economy. The player sets offers to different investable entities. The market responds. Firms scale up or down. External outcomes change. The result is compared with an Impact Frontier.
 
 The central lesson is:
 
@@ -16,7 +40,7 @@ The central lesson is:
 
 The player should learn by experimenting. They should set offers, run the economy, observe what actually happens, and gradually infer which parts of the economy are responsive, complementary, risky, or bottlenecked.
 
-## 2. Teaching goal
+## 3. Teaching goal
 
 The game should teach one idea cleanly:
 
@@ -32,23 +56,263 @@ The important distinction is between:
 
 This distinction is the point. The game should avoid telling users that they directly allocate final firm capital. They set offer strengths or bid shifts. The economy then clears.
 
-## 3. World concept: Lake Economy
+The UI should repeatedly make this concrete:
 
-The game world should be a stylized lake economy inspired by the Gatsby Africa Aquaculture Program case. The source story involves aquaculture, feed, farms, market links, private capital, local jobs, import substitution, and Lake Victoria ecosystem protection. This makes a lake economy a natural setting.
+```text
+Offer tokens are not final capital.
+```
 
-The world should be self-contained enough to be legible on a website homepage. A lake is better than an ocean because it feels bounded, local, and system-like.
+## 4. Homepage identity and top bar
 
-The visual tone should be charming but not childish:
+The top of the page should be a clean research-site bar, not a game HUD.
 
-- low-poly or toy-like 3D,
-- clean and lightweight,
-- slightly cartoony,
+Current target:
+
+```text
+[TPP logo] [CSP logo] [HSG logo]  The Impact Frontier        Papers  Guides  Methods  Play
+```
+
+Notes:
+
+- Use real logo assets when available.
+- Use text placeholders only in prototypes.
+- Keep the bar white or off-white.
+- Keep the bar permanently visible.
+- Papers and Guides should be first-class navigation, not secondary links hidden inside the game.
+- The Play button can sit at the top left or in the top bar, but it should remain visually simple and white.
+- Opening Papers, Guides, or Methods should open a large panel above the economy. The economy can remain visible behind it, but it should become background.
+- Do not darken, blur, or gray out the economy when panels are open.
+
+## 5. World concept: harbor-front lake economy
+
+The original concept was a lake economy. The current visual target is more specific:
+
+```text
+A harbor-front lake economy with all investable entities arranged along one shoreline.
+```
+
+This is better than a lake-in-the-center layout because it lets the user look into the economy from a natural viewing angle. It also supports a cleaner research-homepage feel.
+
+The world is still a lake economy in economic and narrative terms. It is visually rendered as a harbor or waterfront economy:
+
+- blue water in front,
+- a non-trivial shoreline,
+- quays or harbor edges where appropriate,
+- green land rising gently away from the water,
+- all investable entities arranged along the shoreline,
+- low-rise town structures behind them,
+- roads, trucks, boats, trees, and ground detail.
+
+The scene should feel plausibly inspired by an African lake economy without becoming stereotyped, judgmental, or caricatured. Avoid skyscraper-city aesthetics. Avoid making the town look like New York. Use modest low-rise structures, small industrial buildings, market access infrastructure, and working waterfront details.
+
+The visual tone should be:
+
+- bright,
+- clean,
 - serious enough for a research project,
-- clear enough that users can understand the economy quickly.
+- charming but not childish,
+- realistic enough to avoid arcade or cartoon morality-play vibes,
+- closer to a model-town or architectural visualization than a game board.
 
-A good mental image is: a small lake surrounded by farms, a feed mill, a hatchery, cold-chain infrastructure, local markets, other investors, and a lakefront industrial firm.
+Preferred background direction:
 
-## 4. Player role
+- white, off-white, eggshell, or light grey surroundings,
+- blue water,
+- green terrain,
+- optional subtle sky gradient,
+- avoid the yellow/orange background from the Harbor Town reference,
+- avoid dark-green, somber environmental-simulation styling.
+
+## 6. Shoreline and terrain requirements
+
+The shoreline is important. It should not be a simple straight edge.
+
+The target shoreline should have:
+
+- a non-trivial curved shape,
+- a clean rendered edge between land and water,
+- docks, quays, rocks, or small harbor details where useful,
+- boats near the shore,
+- water extending to the usable border of the scene,
+- green ground extending to the usable border of the scene.
+
+Terrain should not be flat white or grey land with structures dropped onto it. Every structure in the economy should sit on sensible ground.
+
+Terrain should:
+
+- rise gently from the water level to the back of the scene,
+- be a little undulating,
+- remain legible and not too noisy,
+- support all business pads and roads naturally,
+- avoid visual artifacts such as flashing roofs or overlapping surfaces.
+
+Use the Harbor Town reference for the broad idea of shoreline, terrain, camera controls, and boats, but do not copy its full evolution feature or its excessive density.
+
+## 7. Boats and moving details
+
+Include boats on the water. They should look like simple harbor or lake boats, not abstract spinning markers.
+
+Good boat direction:
+
+- several small boats,
+- simple low-poly hulls,
+- different colors on some boats,
+- gentle movement if cheap and smooth,
+- no distracting animation.
+
+Cut ambiguous moving objects such as yellow spinning lake markers. If a visual element does not clearly mean something, remove it.
+
+Useful moving details:
+
+- boats moving slowly,
+- trucks near the feed mill or cold chain,
+- light smoke from the lakefront industry,
+- subtle water motion,
+- offer bars filling beside entities,
+- response bars after the economy runs.
+
+## 8. Investable entities
+
+The MVP should use six investable entities. All six should be investable.
+
+1. Scalable fish farm
+2. Steady fish farm
+3. Feed mill
+4. Hatchery
+5. Cold chain / market access
+6. Lakefront industry
+
+Each entity must have a distinct structure or area in the 3D economy. Each should have ground, road, quay, or site detail around it so it feels placed in the world rather than floating on a board.
+
+### Scalable fish farm
+
+Role:
+
+- high local prosperity potential,
+- high risk,
+- can absorb capital in some economies,
+- visually represented by expanding ponds, workers, or an ambitious operation.
+
+Possible cues:
+
+- multiple ponds,
+- construction or expansion detail,
+- active workers,
+- more energetic visual treatment than the steady farm.
+
+### Steady fish farm
+
+Role:
+
+- safer,
+- less scalable,
+- locally useful,
+- may have weaker system response than the scalable farm.
+
+Possible cues:
+
+- stable ponds,
+- modest operations,
+- simpler and calmer visual treatment.
+
+### Feed mill
+
+Role:
+
+- potential system bottleneck,
+- improves fish farm productivity,
+- may be less visibly impactful than farms but can be highly important.
+
+Possible cues:
+
+- small industrial building,
+- sacks or silos,
+- light brown truck,
+- delivery road.
+
+### Hatchery
+
+Role:
+
+- improves fish survival, quality, and productivity,
+- complements fish farms,
+- may be risky or specialized.
+
+Possible cues:
+
+- tanks,
+- fingerling ponds,
+- small technical building.
+
+### Cold chain / market access
+
+Role:
+
+- helps farms sell into stable markets,
+- reduces waste,
+- can unlock demand for local production,
+- may be the hidden lever in some scenarios.
+
+Possible cues:
+
+- refrigerated truck,
+- warehouse,
+- market access road,
+- white truck near the building.
+
+### Lakefront industry
+
+Role:
+
+- financially attractive,
+- creates jobs,
+- damages lake health,
+- competes with aquaculture for labor, land, water quality, finance, or political attention.
+
+This should not be a cartoon villain. It should be a real trade-off.
+
+Possible cues:
+
+- factory or processing plant near the water,
+- smokestack with modest smoke,
+- workers or trucks,
+- visibly industrial but not exaggerated.
+
+## 9. Non-investable visible elements
+
+Some elements should be visible but not investable in the MVP.
+
+### Other investors
+
+Other investors should be visible from the start. They communicate:
+
+> You are not investing into a vacuum. Other capital is already there.
+
+Possible visual forms:
+
+- local bank,
+- small investor crowd,
+- family office or capital pool building,
+- market capital indicator,
+- nearby finance district or modest office building.
+
+Other investors do not need to be interactive in the MVP.
+
+### Local leaders
+
+Local leaders provide the invitation and story context. They do not need to be part of the economic model.
+
+### Import pressure
+
+Imports can appear as an outside competitor, perhaps as a ship, truck, or market-price pressure indicator. The player may reduce import pressure indirectly by building a more competitive local system.
+
+Imports do not need to be investable in the MVP.
+
+### Regulator
+
+A regulator or public building can be visible, but regulation should not be an active lever in the MVP. Regulation belongs to a later Paper 2 mode.
+
+## 10. Player role
 
 The player is not a planner. The player is an outside investor or funder invited by local leaders to help finance the next stage of the lake economy.
 
@@ -60,29 +324,90 @@ This lets the player matter visibly without implying omnipotence. It also prepar
 
 The player should control a limited amount of offer power. They are not directly placing final capital into firms. They are shifting their willingness to supply capital to different investable entities.
 
-## 5. Main interaction loop
+## 11. Main interaction loop
 
 The main loop should be simple:
 
-1. A new lake economy is generated.
-2. The player sees investable entities with visible firm cards.
-3. The player allocates offer tokens across entities.
-4. The player clicks **Run economy**.
-5. The economy clears deterministically for that lake.
-6. The scene animates the response.
-7. The game shows:
+1. The research homepage loads with the 3D harbor economy visible.
+2. The user can open Papers, Guides, or Methods at any time.
+3. The user can click Play to open a compact game panel.
+4. Step 1: the player chooses a goal.
+5. Step 2: the player allocates 100 offer tokens across entities.
+6. The player clicks **Run economy**.
+7. The economy clears deterministically for that lake.
+8. The scene animates the response.
+9. The game shows:
    - the player's offers,
-   - capital actually added or reduced,
+   - capital actually added or reduced relative to baseline,
+   - player and other-investor capital changes where useful,
    - financial result,
    - lake health result,
    - local prosperity result,
    - position relative to the Impact Frontier.
-8. The player can adjust offers and run the same economy again.
-9. The player can start fresh or generate a new lake.
+10. The player can adjust offers and run the same economy again.
+11. The player can Start fresh or generate a New lake.
 
 The interaction should reward iteration. The player should feel that they are discovering the system.
 
-## 6. Button language and controls
+## 12. Play panel and step gating
+
+The Play panel should be compact and non-blocking. It should not cover the whole screen.
+
+Preferred layout:
+
+- left side,
+- vertically compact,
+- small enough that the user can still see and orbit the economy,
+- no dark overlay,
+- no grayed-out or blurred economy behind the panel.
+
+The first run should guide the user through the steps:
+
+### Step 1 - Choose goal
+
+Initial state:
+
+- no option selected,
+- no default to Lake health, Balanced, or Local prosperity,
+- the user must interact by clicking a button or moving the slider.
+
+The goal control can use three buttons, a slider, or both:
+
+- Lake health,
+- Balanced,
+- Local prosperity.
+
+Once the user interacts with Step 1, unlock Step 2.
+
+### Step 2 - Set offers
+
+Initial state:
+
+- greyed out until Step 1 is completed,
+- the user must allocate all 100 tokens before Run economy is enabled.
+
+The offer controls should remain visible after each run so the player can revise and rerun quickly.
+
+Include helpful presets:
+
+- Highest business payoff,
+- Highest raw outcome intensity,
+- Equal offers.
+
+### Step 3 - Results and frontier
+
+Initial state:
+
+- greyed out until the user has completed Step 2 and clicked Run economy.
+
+After a run, show:
+
+- results summary,
+- frontier score,
+- chart,
+- table showing offer versus actual capital change.
+
+## 13. Button language and controls
 
 Use three distinct actions:
 
@@ -90,18 +415,11 @@ Use three distinct actions:
 - **Start fresh** - keep the same lake economy but clear the player's offers.
 - **New lake** - redraw the economy parameters and generate a new playable system.
 
-Avoid ambiguous terms like “reset bids” in the final UI unless needed for internal documentation. “Start fresh” is cleaner for users.
+Start fresh should clear the sliders to an unallocated 100-token pool. The player must reallocate all 100 tokens before running the economy again.
 
-The player's offer sliders should remain visible after each run. The player should be able to revise and rerun quickly.
+Avoid ambiguous language such as "reset bids" in the final UI unless needed in developer notes.
 
-The UI should show:
-
-- current offers,
-- last run result,
-- best result achieved in this lake,
-- frontier score for the current run.
-
-## 7. Offer tokens and budget constraint
+## 14. Offer tokens and visual offer indicators
 
 The player has 100 offer tokens. These represent offer power, not final investment dollars.
 
@@ -112,193 +430,75 @@ b_n >= 0
 sum_n b_n = 100
 ```
 
-The tokens define the player's supply shifter. The economy then determines the effect on firm capital.
+Offer visibility should be clear in both the UI and the world.
 
-In mathematical terms, a simple MVP can treat the offer vector as:
+Use:
+
+- offer sliders in the Play panel,
+- numeric offer bubbles above each entity,
+- a simple visual offer bar beside each entity,
+- yellow fill moving to the right as more is offered to a firm.
+
+The visual offer bar is purely explanatory. It should not imply that the offer is final capital.
+
+## 15. Actual capital language
+
+Be explicit about what "actual capital" means.
+
+Preferred UI label:
 
 ```text
-Delta phi_i = alpha * b
+Actual capital change vs baseline
 ```
 
-where `b` is the player's offer vector and `alpha` scales the game units into the economic model.
-
-The economy response can be represented locally as:
+or shorter:
 
 ```text
-Delta K = C(f) * Delta phi_i
+Total Delta K vs baseline
 ```
 
-where:
+Avoid simply saying "actual capital" without explanation.
 
-- `Delta K` is the equilibrium change in firm capital,
-- `C(f)` is the response matrix for a player or coalition of size `f`,
-- `f` can be fixed in the MVP and exposed later.
+Definition:
 
-The key UI point:
+```text
+Actual capital change = K under current offers - K under equal-offer baseline
+```
 
-> Your offers are not the same as the capital actually added.
+This is a baseline-relative change in total firm capital after market clearing. It is not the absolute firm size and not the player's direct funding.
 
-The game should make this visible.
+A negative actual-capital change does not mean the firm disappears. It means less total capital clears into that firm than under the equal-offer baseline for the same lake.
 
-A useful results display:
+Where useful, split the result into:
 
-| Entity | Your offer | Capital actually added | Outcome effect |
-|---|---:|---:|---:|
+```text
+Offer
+Total Delta K
+Player Delta K
+Other investors Delta K
+```
 
-The table can be visual rather than literal, but the distinction should be clear.
+This makes it clear that a player offer can change the behavior of other investors and can shift capital away from other firms relative to baseline.
 
-## 8. Marginal vs non-marginal player
+## 16. Entity cards and popups
 
-For the game, the player should be meaningful relative to the lake economy. A purely marginal investor may be too abstract and visually unsatisfying.
+Do not put permanent entity detail subpanels inside the Play panel.
 
-The recommended MVP posture:
+Entity information should appear in compact popups.
 
-- The player is large enough to affect the lake economy.
-- The exact size does not need to be shown at first.
-- The model can internally use a fixed player size, such as 5-15 percent of relevant capital influence.
-- A later Paper 2 mode can expose player size as a control:
-  - small investor,
-  - lead investor,
-  - coalition.
+Two ways to open a popup:
 
-The important design constraint is conceptual honesty: do not describe the player as directly choosing final firm sizes. They set offers; the system responds.
+1. click the entity in the 3D economy,
+2. click the entity link/name in the offer list.
 
-## 9. Other investors
+Popup behavior:
 
-Other investors should be visible from the start, even if they are not interactive in the MVP.
+- appears near the relevant entity when possible,
+- closes when the user clicks outside it,
+- has a close button,
+- shows visible characteristics only before a run.
 
-They can appear as:
-
-- a small investor crowd,
-- a local bank,
-- a pension fund building,
-- a family office building,
-- a “market capital” pool.
-
-Their purpose is to communicate:
-
-> You are not investing into a vacuum. Other capital is already there.
-
-In the model, other investors are represented by the aggregate supply slope matrix or the non-player part of the supply system. Later, the player can recruit some of them into a coalition.
-
-## 10. Investable entities
-
-The MVP should use six investable entities. All six should be investable.
-
-### 1. Scalable fish farm
-
-Role:
-
-- high local prosperity potential,
-- high risk,
-- can absorb capital in some economies,
-- visually represented by an ambitious entrepreneur or expanding ponds.
-
-Possible visible cues:
-
-- energetic founder,
-- new ponds under construction,
-- workers moving actively.
-
-### 2. Steady fish farm
-
-Role:
-
-- safer,
-- less scalable,
-- locally useful,
-- may have weaker system response than the scalable farm.
-
-Possible visible cues:
-
-- stable ponds,
-- modest operations,
-- conservative owner.
-
-### 3. Feed mill
-
-Role:
-
-- potential system bottleneck,
-- improves fish farm productivity,
-- may be less visibly “impactful” than farms but can be highly important.
-
-Possible visible cues:
-
-- bags of feed,
-- trucks delivering feed,
-- small industrial facility near farms.
-
-### 4. Hatchery
-
-Role:
-
-- improves fish survival, quality, and productivity,
-- complements fish farms,
-- may be risky or specialized.
-
-Possible visible cues:
-
-- tanks,
-- fingerlings,
-- technical staff.
-
-### 5. Cold chain / market access
-
-Role:
-
-- helps farms sell into stable markets,
-- reduces waste,
-- can unlock demand for local production,
-- may be the hidden lever in some scenarios.
-
-Possible visible cues:
-
-- refrigerated truck,
-- market stall,
-- small warehouse.
-
-### 6. Lakefront industry
-
-Role:
-
-- financially attractive,
-- creates jobs,
-- damages lake health,
-- competes with aquaculture for labor, land, water quality, finance, or political attention.
-
-This should not be a cartoon villain. It should be a real trade-off.
-
-Possible visible cues:
-
-- factory by the lake,
-- smoke or runoff,
-- workers,
-- high-payoff visual signals.
-
-## 11. Non-investable visible elements
-
-Some elements should be visible but not investable in the MVP.
-
-### Local leaders
-
-They provide the invitation and story context. They do not need to be part of the economic model.
-
-### Import pressure
-
-Imports can appear as an outside competitor, perhaps as a ship, truck, or market-price pressure indicator. The player may reduce import pressure indirectly by building a more competitive local system.
-
-Imports do not need to be investable in v1.
-
-### Regulator
-
-A regulator or public building can be visible, but regulation should not be an active lever in v1. Regulation belongs to a later Paper 2 mode.
-
-## 12. Firm cards
-
-Each investable entity should have a compact visible card.
-
-Show:
+Before a run, show only:
 
 - expected business payoff,
 - risk,
@@ -307,53 +507,48 @@ Show:
 
 Do not initially show:
 
-- responsiveness,
+- hidden responsiveness,
 - contribution multipliers,
 - full pass-through values,
-- hidden system links,
-- the exact response matrix.
+- exact response matrix.
 
-The user should infer response from repeated runs.
+After a run, the popup can also show:
 
-Suggested labels:
+- player offer,
+- total capital change versus baseline,
+- player capital change versus baseline,
+- other-investor capital change versus baseline,
+- lake health effect,
+- local prosperity effect,
+- financial result.
 
-- **Expected business payoff** rather than “expected return”.
-- **Risk**.
-- **Lake health**.
-- **Local prosperity**.
+The user should infer the response system through repeated runs.
 
-Reason: “Expected return” is awkward because security-level returns are determined after pricing and market clearing. “Expected business payoff” is a better firm-side primitive for the game.
-
-## 13. Outcome variables
+## 17. Outcome variables
 
 The game should show two external outcome meters:
 
-1. **Lake health**
-2. **Local prosperity**
+1. Lake health
+2. Local prosperity
 
-The player chooses a blended objective using a simple slider:
+The player chooses a blended objective using a simple goal control:
 
 ```text
-Lake health <----------------> Local prosperity
+Lake health <------> Local prosperity
 ```
 
 The model combines the two outcome-intensity vectors into one chosen objective:
 
 ```text
 g(nu) = nu_lake * g_lake + nu_prosperity * g_prosperity
-```
-
-with:
-
-```text
 nu_lake + nu_prosperity = 1
 ```
 
 The Impact Frontier is then computed for the chosen blended objective.
 
-Do not introduce a full multi-outcome frontier in the MVP. It is interesting but too complex for the homepage.
+Do not introduce a full multi-outcome frontier in the MVP.
 
-## 14. Preset offer strategies
+## 18. Preset offer strategies
 
 Include a small preset menu to help users start.
 
@@ -374,476 +569,281 @@ Possible later preset:
    - Available only after the player has played once or twice.
    - Nudges toward the response-adjusted solution without fully revealing it.
 
-Avoid “market allocation” as a preset in v1. It is conceptually too slippery in a fictional lake economy because the market allocation depends on clearing, prices, and existing capital.
+Avoid "market allocation" as a preset in the MVP. It is too slippery in a fictional toy economy.
 
-Internally, “spray and pray” can describe equal offers, but the UI should probably use “Equal offers”.
+## 19. Economic model skeleton
 
-## 15. Frontier scoring
+The R file `lake_economy_model_prototype.R` is the current tested model reference. Port its economic structure into the website stack. Do not copy its plotting choices as the visual design.
 
-Chart convention: the Impact Frontier chart should put expected outcome change on the horizontal axis and certainty-equivalent return, or a plain-language risk-adjusted return result, on the vertical axis. The UI should not plot "financial cost" as the main vertical variable. Financial cost can be used internally for scoring, but the visible chart should follow the standard convention: more outcome to the right, better financial result upward.
-
-The game should report whether the player reached the Impact Frontier.
-
-A simple user-facing message:
-
-> You reached 63 percent of the frontier at this risk-adjusted return.
-
-The exact MVP scoring can be:
-
-1. Compute the player's chosen offer vector `b`.
-2. Compute the resulting financial certainty-equivalent score `CE(b)`. This should be called risk-adjusted return in all player-facing communications.
-3. Compute the outcome score `O(b)` for the chosen blended outcome.
-4. Compute the best feasible outcome at the same financial cost.
-5. Report the ratio:
+The core structure is a non-marginal P/K-space clearing model:
 
 ```text
-frontier_score = O(b) / O_star(CE cost of b)
+Player supply quantity: K_player(P,b) = c_player + E_player P + s_player(b)
+Other supply quantity:  K_other(P)   = c_other  + E_other P
+Aggregate supply:       K_S(P,b)     = c_supply + E_total P + s_player(b)
+Demand inverse curve:   P_D(K)       = a_demand - B K
+Supply inverse curve:   P_S(K,b)     = PhiS [K - c_supply - s_player(b)]
 ```
 
-If O_star <= 0, do not report a percentage. Show a text result instead.
-If O(b) < 0, report that the offer moved against the chosen goal.
-Cap displayed frontier scores at 100% unless explicitly showing approximation error.
-Use "about" or "roughly" for approximate grid-based frontier scores.
-
-A clean reference formulation:
+Clearing condition:
 
 ```text
-CE_loss(b) = CE(b_financial) - CE(b)
+P_S(K,b) = P_D(K)
 ```
 
-where `b_financial` is the best purely financial feasible offer vector under the game's constraints.
-
-Then:
+Solution:
 
 ```text
-O_star(L) = max O(b) subject to CE_loss(b) <= L, b_n >= 0, sum_n b_n = 100
+K(b) = solve(PhiS + B, a_demand + PhiS * (c_supply + s_player(b)))
+P(b) = a_demand - B * K(b)
 ```
 
-and:
+Then compute:
 
 ```text
-frontier_score = O(b) / O_star(CE_loss(b))
+K_player(b)
+K_other(b)
+lake outcome
+prosperity outcome
+blended outcome
+player CE or risk-adjusted return
 ```
 
-The optimization must respect the same feasible set as the player:
+The model preserves the key teaching distinction:
+
+```text
+The player chooses offers, not final capital installed.
+```
+
+## 20. Frontier scoring
+
+The visible chart should use the project convention:
+
+```text
+x-axis: expected outcome change
+y-axis: risk-adjusted return
+```
+
+The internal model may compute CE values or CE loss. Convert this into a plain-language risk-adjusted-return framing for the UI where practical.
+
+The frontier should be the playable constrained frontier, not a fully unconstrained analytical frontier.
+
+Constraints:
 
 ```text
 b_n >= 0
 sum_n b_n = 100
 ```
 
-So the homepage frontier is a constrained playable frontier, not necessarily the clean unconstrained frontier from the academic paper.
-
-## 16. Economic model skeleton
-
-The MVP can use a local affine response system.
-
-### Main variables
-
-For `N = 6` investable entities:
-
-| Symbol / variable | Meaning | Visible to user? |
-|---|---|---|
-| `K0` | current firm size | yes, visually |
-| `mu` | expected business payoff | yes |
-| `Sigma` | payoff covariance / risk matrix | summarized as risk |
-| `g_lake` | lake health intensity | yes |
-| `g_prosperity` | local prosperity intensity | yes |
-| `PhiS` | aggregate supply slope matrix | hidden |
-| `PhiD` | firm demand slope matrix | hidden |
-| `C(f)` | response matrix | hidden in v1 |
-| `b` | player offer vector | yes |
-| `DeltaK` | actual capital response | yes after run |
-
-### Response matrix
-
-For a fixed player or coalition size `f`, the response matrix can be represented as:
+Baseline:
 
 ```text
-C(f) = inverse(PhiS + (1 - f) * PhiD) * PhiS
+equal offers
 ```
 
-For an MVP, `f` can be fixed. Later, `f` can become a player-size or coalition-size control.
-
-### Outcome
-
-For chosen outcome weights `nu`:
+For the player's result, compute:
 
 ```text
-g = nu_lake * g_lake + nu_prosperity * g_prosperity
-O(b) = g' * DeltaK
+outcome gain vs equal-offer baseline
+risk-adjusted return change vs equal-offer baseline
 ```
 
-### Financial score
+For the frontier score, compare the player's outcome gain with the best feasible outcome gain at no worse financial cost or risk-adjusted-return loss.
 
-The financial side can be represented with a simple certainty-equivalent score:
+Suggested UI language:
 
 ```text
-CE(b) = expected_payoff(b) - risk_penalty(b)
+You reached 72% of the frontier for this goal.
 ```
 
-A practical MVP approximation:
+Keep the language concrete. Avoid implying moral failure when the score is low. The player is learning the system.
+
+## 21. Scenario templates
+
+Do not fully randomize the economy. Start from validated templates and randomize only within safe bounds.
+
+Use four primary templates:
+
+1. Feed bottleneck
+2. Market access bottleneck
+3. Scalable entrepreneur
+4. Dirty growth trap
+
+Each template should produce a valid mathematical system.
+
+Each New lake should feel meaningfully different, but not mathematically wild.
+
+## 22. Parameter validity constraints
+
+Parameter generation should avoid broken systems.
+
+Basic requirements:
+
+- no negative baseline firm sizes,
+- no impossible final sizes in ordinary play,
+- stable supply and demand matrices,
+- positive semidefinite or regularized positive definite financial-cost/risk matrix,
+- frontier computation does not fail for normal offer vectors,
+- same lake plus same offers gives the same result,
+- randomness enters only when generating a new lake.
+
+Negative Delta K relative to baseline is acceptable. Negative final firm capital in normal play is not.
+
+## 23. Homepage panels
+
+Papers, Guides, and Methods should open large panels above the economy.
+
+Panel rules:
+
+- do not remove the economy from view,
+- do not darken or blur the economy,
+- panel content can be normal HTML,
+- paper screenshots and guide cards can be added later,
+- the user should be able to close the panel and return to the live scene.
+
+Suggested panel roles:
+
+### Papers
+
+Paper 1: The Impact Frontier  
+Paper 2: Shifting the Frontier
+
+### Guides
+
+Investor guides and related plain-language material.
+
+### Methods
+
+Short explanation of the offer-clearing-frontier loop and links to technical notes.
+
+## 24. Technical architecture
+
+Preferred lightweight architecture:
 
 ```text
-CE(b) = mu' * k_player(b) - 0.5 * gamma * k_player(b)' * Sigma * k_player(b)
+React or Next.js
+TypeScript
+Three.js or React Three Fiber
+SVG or D3-style charting
+client-side model
+no backend for MVP
+no database for MVP
 ```
 
-where `k_player(b)` may initially be approximated by the player's offer vector or by a simple player-allocation response. However, the UI should still call `b` an offer vector, not final firm capital.
+Keep model logic separate from visuals.
 
-Longer-term, the engine can separately solve for:
-
-- player allocation,
-- other-investor allocation,
-- prices,
-- firm capital,
-- external outcome.
-
-The UI can stay the same while the engine becomes more faithful.
-
-## 17. Combinatorial effects
-
-The game should represent combinatorial effects through system links.
-
-In v1, use linear off-diagonal response terms rather than nonlinear threshold bonuses.
-
-The point is that one entity's funding can make another entity more viable.
-
-Examples:
-
-| Capital shift toward... | Helps... | Hurts... |
-|---|---|---|
-| Feed mill | fish farms | possibly lake health if feed is dirty |
-| Hatchery | fish farms | usually none |
-| Cold chain / market access | fish farms, feed mill | import pressure |
-| Fish farms | feed mill, cold chain | lake health if poorly managed |
-| Lakefront industry | local jobs | lake health, fish farms |
-
-The player should not see the full interaction matrix at first. They should infer it from how the economy responds.
-
-Later, a combinatorial mode can add threshold effects:
-
-- feed + farms + cold chain unlock a local industry shift,
-- too much lake stress causes fish productivity to fall,
-- market access creates a step-change in farm demand.
-
-These should be deferred until the linear version is working.
-
-## 18. Off-diagonal terms
-
-The hidden matrices should be economically interpretable.
-
-### Demand-side links
-
-Demand-side off-diagonal terms should capture real-economy complements and substitutes.
-
-Examples:
-
-- Feed mill capital increases fish farm scalability.
-- Hatchery capital increases fish farm productivity.
-- Cold chain capital increases fish farm and feed mill viability by expanding market access.
-- Fish farm capital increases demand for feed and cold chain.
-- Lakefront industry may reduce aquaculture viability through pollution, labor competition, or political attention.
-
-### Supply-side links
-
-Supply-side off-diagonal terms can capture investor-side spillovers, substitution, or shared risk perceptions.
-
-Examples:
-
-- Other investors may view fish farms, hatchery, feed mill, and cold chain as part of the same aquaculture theme.
-- Funding one aquaculture node may draw attention to or away from others.
-- Lakefront industry may be viewed as a separate financial theme.
-
-### Payoff covariance
-
-Payoff covariance should be intuitive:
-
-- aquaculture entities tend to have positively correlated payoffs,
-- feed and farms are especially linked,
-- cold chain may diversify some farm risk,
-- lakefront industry may have lower or even negative correlation with aquaculture,
-- lake health shocks can affect farms, hatchery, and local markets.
-
-## 19. Scenario templates
-
-Randomness should be controlled by scenario templates. Do not fully randomize the economy.
-
-Each template should use bounded parameter draws that preserve a valid economic solution.
-
-### Template 1: Feed bottleneck
-
-Core idea:
-
-- Fish farms have high raw outcome intensity.
-- Feed mill is the hidden lever.
-- Funding farms alone helps less than expected because feed quality or supply constrains scaling.
-- Funding feed mill can unlock farm growth.
-
-Likely lesson:
-
-> The most visible impact node is not always the best first offer.
-
-### Template 2: Market access bottleneck
-
-Core idea:
-
-- Farms can produce, but market access is weak.
-- Cold chain / market infrastructure has high system importance.
-- Funding cold chain improves the viability of farms and feed.
-
-Likely lesson:
-
-> Infrastructure can move the frontier even when its raw outcome intensity looks modest.
-
-### Template 3: Scalable entrepreneur
-
-Core idea:
-
-- One fish farm can absorb capital unusually well.
-- Visual cues should hint at ambition and readiness to scale.
-- Another fish farm may be safer but less responsive.
-
-Likely lesson:
-
-> Raw outcome intensity must be combined with the ability to scale.
-
-### Template 4: Dirty growth trap
-
-Core idea:
-
-- Lakefront industry has high expected business payoff and creates jobs.
-- It damages lake health and weakens aquaculture.
-- The player must decide how much financial payoff to give up for lake health and long-run local prosperity.
-
-Likely lesson:
-
-> The financially attractive offer can move the economy in the wrong outcome direction.
-
-## 20. Parameter validity constraints
-
-Each generated lake economy must be mathematically and economically safe.
-
-The generator should enforce:
-
-- positive current firm sizes,
-- non-negative visible capital after a run,
-- finite and stable response matrix,
-- bounded risk values,
-- bounded outcome intensities,
-- no absurd frontier shapes,
-- no infeasible optimization results,
-- no giant one-entity domination unless intentionally part of a template.
-
-Practical guardrails:
-
-- Keep `PhiS` and `PhiD` diagonally dominant or otherwise regularized.
-- Ensure the matrix being inverted is well-conditioned.
-- Scale `alpha` so `K0 + DeltaK` stays positive.
-- Cap visual changes even if internal values are larger.
-- Test each template with many random seeds.
-- Reject and redraw invalid parameter sets.
-
-## 21. Visual design
-
-The visual scene should dominate the game panel. The frontier chart should be visible but not overwhelming.
-
-Recommended layout:
-
-- left or center: toy lake economy,
-- right side: offer controls and firm cards,
-- lower or side panel: Impact Frontier chart,
-- top bar: project title and paper links.
-
-The frontier chart should feel like a diagnostic instrument, not the whole experience.
-
-Visual effects after running the economy:
-
-- firms grow or shrink slightly,
-- lake color improves or worsens subtly,
-- fish population indicator changes,
-- workers/jobs indicator changes,
-- offer tokens move toward entities,
-- capital response appears as a second layer distinct from offers.
-
-Coin flows, pipes, or boats are optional. They should not clutter the scene.
-
-## 22. Homepage integration
-
-The game must not block users who simply want to access the papers.
-
-Recommended page structure:
-
-### Hero area
-
-- project title,
-- one-line project explanation,
-- buttons:
-  - Read Paper 1,
-  - Read Paper 2,
-  - Read Investors' Guide,
-  - Play the model.
-
-### Interactive area
-
-Tabs or modes:
-
-- Overview,
-- Papers,
-- Play,
-- Methods.
-
-When the user clicks **Play**, the page can shift into game mode. Standard page elements can compress into a small header.
-
-The site should load quickly. A static or lightly animated lake scene can appear first; full game controls can load after user interaction.
-
-## 23. Technical architecture
-
-Recommended technical split:
-
-- Three.js for the lake economy scene.
-- SVG, Canvas, or D3 for the Impact Frontier chart.
-- TypeScript for the economic engine.
-- React / Next.js for the page shell and state management.
-- URL state for shareable lake seeds and offer vectors.
-
-The economic engine should be separate from rendering.
-
-Suggested modules:
+Suggested structure:
 
 ```text
-/game
-  /engine
-    generateLake.ts
+src/
+  game/
+    economyTypes.ts
+    scenarioTemplates.ts
+    generateLakeEconomy.ts
     solveEconomy.ts
     computeFrontier.ts
     scoreRun.ts
-    scenarioTemplates.ts
-  /ui
-    LakeScene.tsx
-    OfferPanel.tsx
-    FirmCard.tsx
+  components/
+    HarborScene.tsx
+    PlayPanel.tsx
+    EntityPopup.tsx
+    ResultsPanel.tsx
     FrontierChart.tsx
-    ResultPanel.tsx
-  /types
-    economy.ts
-    firm.ts
-    runResult.ts
+    ResearchPanel.tsx
+  app/
+    page.tsx
 ```
 
-The MVP should be client-side. No server is needed unless analytics, saved runs, or dynamic paper content are added later.
+The scene should read solved game state. It should not contain economic logic.
 
-## 24. MVP scope
+For quick prototypes, vanilla JS with separated files is acceptable if it keeps the model, scene, chart, and UI separated.
+
+## 25. MVP scope
 
 The MVP should include:
 
+- research-site top bar,
+- harbor-front 3D economy,
+- orbit and zoom controls,
 - six investable entities,
-- deterministic run within each generated lake,
-- controlled random lake generation,
-- three preset offer strategies,
-- offer sliders with 100 tokens,
-- two visible outcome meters,
-- one blended objective slider,
-- hidden response system,
-- constrained playable Impact Frontier,
-- frontier score,
-- result comparison between offers and actual capital response,
-- charming lake visual,
-- accessible paper links.
+- compact non-blocking Play panel,
+- goal choice before offers,
+- 100-token offer allocation,
+- deterministic Run economy,
+- Start fresh,
+- New lake,
+- frontier chart or frontier score,
+- visible distinction between offers and capital changes,
+- entity popups,
+- Papers and Guides access.
 
-## 25. Deferred features
+## 26. Deferred features
 
-Defer these until after the MVP works:
+Defer:
 
-- visible contribution multipliers,
-- full education layer explaining response matrices,
-- coalition recruitment,
-- player-size slider,
-- government policy tools,
-- stewardship tools,
-- nonlinear threshold effects,
-- stochastic shocks within a lake,
-- borrowing or leverage,
-- short positions,
-- full multi-outcome frontier,
-- exact calibration to Paper 1 empirical objects,
-- live data,
-- full price and holdings clearing model.
+- coalition negotiation,
+- policy cards,
+- stewardship cards,
+- borrowing,
+- multi-period dynamics,
+- noisy shocks inside repeated runs,
+- time evolution of the town,
+- density controls,
+- full paper math inside the game UI,
+- hidden matrix reveal before the user has played.
 
-## 26. Paper 1 and Paper 2 alignment
+Paper 2 should influence architecture, not MVP surface area.
 
-### Paper 1 alignment
+## 27. Paper 1 and Paper 2 alignment
 
-The MVP should communicate the Paper 1 idea:
+Paper 1 alignment:
 
-- A portfolio tilt shifts capital supply.
-- The real outcome depends on equilibrium response.
-- Raw outcome intensity alone is not enough.
-- The Impact Frontier compares expected outcome change with financial cost.
+- investor sets offers,
+- firms and other investors respond,
+- market clears,
+- outcomes change,
+- result is compared with a frontier.
 
-The homepage should not overburden users with the full paper terminology. It can introduce the Impact Frontier visually first and explain details later.
+Paper 2 alignment:
 
-### Paper 2 alignment
+- future modes may change investor size, coalition size, policy wedges, or stewardship actions,
+- larger coalitions are not simply scaled-up small investors,
+- different instruments shift the frontier through different margins and costs.
 
-The design should be expandable into Paper 2:
+Do not put Paper 2 modes in the MVP.
 
-- larger player size,
-- investor coalitions,
-- government wedges,
-- stewardship levers,
-- instruments that shift the frontier rather than merely move along it.
+## 28. What the game should not do
 
-The UI should therefore avoid design choices that assume the player is always infinitesimal or that portfolio tilts are the only intervention.
+Do not:
 
-## 27. What the game should not do
-
-The game should not:
-
-- imply that investing is only about picking virtuous firms,
-- imply that raw scores solve the allocation problem,
-- imply that the player directly controls firm capital,
-- hide the distinction between offers and actual capital response,
-- make the polluting firm a simplistic villain,
-- make the game so complex that users cannot quickly understand it,
-- make paper downloads hard to find,
-- present stochastic noise as the main lesson,
-- expose contribution multipliers too early,
-- require users to understand finance before playing.
-
-## 28. Agent challenge version
-
-A future agent challenge can use this brief as the source. The challenge should ask agents to produce either a visual concept or a working prototype.
-
-Recommended challenge framing:
-
-> Build a homepage prototype for the Impact Frontier project. The core interaction is a playable Lake Economy. The player sets offers to investable entities, the economy clears, firm capital and outcomes change, and the result is scored against a constrained Impact Frontier. The prototype should be charming, lightweight, intuitive, and faithful to the distinction between offers, market response, and outcome change.
-
-Evaluation criteria:
-
-- Does it teach the right idea?
-- Is it charming?
-- Is the interaction intuitive?
-- Is the economics misleading anywhere?
-- Is it technically lightweight?
-- Can it sit on the homepage without blocking access to papers?
-- Is the code structured so the economic engine can improve later?
+- make the whole website feel titled Lake Economy,
+- hide the research behind the game,
+- make the game a simple ESG ranking exercise,
+- make the player an all-powerful planner,
+- say the player directly chooses final capital,
+- hide Papers and Guides inside the game,
+- darken, blur, or gray out the economy during play,
+- use full-screen step modals for the main flow,
+- put permanent entity-card subpanels inside the Play panel,
+- use ambiguous decorative objects such as spinning yellow markers,
+- show hidden responsiveness or contribution multipliers at the start,
+- make the lakefront industry an evil villain,
+- imply all aquaculture is automatically environmentally good,
+- claim to simulate the actual Gatsby program,
+- overbuild a full financial simulator for the homepage MVP.
 
 ## 29. Open technical questions
 
-These do not block the MVP, but they should be resolved before implementation hardens.
+Remaining choices:
 
-1. Should the MVP approximate player allocation by the offer vector, or solve a separate player allocation response?
-2. What exact certainty-equivalent score should be used in the game engine?
-3. How should the financial-only reference offer `b_financial` be defined?
-4. Should the initial player size `f` be fixed at 5 percent, 10 percent, or left implicit?
-5. How strongly should visual cues hint at hidden responsiveness?
-6. Should the frontier chart appear immediately, or only after the first run?
-7. How much explanatory text should appear inside the game versus below it?
-8. Should “Lake health” and “Local prosperity” be symmetric in the UI, or should one be the default focus?
-9. Should the first public version include a Gatsby-inspired note, or keep the case inspiration implicit?
-10. How close should the MVP economic model stay to the exact Paper 1 notation?
+- exact camera default angle,
+- exact top-bar logo placement,
+- whether Papers and Guides panels should be routed pages or overlays,
+- whether to bundle Three.js or import it from a CDN during early prototyping,
+- how much city/town detail is optimal before performance or visual noise suffers,
+- exact chart styling for the frontier,
+- exact wording for risk-adjusted return in the UI.
 
 ## 30. Best current design statement
 
-The strongest current version is:
-
-> A charming lake economy sits on the homepage. The player is invited to help finance its next stage. They set offers to fish farms, feed, hatchery, cold chain, and lakefront industry. The economy clears. Their offers are not the same as the capital that actually gets added. Lake health, local prosperity, and financial results change. A small frontier chart shows whether their strategy was efficient. By trying again, the player learns that impact depends on the response system, not just raw scores or profitability.
+The homepage should open as a bright research website for **The Impact Frontier**, with a clean white top bar for logos and research navigation. Beneath it, users see a polished harbor-front lake economy: water in front, a curved shoreline, gently rising green terrain, boats, roads, trucks, low-rise town structures, and six investable entities along the waterfront. The user can ignore the game and open Papers or Guides, or click Play to open a compact left-side panel. The panel guides them to choose a goal, set 100 offer tokens, run the economy, and compare the result with the Impact Frontier. The economy stays visible throughout. The player learns that offers are not final capital, because the market response can amplify, redirect, or partially offset what they tried to fund.

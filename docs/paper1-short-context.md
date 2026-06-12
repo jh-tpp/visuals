@@ -20,6 +20,35 @@ The game shows what actually got funded.
 
 Do not describe the player as directly allocating final firm capital.
 
+
+## Current UI agreements after v3 prototype
+
+The website is a research homepage first. Do not make the whole page feel titled **Lake Economy**. The visible site title should be **The Impact Frontier**, with Papers and Guides kept easy to access.
+
+The interactive economy should use a harbor-front layout rather than a circular lake-in-the-center layout. The economy should remain visible during play. Avoid full-screen step modals, dark overlays, blurred backgrounds, or grayed-out scenes.
+
+In result tables, be precise about capital changes. Preferred language:
+
+```text
+Actual capital change vs baseline = K under current offers - K under equal-offer baseline
+```
+
+This is baseline-relative total firm capital after market clearing. It is not the player's direct funding. A negative value means less capital than under the equal-offer baseline, not that the final firm size is negative. Where useful, split results into:
+
+```text
+Offer
+Total Delta K
+Player Delta K
+Other investors Delta K
+```
+
+The visible frontier chart should keep the project convention:
+
+```text
+x-axis: expected outcome change
+y-axis: risk-adjusted return
+```
+
 ## Key terms for the game
 
 ### Offer

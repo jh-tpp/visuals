@@ -1,6 +1,13 @@
 # Gatsby Aquaculture Context - Why a Lake Economy
 
-This note gives agents the real-world inspiration for the Lake Economy game.
+Version: 0.2 working note  
+Status: updated after the v3 working prototype
+
+## Purpose
+
+This note gives the real-world inspiration for the stylized economy used in the homepage game.
+
+The public site should not claim that the game simulates the Gatsby Africa Aquaculture Program. The game is a toy model inspired by real lake-economy and aquaculture cases.
 
 ## Source case
 
@@ -18,8 +25,6 @@ The case is useful for the website because it is naturally systemic. It includes
 - import substitution,
 - Lake Victoria ecosystem protection,
 - coordination across multiple parts of the value chain.
-
-The homepage game should not claim to simulate the real Gatsby program. It should be a stylized toy economy inspired by the case.
 
 ## Core story
 
@@ -52,6 +57,21 @@ For example:
 
 This creates a richer game than simply ranking firms by raw scores.
 
+## Current visual interpretation
+
+The current visual target is not a circular lake with businesses arranged around it. It is a harbor-front lake economy.
+
+Use:
+
+- a working shoreline,
+- lake or harbor water in front,
+- businesses arranged along one waterfront,
+- modest low-rise town structures behind them,
+- green terrain rising gently away from the water,
+- boats, roads, trucks, trees, and quays.
+
+The setting should feel plausible and respectful. It should not look like a wealthy global-city skyline, and it should not rely on stereotypes of African poverty.
+
 ## Suggested investable entities
 
 Use six investable entities in the MVP:
@@ -71,15 +91,15 @@ Imports can appear as visible competitive pressure, but do not need to be invest
 
 ### Scalable fish farm
 
-Energetic entrepreneur, expanding ponds, visible workers, high upside, high risk.
+Energetic operation, expanding ponds, visible workers, high upside, high risk.
 
 ### Steady fish farm
 
-Stable ponds, more modest owner, lower risk, lower scalability.
+Stable ponds, modest operation, lower risk, lower scalability.
 
 ### Feed mill
 
-Industrial but clean enough, trucks or sacks of feed, a bottleneck node.
+Small industrial facility, trucks or sacks of feed, a bottleneck node.
 
 ### Hatchery
 
@@ -87,11 +107,13 @@ Small facility, tanks or young fish, productivity lever for farms.
 
 ### Cold chain / market access
 
-Refrigerated storage, market stall, logistics route, link between production and buyers.
+Refrigerated storage, market stall, logistics route, white truck, link between production and buyers.
 
 ### Lakefront industry
 
 Factory or processing plant near the lake. Financially attractive and job-creating, but potentially harmful to lake health.
+
+This should not be an evil-villain factory. It should show a real trade-off.
 
 ## Interaction links
 
@@ -117,8 +139,12 @@ Avoid a cartoon morality play. The lakefront industry should not be an evil vill
 
 ## What not to overclaim
 
-- Do not say the game is Gatsby's actual model.
-- Do not imply all aquaculture is automatically environmentally good.
-- Do not imply one actor can solve the whole economy alone.
-- Do not present the player as a planner.
-- Do not treat local leaders as passive recipients. The story should start from an invitation by local leaders.
+Do not say:
+
+- the game is Gatsby's actual model,
+- all aquaculture is automatically environmentally good,
+- one actor can solve the whole economy alone,
+- the player is a planner,
+- local leaders are passive recipients.
+
+The story should start from an invitation by local leaders.

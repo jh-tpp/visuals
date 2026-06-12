@@ -1,16 +1,21 @@
-# Goals Guide Integration for the Lake Economy Game
+# Goals Guide Integration for the Homepage Game
+
+Version: 0.2 working note  
+Status: updated after the v3 working prototype
 
 ## Purpose
 
-This note defines how the Lake Economy game should connect to *The Investor's Guide to Goals-Based Investing and Philanthropy* without turning the game into a guide summary or adding too much explanation.
+This note defines how the interactive economy should connect to *The Investor's Guide to Goals-Based Investing and Philanthropy* without turning the game into a guide summary.
 
-The game should remain simple: choose a goal, set offers, run the economy, and see whether the result is close to the Impact Frontier.
+The game should remain simple:
 
-The guide connection should be natural and embedded in the interaction.
+```text
+choose a goal -> set offers -> run the economy -> compare with the Impact Frontier
+```
 
-## Core guide links to include
+The guide connection should be felt through the interaction, not explained as a separate lesson.
 
-### 1. Choose the goal first
+## 1. Choose the goal first
 
 Before the player sets offers, the game should ask:
 
@@ -19,14 +24,23 @@ Before the player sets offers, the game should ask:
 The player should choose one of three goal settings:
 
 - Lake health
-- Local prosperity
 - Balanced
+- Local prosperity
 
-A simple slider can also work:
+A slider can also work:
 
-- 100% lake health
-- 50/50 balanced
-- 100% local prosperity
+```text
+Lake health <------> Local prosperity
+```
+
+Initial state:
+
+- no option selected,
+- not Lake health,
+- not Balanced,
+- not Local prosperity.
+
+The user must interact with the goal control before the offer controls unlock.
 
 This is the cleanest connection to the guide. The guide's core message is that capital is a means, not an end. The player should therefore choose the goal before choosing the strategy.
 
@@ -35,12 +49,13 @@ Implementation note:
 - The chosen goal defines the blended outcome vector used in the game.
 - The Impact Frontier should be computed for that chosen goal.
 - Changing the goal should change the relevant frontier.
+- Step 2 should remain greyed out until Step 1 is completed.
 
 Suggested UI language:
 
 > First choose your goal. The same economy can look different depending on what you are trying to improve.
 
-### 2. Use the Impact Frontier as a coherence check
+## 2. Use the Impact Frontier as a coherence check
 
 After the player runs the economy, show the result on the Impact Frontier chart.
 
@@ -60,13 +75,25 @@ This links to the guide's point that clear goals allow coherent strategy. The ga
 
 Implementation note:
 
+- Step 3 should remain greyed out until Run economy has been clicked.
 - Avoid saying the player's choice is morally right or wrong.
 - The result is a coherence check, not a values judgment.
 - The same offer vector may look strong for one goal and weak for another.
 
-### 3. Include local perspective cards
+## 3. Keep local perspectives optional and light
 
-The game should include short, optional perspective cards from people connected to the lake economy. These cards motivate the goal choice and make the outcome slider feel grounded rather than abstract.
+The game can include short local perspective cards from people connected to the economy. These cards should motivate the goal choice and make the outcome slider feel grounded rather than abstract.
+
+They should not dominate the opening view.
+
+Good placement:
+
+- optional disclosure in Step 1,
+- small expandable row,
+- short popover,
+- lightweight card carousel only if it does not block the economy.
+
+Avoid making these cards large by default.
 
 Suggested intro:
 
@@ -74,36 +101,50 @@ Suggested intro:
 
 Suggested perspective cards:
 
-#### Fish farmers
+### Fish farmers
 
 Reliable feed and market access would help us produce more and earn steadier incomes.
 
-#### Families
+### Families
 
 We need affordable local food and jobs that last.
 
-#### Lake stewards
+### Lake stewards
 
 The lake supports the whole economy. Growth that damages the water will not last.
 
-#### Entrepreneurs
+### Entrepreneurs
 
 Some businesses are ready to grow, but they need capital and a stronger local system around them.
 
-#### Workers
+### Workers
 
 New investment can create jobs, but the quality and stability of those jobs matter.
 
 Design guidance:
 
-- These should be short and visual.
-- They should not become a lecture.
-- They should support the player's choice of goal, not tell the player what to choose.
-- They should be optional or lightly presented so the game stays fast.
+- Keep cards short.
+- Make them optional.
+- Do not turn them into a lecture.
+- Do not imply local perspectives mechanically determine the goal.
+- Do not tell the player which goal is correct.
 
-## Success-state message
+## 4. Keep the economy visible
 
-When the player gets close to the frontier, the game should congratulate them and point toward future layers of the project.
+Goal choice and guide connection should not lock the user out of the economy view.
+
+Avoid:
+
+- full-screen goal modals,
+- centered step overlays,
+- dark masks,
+- blurred or grayed-out economy views.
+
+The Play panel can guide the user, but the harbor economy should remain visible and interactive.
+
+## 5. Success-state message
+
+When the player gets close to the frontier, congratulate them and point toward future layers of the project.
 
 Suggested language:
 
@@ -113,22 +154,22 @@ Suggested language:
 
 This connects the guide to Paper 2 without overloading the first version of the game.
 
-## What not to do in the MVP
+## 6. What not to do in the MVP
 
-### Do not overuse the word “structure” in the game UI
+### Do not overuse the word "structure" in the game UI
 
-The guide discusses structures, but the MVP game already creates a focused decision setting: one lake, one budget, one chosen goal, one response system.
+The guide discusses structures, but the MVP game already creates a focused decision setting: one economy, one budget, one chosen goal, one response system.
 
-Calling this a “structure” in the UI may feel like abstract terminology pasted onto the game.
+Calling this a "structure" in the UI may feel like abstract terminology pasted onto the game.
 
 Use the idea implicitly for now. The structure concept can become explicit later if the game adds:
 
-- multiple lakes
-- separate grant and investment budgets
-- family goals
-- personal financial goals
-- philanthropic vehicles
-- stewardship or policy instruments
+- multiple lakes or regions,
+- separate grant and investment budgets,
+- family goals,
+- personal financial goals,
+- philanthropic vehicles,
+- stewardship or policy instruments.
 
 ### Do not make the goal choice too heavy
 
@@ -142,31 +183,11 @@ Avoid:
 
 > Define your values vector and preferred impact structure.
 
-### Do not imply that local perspectives mechanically determine the goal
+### Do not imply that local perspectives decide the goal
 
 The perspective cards should inform the player. They should not make the game claim that one goal is objectively correct.
 
 The game should respect that different investors may choose different goals.
-
-## Recommended placement in the project docs
-
-Add this file beside the main game brief:
-
-```text
-docs/goals-guide-game-integration.md
-```
-
-Then update the agent context index to include:
-
-```text
-- goals-guide-game-integration.md: explains how the Lake Economy game should connect to The Investor's Guide to Goals-Based Investing and Philanthropy.
-```
-
-Then add one line to the agent challenge prompt:
-
-```text
-Use `goals-guide-game-integration.md` to include the goals-based-investing connection: goal choice before play, frontier as a coherence check, and light local perspective cards.
-```
 
 ## Summary for agents
 
@@ -174,6 +195,6 @@ The game should connect to the guide in three ways:
 
 1. The player chooses the goal before setting offers.
 2. The Impact Frontier checks whether the player's offers fit that goal.
-3. Local perspective cards make the goal choice concrete and open the path to advanced strategies.
+3. Local perspective cards make the goal choice concrete without taking over the screen.
 
-The guide connection should be felt through the interaction, not explained as a separate lesson.
+The guide connection should be embedded in the interaction, not added as an explanatory essay.
