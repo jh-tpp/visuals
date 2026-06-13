@@ -23,10 +23,21 @@ const COLORS = {
   glass: 0x9bc9d8
 };
 
+const LAKE_VISUAL_SCALE = {
+  positiveFull: 4.5,
+  negativeFull: 13,
+  severeNegativeStart: 22,
+  severeNegativeFull: 40
+};
+
+const PROSPERITY_VISUAL_SCALE = {
+  negativeFull: 4,
+  positiveFull: 3.8
+};
+
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 function lerp(a, b, t) { return a + (b - a) * t; }
 function smoothstep(t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
-function sum(v) { return v.reduce((a, b) => a + b, 0); }
 function signed(v, digits = 1) { return Number.isFinite(v) ? `${v >= 0 ? '+' : ''}${v.toFixed(digits)}` : '—'; }
 
 function xmur3(str) {
@@ -68,6 +79,31 @@ function makeMat(color, options = {}) {
     emissive: options.emissive ?? 0x000000,
     emissiveIntensity: options.emissiveIntensity ?? 0
   });
+}
+
+function rememberMaterialBase(material) {
+  if (!material || material.userData.visualBase) return;
+  material.userData.visualBase = {
+    color: material.color?.clone?.(),
+    emissive: material.emissive?.clone?.(),
+    emissiveIntensity: material.emissiveIntensity ?? 0,
+    roughness: material.roughness,
+    metalness: material.metalness,
+    opacity: material.opacity,
+    transparent: material.transparent
+  };
+}
+
+function restoreMaterialBase(material) {
+  const base = material?.userData?.visualBase;
+  if (!base) return;
+  if (base.color && material.color) material.color.copy(base.color);
+  if (base.emissive && material.emissive) material.emissive.copy(base.emissive);
+  if (material.emissiveIntensity !== undefined) material.emissiveIntensity = base.emissiveIntensity;
+  if (material.roughness !== undefined) material.roughness = base.roughness;
+  if (material.metalness !== undefined) material.metalness = base.metalness;
+  if (material.opacity !== undefined) material.opacity = base.opacity;
+  if (material.transparent !== undefined) material.transparent = base.transparent;
 }
 
 // The coastline, terrain slope, and undulations are adapted from the uploaded Harbor Town
@@ -156,14 +192,17 @@ function makeGableRoofGeometry(w, d, h) {
 function createSimpleHouse(w, d, h, wallColor, roofColor, options = {}) {
   const g = new THREE.Group();
   const base = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), makeMat(wallColor, { roughness: 0.86, metalness: options.metalness ?? 0.02 }));
+  base.userData.prosperitySensitive = true;
   base.position.y = h * 0.5;
   g.add(base);
   if (options.flat) {
     const roof = new THREE.Mesh(new THREE.BoxGeometry(w * 1.04, 0.22, d * 1.04), makeMat(roofColor, { roughness: 0.82, metalness: options.roofMetalness ?? 0.02 }));
+    roof.userData.prosperitySensitive = true;
     roof.position.y = h + 0.14;
     g.add(roof);
   } else {
     const roof = new THREE.Mesh(makeGableRoofGeometry(w * 1.18, d * 1.10, options.roofHeight ?? 0.9), makeMat(roofColor, { roughness: 0.82 }));
+    roof.userData.prosperitySensitive = true;
     roof.position.y = h + 0.02;
     g.add(roof);
   }
@@ -183,8 +222,10 @@ function addWindowGrid(g, w, d, h, rows, cols) {
       if (!chance(0.68)) continue;
       const x = lerp(-w * 0.35, w * 0.35, cols === 1 ? 0.5 : c / (cols - 1));
       const front = new THREE.Mesh(paneGeo, mat);
+      front.userData.prosperitySensitive = true;
       front.position.set(x, y, zFront);
       const back = new THREE.Mesh(paneGeo, mat);
+      back.userData.prosperitySensitive = true;
       back.position.set(x, y, zBack);
       back.rotation.y = Math.PI;
       g.add(front, back);
@@ -309,6 +350,8 @@ export class LakeScene {
     this.anchors = [];
     this.movingBoats = [];
     this.smokePuffs = [];
+    this.prosperityMeshes = [];
+    this.grimeMarks = [];
     this.waterMesh = null;
     this.selectedIndex = null;
     this.frameCallback = null;
@@ -419,6 +462,8 @@ export class LakeScene {
     this.anchors = [];
     this.movingBoats = [];
     this.smokePuffs = [];
+    this.prosperityMeshes = [];
+    this.grimeMarks = [];
     this.waterMesh = null;
     waterMaterial = null;
   }
@@ -430,6 +475,7 @@ export class LakeScene {
     this.createEntities(params);
     this.createOtherInvestors();
     this.createBoats();
+    this.captureProsperitySurfaces();
   }
 
   createTerrain() {
@@ -686,6 +732,62 @@ export class LakeScene {
     this.world.add(publicOffice);
   }
 
+  captureProsperitySurfaces() {
+    const structureNames = [
+      'construction frame',
+      'feed storage',
+      'feed silo',
+      'feed sacks',
+      'hatchery tank',
+      'tank deck',
+      'market stall',
+      'market canopy',
+      'smokestack',
+      'subtle outflow pipe',
+      'truck body',
+      'truck cab',
+      'site pad'
+    ];
+
+    this.prosperityMeshes = [];
+    this.world.traverse(obj => {
+      if (!obj.isMesh || !obj.material || obj === this.waterMesh) return;
+      const isStructure = obj.userData.prosperitySensitive || structureNames.includes(obj.name);
+      if (!isStructure) return;
+      const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+      materials.forEach(rememberMaterialBase);
+      this.prosperityMeshes.push(obj);
+    });
+
+    this.createGrimeMarks();
+  }
+
+  createGrimeMarks() {
+    this.grimeMarks = [];
+    this.entityGroups.forEach(group => {
+      if (!group) return;
+      const markCount = 4;
+      for (let i = 0; i < markCount; i++) {
+        const mark = new THREE.Mesh(
+          new THREE.PlaneGeometry(rand(0.52, 1.18), rand(0.20, 0.54)),
+          makeMat(0x221f1b, { roughness: 0.98, opacity: 0.0 })
+        );
+        mark.material.transparent = true;
+        mark.position.set(rand(-4.8, 4.8), rand(1.05, 3.8), rand(-5.18, 5.18));
+        if (Math.abs(mark.position.z) > 4.9) {
+          mark.rotation.y = mark.position.z > 0 ? 0 : Math.PI;
+        } else {
+          mark.position.x = mark.position.x < 0 ? -6.95 : 6.95;
+          mark.rotation.y = mark.position.x < 0 ? -Math.PI / 2 : Math.PI / 2;
+        }
+        mark.userData.baseOpacity = rand(0.10, 0.24);
+        mark.visible = false;
+        group.add(mark);
+        this.grimeMarks.push(mark);
+      }
+    });
+  }
+
   createBoats() {
     const colors = [0x2f7890, 0x9b4f42, 0xd7a64a, 0x365f7d, 0x4f7f55];
     for (let i = 0; i < 7; i++) {
@@ -814,7 +916,8 @@ export class LakeScene {
   updateLakeColor(netLakeOutcome = 0) {
     if (!waterMaterial) return;
 
-    const clean = new THREE.Color(0x4aa7c8);
+    const sparkling = new THREE.Color(0x72dcec);
+    const clean = new THREE.Color(0x51cbe0);
     const neutral = new THREE.Color(0x6f9fb0);
     const dirty = new THREE.Color(0x2d3a32);
     const ugly = new THREE.Color(0x1d1f1b);
@@ -822,20 +925,66 @@ export class LakeScene {
     let color;
 
     if (netLakeOutcome >= 0) {
-      const t = Math.min(netLakeOutcome / 20, 1);
-      color = neutral.clone().lerp(clean, t);
+      const t = smoothstep(netLakeOutcome / LAKE_VISUAL_SCALE.positiveFull);
+      color = neutral.clone().lerp(clean, t).lerp(sparkling, Math.max(0, t - 0.62) * 0.65);
+      waterMaterial.opacity = lerp(0.82, 0.66, t);
+      waterMaterial.roughness = lerp(0.55, 0.28, t);
+      waterMaterial.emissive.setHex(0x0b9cb0);
+      waterMaterial.emissiveIntensity = lerp(0.0, 0.08, t);
     } else {
-      const t = Math.min(Math.abs(netLakeOutcome) / 20, 1);
+      const t = smoothstep(Math.abs(netLakeOutcome) / LAKE_VISUAL_SCALE.negativeFull);
       color = neutral.clone().lerp(dirty, t);
+      waterMaterial.opacity = lerp(0.88, 0.95, t);
+      waterMaterial.roughness = lerp(0.58, 0.82, t);
+      waterMaterial.emissive.setHex(0x000000);
+      waterMaterial.emissiveIntensity = 0;
     }
 
-    if (netLakeOutcome < -35) {
-      const t = Math.min((Math.abs(netLakeOutcome) - 35) / 25, 1);
+    if (netLakeOutcome < -LAKE_VISUAL_SCALE.severeNegativeStart) {
+      const t = smoothstep((Math.abs(netLakeOutcome) - LAKE_VISUAL_SCALE.severeNegativeStart) / (LAKE_VISUAL_SCALE.severeNegativeFull - LAKE_VISUAL_SCALE.severeNegativeStart));
       color = dirty.clone().lerp(ugly, t);
     }
 
     waterMaterial.color.copy(color);
-    waterMaterial.opacity = netLakeOutcome < 0 ? 0.92 : 0.84;
+  }
+
+  updateProsperityLook(netProsperityOutcome = 0) {
+    const positive = smoothstep(netProsperityOutcome / PROSPERITY_VISUAL_SCALE.positiveFull);
+    const negative = smoothstep(Math.abs(Math.min(0, netProsperityOutcome)) / PROSPERITY_VISUAL_SCALE.negativeFull);
+    const cleanTint = new THREE.Color(0xfff5dc);
+    const rundownTint = new THREE.Color(0x3a332d);
+
+    this.prosperityMeshes.forEach(mesh => {
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      materials.forEach(material => {
+        restoreMaterialBase(material);
+        const base = material.userData.visualBase;
+        if (!base?.color || !material.color) return;
+        if (positive > 0) {
+          material.color.copy(base.color).lerp(cleanTint, positive * 0.28);
+          if (material.emissive) material.emissive.copy(base.emissive ?? new THREE.Color(0x000000)).lerp(new THREE.Color(0xffd887), positive * 0.36);
+          if (material.emissiveIntensity !== undefined) material.emissiveIntensity = (base.emissiveIntensity ?? 0) + positive * 0.10;
+          if (material.roughness !== undefined) material.roughness = Math.max(0.38, (base.roughness ?? 0.8) - positive * 0.18);
+        }
+        if (negative > 0) {
+          material.color.copy(base.color).lerp(rundownTint, negative * 0.55);
+          material.color.offsetHSL(0, -negative * 0.12, -negative * 0.13);
+          if (material.emissiveIntensity !== undefined) material.emissiveIntensity = (base.emissiveIntensity ?? 0) * (1 - negative * 0.82);
+          if (material.roughness !== undefined) material.roughness = Math.min(1, (base.roughness ?? 0.8) + negative * 0.16);
+        }
+      });
+    });
+
+    this.grimeMarks.forEach(mark => {
+      mark.visible = negative > 0.05;
+      mark.material.opacity = mark.userData.baseOpacity * negative;
+      mark.scale.setScalar(lerp(0.72, 1.25, negative));
+    });
+  }
+
+  updateOutcomeVisuals({ lake = 0, prosperity = 0 } = {}) {
+    this.updateLakeColor(lake);
+    this.updateProsperityLook(prosperity);
   }
 
   updateLabels() {

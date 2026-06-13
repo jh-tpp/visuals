@@ -113,7 +113,7 @@ function init(signal) {
   scene.setFrameCallback(() => positionEntityPopup());
   scene.setLake(params);
   scene.updateState({ offers: state.tokens, lastRun: null });
-  scene.updateLakeColor(0);
+  scene.updateOutcomeVisuals();
 
   bindEvents(signal);
   renderAll();
@@ -130,13 +130,17 @@ function bindEvents(signal) {
   }, signal);
   on(elements.canvas, 'pointerdown', dismissWelcome, signal);
   on(elements.minimizePanel, 'click', () => setPanelOpen(false), signal);
-  on(elements.goalSlider, 'input', () => setGoal(Number(elements.goalSlider.value) / 100), signal);
+  on(elements.goalSlider, 'input', () => setGoal(1 - Number(elements.goalSlider.value) / 100), signal);
   elements.goalButtons.forEach(btn => on(btn, 'click', () => setGoal(Number(btn.dataset.goal) / 100), signal));
   elements.presetButtons.forEach(btn => on(btn, 'click', () => applyPreset(btn.dataset.preset), signal));
   on(elements.runBtn, 'click', runEconomy, signal);
   on(elements.freshBtn, 'click', startFresh, signal);
   on(elements.newLakeBtn, 'click', newLake, signal);
-  on(elements.resetViewBtn, 'click', () => scene.resetView(), signal);
+  on(elements.resetViewBtn, 'click', () => {
+    scene.resetView();
+    scene.updateState({ offers: state.tokens, lastRun: null });
+    scene.updateOutcomeVisuals();
+  }, signal);
   elements.panelButtons.forEach(btn => on(btn, 'click', () => {
     dismissWelcome();
     openContentPanel(btn.dataset.panel);
@@ -206,7 +210,6 @@ function setGoal(weight) {
     state.lastScore = scoreCurrentOffers();
     state.bestScore = state.lastScore;
     scene.updateState({ offers: state.tokens, lastRun: state.lastScore.current });
-    scene.updateLakeColor(state.lastScore.lakeGainVsEqual);
   } else {
     state.bestScore = null;
   }
@@ -249,8 +252,7 @@ function adjustToken(index, value) {
 
 function clearStaleRun(message) {
   state.lastScore = null;
-  scene.updateState({ offers: state.tokens, lastRun: null });
-  scene.updateLakeColor(0);
+  scene.updateState({ offers: state.tokens });
   elements.statusLine.textContent = message;
   renderAll();
 }
@@ -276,7 +278,10 @@ function runEconomy() {
     state.bestScore = state.lastScore;
   }
   scene.updateState({ offers: state.tokens, lastRun: state.lastScore.current });
-  scene.updateLakeColor(state.lastScore.lakeGainVsEqual);
+  scene.updateOutcomeVisuals({
+    lake: state.lastScore.lakeGainVsEqual,
+    prosperity: state.lastScore.prosperityGainVsEqual
+  });
   elements.statusLine.textContent = 'Economy cleared. Compare your offers with total capital change and other-investor response.';
   renderAll();
 }
@@ -286,7 +291,7 @@ function startFresh() {
   state.lastScore = null;
   closeEntityPopup();
   scene.updateState({ offers: state.tokens, lastRun: null });
-  scene.updateLakeColor(0);
+  scene.updateOutcomeVisuals();
   elements.statusLine.textContent = state.goalChosen
     ? 'Same lake economy, fresh offer sheet. Allocate 100 tokens before running.'
     : 'Same lake economy. Choose a goal first, then allocate offers.';
@@ -306,7 +311,7 @@ function newLake() {
   params = buildLakeParams({ seed: state.seed, templateKey: state.templateKey, lakeOutcomeWeight: state.goalChosen ? state.goalWeight : 0.5 });
   scene.setLake(params);
   scene.updateState({ offers: state.tokens, lastRun: null });
-  scene.updateLakeColor(0);
+  scene.updateOutcomeVisuals();
   elements.statusLine.textContent = state.goalChosen
     ? 'New lake economy generated. The goal is unchanged, but the hidden response system is new.'
     : 'New lake economy generated. Choose a goal to begin.';
@@ -340,7 +345,7 @@ function renderGoal() {
   }
   const lakePct = Math.round(state.goalWeight * 100);
   const prosperityPct = 100 - lakePct;
-  elements.goalSlider.value = lakePct;
+  elements.goalSlider.value = prosperityPct;
   elements.goalReadout.textContent = `${lakePct}% lake · ${prosperityPct}% prosperity`;
   elements.goalHint.textContent = state.goalWeight > 0.72
     ? 'Frontier is judged mainly by lake health.'
