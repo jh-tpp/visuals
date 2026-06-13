@@ -17,7 +17,7 @@ export default function PopupClosePage() {
       return;
     }
 
-    window.location.href = `/?tab=${encodeURIComponent(tab)}`;
+    window.location.href = `/tools?tab=${encodeURIComponent(tab)}`;
   }, []);
 
   return (

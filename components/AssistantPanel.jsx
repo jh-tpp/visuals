@@ -221,7 +221,7 @@ export default function AssistantPanel() {
       if (event.data?.type !== "auth-success") return;
 
       const tab = event.data?.tab || "assistant";
-      window.location.href = `/?tab=${encodeURIComponent(tab)}`;
+      window.location.href = `/tools?tab=${encodeURIComponent(tab)}`;
     }
 
     window.addEventListener("message", handleAuthMessage);
@@ -272,7 +272,7 @@ export default function AssistantPanel() {
       const timer = window.setInterval(() => {
         if (popup.closed) {
           window.clearInterval(timer);
-          window.location.href = "/?tab=assistant";
+          window.location.href = "/tools?tab=assistant";
         }
       }, 500);
     } catch (error) {

@@ -56,7 +56,7 @@ export default async function LogsPage({ searchParams }) {
   const signedInEmail = normalizeEmail(session?.user?.email);
 
   if (!signedInEmail) {
-    redirect("/?tab=assistant");
+    redirect("/tools?tab=assistant");
   }
 
   if (!canViewLogs(signedInEmail)) {

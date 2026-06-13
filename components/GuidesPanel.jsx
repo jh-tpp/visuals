@@ -5,7 +5,7 @@ const GUIDES = [
     id: "goals-based-guide",
     title: "Investor’s Guide to Goals-based Investing and Philanthropy",
     status: "Preview cover only. Full guide not yet public.",
-    previewSrc: "/guides/goals-based-preview.png",
+    previewSrc: "/guides/ig-goals-cover.jpg",
     previewType: "image",
     downloadHref: "",
     downloadLabel: "Download from CSP",
