@@ -47,9 +47,6 @@ export default function LakeEconomyHome() {
             <button type="button" data-panel="guides">
               Guide
             </button>
-            <button type="button" data-open-play>
-              Play model
-            </button>
           </nav>
 
           <a className="top-cta" href="mailto:jonathan@total-portfolio.org">
@@ -67,7 +64,12 @@ export default function LakeEconomyHome() {
             role="dialog"
             aria-label="Entity characteristics"
           />
-          <div className="scene-help">Drag to orbit · scroll to zoom</div>
+          <div className="scene-controls" aria-label="Scene controls">
+            <button id="cityModeBtn" type="button" aria-pressed="false">
+              City skyline
+            </button>
+            <div className="scene-help">Drag to orbit · scroll to zoom</div>
+          </div>
         </main>
 
         <section id="welcomePanel" className="welcome-panel" aria-label="Welcome">

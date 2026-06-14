@@ -33,11 +33,14 @@ const state = {
   tokens: [0, 0, 0, 0, 0, 0],
   lastScore: null,
   bestScore: null,
+  cityMode: 'town',
   frontierCache: new Map(),
   selectedEntity: null,
   panelOpen: false,
   panelMode: null
 };
+
+const CITY_MODES = ['town', 'skyline', 'network'];
 
 let params;
 let scene;
@@ -85,6 +88,7 @@ function init(signal) {
     freshBtn: $('#freshBtn'),
     newLakeBtn: $('#newLakeBtn'),
     resetViewBtn: $('#resetViewBtn'),
+    cityModeBtn: $('#cityModeBtn'),
     resultSection: $('#resultSection'),
     resultSummary: $('#resultSummary'),
     resultTable: $('#resultTable'),
@@ -114,6 +118,7 @@ function init(signal) {
   scene.setLake(params);
   scene.updateState({ offers: state.tokens, lastRun: null });
   scene.updateOutcomeVisuals();
+  scene.setCityMode(state.cityMode);
 
   bindEvents(signal);
   renderAll();
@@ -141,6 +146,7 @@ function bindEvents(signal) {
     scene.updateState({ offers: state.tokens, lastRun: null });
     scene.updateOutcomeVisuals();
   }, signal);
+  on(elements.cityModeBtn, 'click', toggleCityMode, signal);
   elements.panelButtons.forEach(btn => on(btn, 'click', () => {
     dismissWelcome();
     openContentPanel(btn.dataset.panel);
@@ -200,6 +206,26 @@ function setPanelOpen(open) {
   elements.panelToggle.setAttribute('aria-expanded', String(open));
   elements.panelToggle.textContent = open ? 'Playing' : 'Play';
   elements.playButtons.forEach(btn => btn.classList.toggle('active', open));
+}
+
+function toggleCityMode() {
+  dismissWelcome();
+  const index = CITY_MODES.indexOf(state.cityMode);
+  state.cityMode = CITY_MODES[(index + 1) % CITY_MODES.length];
+  scene.setCityMode(state.cityMode);
+  scene.updateState({ offers: state.tokens, lastRun: state.lastScore?.current ?? null });
+  scene.updateOutcomeVisuals(state.lastScore
+    ? {
+        lake: state.lastScore.lakeGainVsEqual,
+        prosperity: state.lastScore.prosperityGainVsEqual
+      }
+    : {});
+  elements.statusLine.textContent = state.cityMode === 'skyline'
+    ? 'City skyline enabled. The lake and ground are unchanged; the harbor economy is denser.'
+    : state.cityMode === 'network'
+      ? 'Light network enabled. The physical terrain falls away, leaving entities, flows, and outcomes.'
+      : 'Harbor town enabled. The lake and ground are unchanged; the built environment is quieter.';
+  renderAll();
 }
 
 function setGoal(weight) {
@@ -325,7 +351,18 @@ function renderAll() {
   renderResults();
   renderFlowLocks();
   renderButtons();
+  renderCityMode();
   renderEntityPopup();
+}
+
+function renderCityMode() {
+  if (!elements.cityModeBtn) return;
+  const skyline = state.cityMode === 'skyline';
+  const network = state.cityMode === 'network';
+  rootNode.classList.toggle('light-network-mode', network);
+  elements.cityModeBtn.classList.toggle('active', skyline || network);
+  elements.cityModeBtn.setAttribute('aria-pressed', String(skyline || network));
+  elements.cityModeBtn.textContent = skyline ? 'Light network' : network ? 'Harbor town' : 'City skyline';
 }
 
 function renderScenario() {

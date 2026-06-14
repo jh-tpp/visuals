@@ -66,6 +66,100 @@
     linear-gradient(180deg, #ffffff 0%, #eef7fb 30%, #f7f4eb 76%, #ededeb 100%);
   pointer-events: none;
 }
+.lake-economy-root.light-network-mode {
+  background: #02030a;
+}
+.lake-economy-root.light-network-mode .sky-gradient {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(90, 52, 180, 0.22), transparent 34%),
+    radial-gradient(circle at 24% 70%, rgba(37, 219, 255, 0.16), transparent 24%),
+    radial-gradient(circle at 76% 28%, rgba(255, 74, 198, 0.14), transparent 24%),
+    #02030a;
+}
+.lake-economy-root.light-network-mode .scene-help {
+  background: rgba(5, 8, 22, 0.74);
+  border-color: rgba(129, 225, 255, 0.26);
+  color: rgba(230, 244, 255, 0.78);
+}
+.lake-economy-root.light-network-mode .world-label {
+  background: rgba(6, 9, 26, 0.76);
+  border-color: rgba(127, 230, 255, 0.30);
+  color: #f5fbff;
+  box-shadow: 0 0 24px rgba(85, 223, 255, 0.16);
+}
+.lake-economy-root.light-network-mode .world-label .delta,
+.lake-economy-root.light-network-mode .world-label .name {
+  color: rgba(245, 251, 255, 0.86);
+}
+.lake-economy-root.light-network-mode .world-label .offer-fill {
+  background: rgba(255, 255, 255, 0.14);
+}
+.lake-economy-root.light-network-mode .outcome-label {
+  pointer-events: none;
+  width: auto;
+  min-width: 148px;
+  border-color: rgba(255, 224, 118, 0.32);
+  background: rgba(4, 8, 24, 0.68);
+}
+.lake-economy-root.light-network-mode .outcome-label .label-top {
+  justify-content: space-between;
+  gap: 10px;
+}
+.lake-economy-root.light-network-mode .outcome-label .name {
+  font-size: 11px;
+}
+.lake-economy-root.light-network-mode .outcome-label .outcome-value {
+  display: inline-grid;
+  place-items: center;
+  min-width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.12);
+}
+.lake-economy-root.light-network-mode .outcome-label.outcome-positive .outcome-value {
+  color: #113d22;
+  background: #8effb1;
+}
+.lake-economy-root.light-network-mode .outcome-label.outcome-negative .outcome-value {
+  color: #fff4f3;
+  background: #d95d67;
+}
+.lake-economy-root.light-network-mode .outcome-label .outcome-fill {
+  position: relative;
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: linear-gradient(90deg, rgba(217, 93, 103, 0.18) 0 50%, rgba(142, 255, 177, 0.18) 50% 100%);
+}
+.lake-economy-root.light-network-mode .outcome-label .outcome-fill::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.42);
+}
+.lake-economy-root.light-network-mode .outcome-label .outcome-fill i {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #8effb1;
+}
+.lake-economy-root.light-network-mode .outcome-label.outcome-negative .outcome-fill i {
+  background: #d95d67;
+}
+.lake-economy-root.light-network-mode .outcome-label .delta {
+  text-align: center;
+  color: rgba(213, 235, 255, 0.66);
+}
 #labels { position: fixed; inset: 0; pointer-events: none; z-index: 14; }
 
 .topbar {
@@ -137,7 +231,7 @@
   font-weight: 850;
 }
 .top-nav { display: flex; gap: 6px; align-items: center; margin-left: 4px; }
-.top-nav button, .preset-btn, .goal-pill, .action-strip button, .icon-button, .panel-toggle, .popup-close, .secondary-action {
+.top-nav button, .preset-btn, .goal-pill, .action-strip button, .icon-button, .panel-toggle, .popup-close, .secondary-action, #cityModeBtn {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.70);
@@ -148,13 +242,13 @@
   font-weight: 780;
   transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
 }
-.goal-pill, .panel-toggle, .preset-btn, .action-strip button { border-radius: 999px; }
-.top-nav button:hover, .preset-btn:hover, .goal-pill:hover, .action-strip button:hover, .icon-button:hover, .panel-toggle:hover, .popup-close:hover, .secondary-action:hover {
+.goal-pill, .panel-toggle, .preset-btn, .action-strip button, #cityModeBtn { border-radius: 999px; }
+.top-nav button:hover, .preset-btn:hover, .goal-pill:hover, .action-strip button:hover, .icon-button:hover, .panel-toggle:hover, .popup-close:hover, .secondary-action:hover, #cityModeBtn:hover {
   transform: translateY(-1px);
   background: #fff;
   border-color: var(--line-strong);
 }
-.top-nav button.active { background: var(--csp-indigo); color: #fffdfb; border-color: transparent; }
+.top-nav button.active, #cityModeBtn.active { background: var(--csp-indigo); color: #fffdfb; border-color: transparent; }
 .top-cta {
   display: inline-flex;
   align-items: center;
@@ -177,11 +271,21 @@
   transform: translateY(-1px);
   box-shadow: 0 14px 32px rgba(41, 40, 95, 0.20);
 }
-.scene-help {
+.scene-controls {
   position: fixed;
   right: 22px;
   bottom: 18px;
   z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#cityModeBtn {
+  background: rgba(255, 253, 251, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.scene-help {
   padding: 7px 10px;
   border-radius: 999px;
   background: rgba(255, 253, 251, 0.76);
@@ -262,9 +366,20 @@
   left: 20px;
   top: var(--lake-panel-toggle-top);
   z-index: 31;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 14px 42px rgba(75, 68, 52, 0.14);
-  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  min-height: 36px;
+  background: rgba(255, 253, 251, 0.84);
+  box-shadow: 0 10px 28px rgba(24, 24, 39, 0.10);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1;
+  color: var(--ink);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .panel-toggle[aria-expanded="true"] { background: var(--csp-indigo); color: white; }
 
@@ -784,7 +899,7 @@ a.research-action.secondary-link:hover { background: rgba(41, 40, 95, 0.08); col
   .welcome-panel { padding: 20px 18px; }
   .welcome-panel h1 { font-size: 34px; }
   .welcome-panel p { font-size: 14px; }
-  .scene-help { right: 12px; bottom: 12px; }
+  .scene-controls { right: 12px; bottom: 12px; flex-wrap: wrap; justify-content: flex-end; max-width: calc(100vw - 24px); }
   .panel-toggle { left: 12px; }
   .play-panel { left: 10px; right: 10px; width: auto; max-height: calc(100vh - var(--lake-panel-top) - 12px); }
   .offer-row { grid-template-columns: 1fr; }
