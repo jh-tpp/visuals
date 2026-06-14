@@ -9,11 +9,9 @@ const PAPERS = [
     // description:
     //   "Preview the opening page here. Use the main link for the full paper when ready.",
     previewUrl: "/papers/impact-frontier-preview.pdf",
-    primaryLabel: "Download from SSRN",
-    primaryHref: "", // add SSRN link when ready
-    downloadDisabled: true,
-    // secondaryLabel: "Open preview PDF",
-    // secondaryHref: "/papers/impact-frontier-preview.pdf",
+    primaryLabel: "Preview paper",
+    primaryHref: "/papers/impact-frontier-preview.pdf",
+    downloadDisabled: false,
   },
   {
     id: "paper-2",
@@ -23,11 +21,9 @@ const PAPERS = [
     // description:
     //   "This currently shows the title and abstract page only.",
     previewUrl: "/papers/shifting-frontier-preview.pdf",
-    primaryLabel: "Download from SSRN",
-    primaryHref: "", // add SSRN link when ready
-    downloadDisabled: true,
-    // secondaryLabel: "Open preview PDF",
-    // secondaryHref: "/papers/shifting-frontier-preview.pdf",
+    primaryLabel: "Preview paper",
+    primaryHref: "/papers/shifting-frontier-preview.pdf",
+    downloadDisabled: false,
   },
 ];
 
@@ -137,8 +133,7 @@ export default function PapersPanel() {
           Papers
         </h2>
         <p className="text-sm leading-6 text-slate-600">
-          Preview the opening page of each paper here. Use the links
-          for downloads when available.
+          Working papers behind the model. SSRN links will be added when available.
         </p>
       </div>
 

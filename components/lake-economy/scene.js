@@ -23,10 +23,21 @@ const COLORS = {
   glass: 0x9bc9d8
 };
 
+const LAKE_VISUAL_SCALE = {
+  positiveFull: 4.5,
+  negativeFull: 13,
+  severeNegativeStart: 22,
+  severeNegativeFull: 40
+};
+
+const PROSPERITY_VISUAL_SCALE = {
+  negativeFull: 4,
+  positiveFull: 3.8
+};
+
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 function lerp(a, b, t) { return a + (b - a) * t; }
 function smoothstep(t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
-function sum(v) { return v.reduce((a, b) => a + b, 0); }
 function signed(v, digits = 1) { return Number.isFinite(v) ? `${v >= 0 ? '+' : ''}${v.toFixed(digits)}` : '—'; }
 
 function xmur3(str) {
@@ -53,6 +64,7 @@ function mulberry32(a) {
 let seedNumber = 1;
 let rng = mulberry32(1);
 let waterMaterial;
+let flowMaterialId = 0;
 function rand(min = 0, max = 1) { return min + (max - min) * rng(); }
 function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
 function chance(p) { return rng() < p; }
@@ -68,6 +80,43 @@ function makeMat(color, options = {}) {
     emissive: options.emissive ?? 0x000000,
     emissiveIntensity: options.emissiveIntensity ?? 0
   });
+}
+
+function makeGlowMat(color, options = {}) {
+  const mat = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity: options.opacity ?? 0.82,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  mat.userData.flowId = flowMaterialId++;
+  return mat;
+}
+
+function rememberMaterialBase(material) {
+  if (!material || material.userData.visualBase) return;
+  material.userData.visualBase = {
+    color: material.color?.clone?.(),
+    emissive: material.emissive?.clone?.(),
+    emissiveIntensity: material.emissiveIntensity ?? 0,
+    roughness: material.roughness,
+    metalness: material.metalness,
+    opacity: material.opacity,
+    transparent: material.transparent
+  };
+}
+
+function restoreMaterialBase(material) {
+  const base = material?.userData?.visualBase;
+  if (!base) return;
+  if (base.color && material.color) material.color.copy(base.color);
+  if (base.emissive && material.emissive) material.emissive.copy(base.emissive);
+  if (material.emissiveIntensity !== undefined) material.emissiveIntensity = base.emissiveIntensity;
+  if (material.roughness !== undefined) material.roughness = base.roughness;
+  if (material.metalness !== undefined) material.metalness = base.metalness;
+  if (material.opacity !== undefined) material.opacity = base.opacity;
+  if (material.transparent !== undefined) material.transparent = base.transparent;
 }
 
 // The coastline, terrain slope, and undulations are adapted from the uploaded Harbor Town
@@ -156,14 +205,17 @@ function makeGableRoofGeometry(w, d, h) {
 function createSimpleHouse(w, d, h, wallColor, roofColor, options = {}) {
   const g = new THREE.Group();
   const base = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), makeMat(wallColor, { roughness: 0.86, metalness: options.metalness ?? 0.02 }));
+  base.userData.prosperitySensitive = true;
   base.position.y = h * 0.5;
   g.add(base);
   if (options.flat) {
     const roof = new THREE.Mesh(new THREE.BoxGeometry(w * 1.04, 0.22, d * 1.04), makeMat(roofColor, { roughness: 0.82, metalness: options.roofMetalness ?? 0.02 }));
+    roof.userData.prosperitySensitive = true;
     roof.position.y = h + 0.14;
     g.add(roof);
   } else {
     const roof = new THREE.Mesh(makeGableRoofGeometry(w * 1.18, d * 1.10, options.roofHeight ?? 0.9), makeMat(roofColor, { roughness: 0.82 }));
+    roof.userData.prosperitySensitive = true;
     roof.position.y = h + 0.02;
     g.add(roof);
   }
@@ -171,8 +223,8 @@ function createSimpleHouse(w, d, h, wallColor, roofColor, options = {}) {
   return g;
 }
 function addWindowGrid(g, w, d, h, rows, cols) {
-  rows = clamp(Math.floor(rows), 1, 12);
-  cols = clamp(Math.floor(cols), 1, 14);
+  rows = clamp(Math.floor(rows), 1, 24);
+  cols = clamp(Math.floor(cols), 1, 18);
   const mat = makeMat(0xffe2a0, { roughness: 0.4, emissive: 0xffcf7a, emissiveIntensity: 0.18, opacity: 0.82 });
   const paneGeo = new THREE.PlaneGeometry(0.16, 0.20);
   const zFront = d / 2 + 0.014;
@@ -183,8 +235,10 @@ function addWindowGrid(g, w, d, h, rows, cols) {
       if (!chance(0.68)) continue;
       const x = lerp(-w * 0.35, w * 0.35, cols === 1 ? 0.5 : c / (cols - 1));
       const front = new THREE.Mesh(paneGeo, mat);
+      front.userData.prosperitySensitive = true;
       front.position.set(x, y, zFront);
       const back = new THREE.Mesh(paneGeo, mat);
+      back.userData.prosperitySensitive = true;
       back.position.set(x, y, zBack);
       back.rotation.y = Math.PI;
       g.add(front, back);
@@ -287,6 +341,28 @@ function createShip(kind = 'sail', colorOverride = null) {
   }
   return g;
 }
+function createGantryCrane() {
+  const g = new THREE.Group();
+  const mat = makeMat(0xf0a33c, { roughness: 0.58, metalness: 0.22 });
+  const beam = new THREE.Mesh(new THREE.BoxGeometry(6.8, 0.28, 0.38), mat);
+  beam.position.y = 4.2;
+  const leg1 = new THREE.Mesh(new THREE.BoxGeometry(0.32, 4.2, 0.32), mat);
+  leg1.position.set(-2.7, 2.1, -0.9);
+  const leg2 = leg1.clone();
+  leg2.position.z = 0.9;
+  const leg3 = leg1.clone();
+  leg3.position.x = 2.7;
+  const leg4 = leg2.clone();
+  leg4.position.x = 2.7;
+  const hook = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.45, 0.35), makeMat(0x2a2a2a, { roughness: 0.5, metalness: 0.2 }));
+  hook.position.set(0.8, 3.2, 0);
+  [beam, leg1, leg2, leg3, leg4, hook].forEach(mesh => {
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+  });
+  g.add(beam, leg1, leg2, leg3, leg4, hook);
+  return g;
+}
 function createSmokePuff(parent, x, y, z, scale = 1) {
   const puff = new THREE.Mesh(new THREE.SphereGeometry(0.32 * scale, 12, 8), makeMat(0xaeb3ae, { roughness: 1, opacity: 0.22 }));
   puff.position.set(x, y, z);
@@ -296,6 +372,16 @@ function createSmokePuff(parent, x, y, z, scale = 1) {
   return puff;
 }
 
+function makeCurveTube(points, color, radius = 0.08, opacity = 0.55) {
+  const curve = new THREE.CatmullRomCurve3(points);
+  const mesh = new THREE.Mesh(
+    new THREE.TubeGeometry(curve, 44, radius, 8, false),
+    makeGlowMat(color, { opacity })
+  );
+  mesh.userData.curve = curve;
+  return mesh;
+}
+
 export class LakeScene {
   constructor({ canvas, labelRoot, onEntitySelect = () => {} }) {
     this.canvas = canvas;
@@ -303,13 +389,21 @@ export class LakeScene {
     this.onEntitySelect = onEntitySelect;
     this.clock = new THREE.Clock();
     this.labels = [];
+    this.outcomeLabels = [];
     this.entityGroups = [];
     this.offerBars = [];
     this.responseBars = [];
     this.anchors = [];
     this.movingBoats = [];
     this.smokePuffs = [];
+    this.flowBeads = [];
+    this.networkPulseMeshes = [];
+    this.networkOutcomeGroups = { lake: null, prosperity: null };
+    this.networkOutcomeMeshes = { lake: [], prosperity: [] };
+    this.prosperityMeshes = [];
+    this.grimeMarks = [];
     this.waterMesh = null;
+    this.cityMode = 'town';
     this.selectedIndex = null;
     this.frameCallback = null;
     this.animationFrame = null;
@@ -341,6 +435,14 @@ export class LakeScene {
     this.controls.maxPolarAngle = Math.PI * 0.49;
     this.controls.minPolarAngle = Math.PI * 0.16;
     this.controls.screenSpacePanning = false;
+    this.defaultView = {
+      position: this.camera.position.clone(),
+      target: this.controls.target.clone(),
+      minDistance: this.controls.minDistance,
+      maxDistance: this.controls.maxDistance,
+      minPolarAngle: this.controls.minPolarAngle,
+      maxPolarAngle: this.controls.maxPolarAngle
+    };
 
     this.raycaster = new THREE.Raycaster();
     this.pointer = new THREE.Vector2();
@@ -386,8 +488,12 @@ export class LakeScene {
   }
 
   resetView() {
-    this.camera.position.set(62, 43, 82);
-    this.controls.target.set(0, 7.5, 14);
+    this.controls.minDistance = this.defaultView.minDistance;
+    this.controls.maxDistance = this.defaultView.maxDistance;
+    this.controls.minPolarAngle = this.defaultView.minPolarAngle;
+    this.controls.maxPolarAngle = this.defaultView.maxPolarAngle;
+    this.camera.position.copy(this.defaultView.position);
+    this.controls.target.copy(this.defaultView.target);
     this.controls.update();
   }
 
@@ -402,34 +508,235 @@ export class LakeScene {
     this.updateState(this.state);
   }
 
+  setCityMode(mode = 'town') {
+    const nextMode = ['skyline', 'network'].includes(mode) ? mode : 'town';
+    if (this.cityMode === nextMode || !this.params) return;
+    this.cityMode = nextMode;
+    seedNumber = xmur3(`${this.params.seed}:${this.params.template?.key ?? 'harbor'}`)();
+    rng = mulberry32(seedNumber);
+    this.clearWorld();
+    this.buildWorld(this.params);
+    this.updateState(this.state);
+  }
+
   clearWorld() {
     this.world.traverse(obj => {
       if (obj.geometry) obj.geometry.dispose?.();
       if (obj.material) {
         const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-        mats.forEach(m => m.dispose?.());
+        mats.forEach(m => {
+          m.map?.dispose?.();
+          m.dispose?.();
+        });
       }
     });
     this.world.clear();
     this.labels.forEach(label => label.div.remove());
+    this.outcomeLabels.forEach(label => label.div.remove());
     this.labels = [];
+    this.outcomeLabels = [];
     this.entityGroups = [];
     this.offerBars = [];
     this.responseBars = [];
     this.anchors = [];
     this.movingBoats = [];
     this.smokePuffs = [];
+    this.flowBeads = [];
+    this.networkPulseMeshes = [];
+    this.networkOutcomeGroups = { lake: null, prosperity: null };
+    this.networkOutcomeMeshes = { lake: [], prosperity: [] };
+    this.prosperityMeshes = [];
+    this.grimeMarks = [];
     this.waterMesh = null;
     waterMaterial = null;
   }
 
   buildWorld(params) {
+    this.scene.background.setHex(this.cityMode === 'network' ? 0x02030a : 0xf7f7f3);
+    this.scene.fog = this.cityMode === 'network'
+      ? new THREE.FogExp2(0x02030a, 0.0035)
+      : new THREE.FogExp2(0xdce8eb, 0.001);
+
+    if (this.cityMode === 'network') {
+      this.createLightNetworkWorld(params);
+      this.captureProsperitySurfaces();
+      return;
+    }
+
     this.createTerrain();
     this.createRoadsAndQuays();
     this.createTownAndLandscape();
     this.createEntities(params);
     this.createOtherInvestors();
     this.createBoats();
+    this.captureProsperitySurfaces();
+  }
+
+  createLightNetworkWorld(params) {
+    const layout = this.networkLayout();
+    const positions = layout.map(p => new THREE.Vector3(p.x, p.y, p.z));
+    params.entities.forEach((entity, i) => {
+      const group = new THREE.Group();
+      group.userData.entityIndex = i;
+      group.position.copy(positions[i]);
+      group.rotation.y = layout[i].rot;
+      this.world.add(group);
+      this.buildNetworkEntity(group, i);
+      markEntityMeshes(group, i);
+      this.addOfferBar(group, i);
+      this.addResponseBar(group, i);
+      const anchor = new THREE.Object3D();
+      anchor.position.set(0, 7.2, 0);
+      group.add(anchor);
+      this.anchors[i] = anchor;
+      this.entityGroups[i] = group;
+      this.addWorldLabel(i, entity.short, anchor);
+    });
+
+    const lakeNode = this.createLakeLightCloud(new THREE.Vector3(0, 6.2, -25));
+    const townNode = this.createTownLightCluster(new THREE.Vector3(0, 21, 46));
+    this.networkOutcomeGroups.lake = lakeNode;
+    this.networkOutcomeGroups.prosperity = townNode;
+    this.addOutcomeLabel('lake', 'Lake health', this.makeLocalAnchor(lakeNode, 0, 6.0, 0));
+    this.addOutcomeLabel('prosperity', 'Local prosperity', this.makeLocalAnchor(townNode, 0, 13.5, 0));
+    const maxPhiS = this.maxOffDiagonal(params.PhiS);
+    const maxB = this.maxOffDiagonal(params.B);
+    for (let i = 0; i < positions.length; i++) {
+      for (let j = i + 1; j < positions.length; j++) {
+        const supplyStrength = ((params.PhiS[i]?.[j] ?? 0) + (params.PhiS[j]?.[i] ?? 0)) * 0.5;
+        const demandStrength = ((params.B[i]?.[j] ?? 0) + (params.B[j]?.[i] ?? 0)) * 0.5;
+        this.addFlowRope(positions[i], positions[j], supplyStrength, maxPhiS, 0x9b7cff, 0.95, 0.34);
+        this.addFlowRope(positions[i], positions[j], demandStrength, maxB, demandStrength < 0 ? 0x43fff4 : 0xff7a55, -0.95, 0.26);
+      }
+    }
+
+    const maxLake = Math.max(0.1, ...params.gLake.map(v => Math.abs(v)));
+    const maxProsperity = Math.max(0.1, ...params.gProsperity.map(v => Math.abs(v)));
+    positions.forEach((pos, i) => {
+      this.addFlowRope(pos, lakeNode.position, params.gLake[i], maxLake, params.gLake[i] >= 0 ? 0x59dfff : 0xff3f86, 0.0, 0.34, 2);
+      this.addFlowRope(pos, townNode.position, params.gProsperity[i], maxProsperity, 0xffdf66, 0.0, 0.30, 2);
+    });
+
+  }
+
+  networkLayout() {
+    return [
+      { x: -52, y: 7.5, z: 6, rot: -0.20 },
+      { x: -31, y: 8.8, z: 13, rot: 0.12 },
+      { x: -10, y: 11.0, z: 16, rot: -0.05 },
+      { x: 11, y: 11.0, z: 16, rot: 0.05 },
+      { x: 32, y: 8.8, z: 13, rot: -0.12 },
+      { x: 53, y: 7.5, z: 6, rot: 0.20 }
+    ];
+  }
+
+  buildNetworkEntity(group, index) {
+    const palette = [0x45f3ff, 0x69ff9a, 0xffdd60, 0xff63ce, 0x8b78ff, 0xff7a45];
+    const color = palette[index % palette.length];
+    const coreMat = makeGlowMat(color, { opacity: 0.94 });
+    const core = index % 2 === 0
+      ? new THREE.Mesh(new THREE.BoxGeometry(4.0, 4.0, 4.0), coreMat)
+      : new THREE.Mesh(new THREE.SphereGeometry(2.35, 28, 18), coreMat);
+    core.position.y = 2.9;
+    core.userData.prosperitySensitive = true;
+    group.add(core);
+
+    const halo = new THREE.Mesh(
+      new THREE.TorusGeometry(3.6, 0.08, 8, 72),
+      makeGlowMat(color, { opacity: 0.58 })
+    );
+    halo.position.y = 2.9;
+    halo.rotation.x = Math.PI / 2;
+    halo.userData.pulseBase = 1;
+    group.add(halo);
+    this.networkPulseMeshes.push(core, halo);
+
+    const secondHalo = halo.clone();
+    secondHalo.material = makeGlowMat(0xffffff, { opacity: 0.28 });
+    secondHalo.rotation.x = Math.PI * 0.35;
+    secondHalo.rotation.y = Math.PI * 0.22;
+    group.add(secondHalo);
+    this.networkPulseMeshes.push(secondHalo);
+  }
+
+  createLakeLightCloud(position) {
+    const group = new THREE.Group();
+    group.position.copy(position);
+    const colors = [0x2adfff, 0x54a7ff, 0x7affff, 0x3f6fff];
+    for (let i = 0; i < 36; i++) {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(rand(0.45, 1.7), 18, 12),
+        makeGlowMat(pick(colors), { opacity: rand(0.18, 0.55) })
+      );
+      mesh.position.set(rand(-11, 11), rand(-2.2, 2.4), rand(-4.6, 4.6));
+      mesh.userData.pulseBase = rand(0.7, 1.2);
+      group.add(mesh);
+      this.networkPulseMeshes.push(mesh);
+      this.networkOutcomeMeshes.lake.push(mesh);
+    }
+    this.world.add(group);
+    return group;
+  }
+
+  createTownLightCluster(position) {
+    const group = new THREE.Group();
+    group.position.copy(position);
+    const colors = [0xffdd66, 0xff68d8, 0x6dffb2, 0x65d8ff, 0xa98bff];
+    for (let i = 0; i < 22; i++) {
+      const h = rand(3.2, 13.5);
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(rand(1.0, 2.5), h, rand(1.0, 2.5)),
+        makeGlowMat(pick(colors), { opacity: rand(0.48, 0.84) })
+      );
+      mesh.position.set(rand(-12, 12), h * 0.5 + rand(-0.4, 1.1), rand(-7, 7));
+      mesh.userData.pulseBase = rand(0.8, 1.25);
+      group.add(mesh);
+      this.networkPulseMeshes.push(mesh);
+      this.networkOutcomeMeshes.prosperity.push(mesh);
+    }
+    this.world.add(group);
+    return group;
+  }
+
+  maxOffDiagonal(matrix) {
+    let max = 0;
+    for (let i = 0; i < matrix.length; i++) {
+      for (let j = 0; j < matrix[i].length; j++) {
+        if (i !== j) max = Math.max(max, Math.abs(matrix[i][j]));
+      }
+    }
+    return Math.max(max, 1e-9);
+  }
+
+  addFlowRope(start, end, value, maxAbs, color, side = 0, baseOpacity = 0.36, beadCount = 1) {
+    const strength = clamp(Math.abs(value) / maxAbs, 0.08, 1);
+    const a = start.clone();
+    const b = end.clone();
+    const mid = a.clone().lerp(b, 0.5);
+    const dir = b.clone().sub(a);
+    const sideVec = new THREE.Vector3(-dir.z, 0, dir.x).normalize().multiplyScalar(side * 0.9);
+    mid.y += 4 + strength * 7 + Math.abs(side) * 0.5;
+    mid.add(sideVec);
+    const tube = makeCurveTube([a, mid, b], color, 0.025 + strength * 0.115, baseOpacity + strength * 0.30);
+    this.world.add(tube);
+    this.networkPulseMeshes.push(tube);
+
+    const direction = value >= 0 ? 1 : -1;
+    for (let i = 0; i < beadCount; i++) {
+      const bead = new THREE.Mesh(
+        new THREE.SphereGeometry(0.22 + strength * 0.28, 16, 10),
+        makeGlowMat(color, { opacity: 0.90 })
+      );
+      bead.userData = {
+        curve: tube.userData.curve,
+        offset: rand(0, 1) + i / beadCount,
+        speed: direction * (0.045 + strength * 0.08),
+        pulse: rand(0, Math.PI * 2),
+        scale: 0.85 + strength * 0.85
+      };
+      this.world.add(bead);
+      this.flowBeads.push(bead);
+    }
   }
 
   createTerrain() {
@@ -518,9 +825,22 @@ export class LakeScene {
     createSegment(this.world, { x: 22, z: 5 }, { x: 22, z: 58 }, 1.65, 0.10, asphalt, 'ground', 0.13);
     createSegment(this.world, { x: -52, z: coastLine(-52) + 6 }, { x: -52, z: 35 }, 1.1, 0.09, road, 'ground', 0.13);
     createSegment(this.world, { x: 52, z: coastLine(52) + 4 }, { x: 52, z: 35 }, 1.1, 0.09, road, 'ground', 0.13);
+    if (this.cityMode === 'skyline') {
+      const boulevard = makeMat(0x3e4648, { roughness: 0.82 });
+      createSegment(this.world, { x: -66, z: 24 }, { x: 66, z: 24 }, 2.9, 0.11, boulevard, 'ground', 0.14);
+      createSegment(this.world, { x: -42, z: 16 }, { x: -42, z: 64 }, 2.0, 0.11, boulevard, 'ground', 0.14);
+      createSegment(this.world, { x: 0, z: 18 }, { x: 0, z: 66 }, 2.4, 0.11, boulevard, 'ground', 0.14);
+      createSegment(this.world, { x: 42, z: 13 }, { x: 42, z: 64 }, 2.0, 0.11, boulevard, 'ground', 0.14);
+      createSegment(this.world, { x: 24, z: coastLine(24) + 2.7 }, { x: 62, z: coastLine(54) + 2.0 }, 6.4, 0.28, concrete, 'water', 0.35);
+    }
   }
 
   createTownAndLandscape() {
+    if (this.cityMode === 'skyline') {
+      this.createRichCityAndLandscape();
+      return;
+    }
+
     const trees = Math.round(115);
     for (let i = 0; i < trees; i++) {
       const x = rand(-68, 68);
@@ -551,6 +871,138 @@ export class LakeScene {
       placeObject(b, x, z, pick([0, Math.PI / 2]) + rand(-0.15, 0.15));
       b.scale.setScalar(rand(0.85, 1.15));
       this.world.add(b);
+    }
+  }
+
+  createRichCityAndLandscape() {
+    const parkMat = makeMat(0x6aa45f, { roughness: 0.98 });
+    const darkParkMat = makeMat(0x3f7c4e, { roughness: 0.98 });
+    const plazaMat = makeMat(0xc2b9a4, { roughness: 0.9 });
+    const glassColors = [0x6aa5bf, 0x7fb6d6, 0x9cc8d7, 0x627f9d, 0xb4cfd9, 0x8ea7b8];
+    const masonry = [0xb7aa96, 0xd3c5ab, 0xb4b9b4, 0xc7b99e];
+
+    const parkPads = [
+      { x: -55, z: 52, w: 15, d: 11 },
+      { x: -6, z: 50, w: 19, d: 10 },
+      { x: 54, z: 50, w: 14, d: 12 },
+      { x: 10, z: 28, w: 11, d: 8 }
+    ];
+    parkPads.forEach((park, index) => {
+      const pad = new THREE.Mesh(new THREE.BoxGeometry(park.w, 0.12, park.d), index % 2 ? darkParkMat : parkMat);
+      pad.position.set(park.x, groundY(park.x, park.z) + 0.08, park.z);
+      pad.castShadow = false;
+      pad.receiveShadow = true;
+      this.world.add(pad);
+      for (let i = 0; i < 14; i++) {
+        const tx = park.x + rand(-park.w * 0.42, park.w * 0.42);
+        const tz = park.z + rand(-park.d * 0.38, park.d * 0.38);
+        const tree = new THREE.Group();
+        makeTree(tree, 0, 0, rand(0.82, 1.55));
+        placeObject(tree, tx, tz, rand(0, Math.PI * 2));
+        this.world.add(tree);
+      }
+    });
+
+    for (let i = 0; i < 70; i++) {
+      const x = rand(-68, 68);
+      const z = rand(7, 66);
+      if (!isLand(x, z, 4)) continue;
+      const inCore = Math.abs(x) < 34 && z > 24;
+      const byHarbor = z < coastLine(x) + 17;
+      if ((inCore || byHarbor) && chance(0.84)) continue;
+      const tree = new THREE.Group();
+      makeTree(tree, 0, 0, rand(0.72, 1.4));
+      placeObject(tree, x, z, rand(0, Math.PI * 2));
+      this.world.add(tree);
+    }
+
+    const protectedSpots = [
+      { x: -50, z: coastLine(-50) + 13.8, r: 10 },
+      { x: -33, z: coastLine(-33) + 13.0, r: 9 },
+      { x: -12, z: coastLine(-12) + 11.4, r: 9 },
+      { x: 7, z: coastLine(7) + 13.2, r: 9 },
+      { x: 29, z: coastLine(29) + 9.6, r: 10 },
+      { x: 51, z: coastLine(51) + 8.4, r: 10 },
+      ...parkPads.map(p => ({ x: p.x, z: p.z, r: Math.max(p.w, p.d) * 0.55 }))
+    ];
+    const clearOfProtected = (x, z, extra = 0) => protectedSpots.every(p => Math.hypot(x - p.x, z - p.z) > p.r + extra);
+
+    for (let i = 0; i < 62; i++) {
+      const x = rand(-35, 35);
+      const z = rand(28, 66);
+      if (!isLand(x, z, 3) || !clearOfProtected(x, z, 2)) continue;
+      const h = Math.pow(rand(), 1.45) * 34 + 7;
+      const w = rand(2.4, 6.2);
+      const d = rand(2.4, 6.6);
+      const tower = createSimpleHouse(w, d, h, pick(glassColors), 0x4f5962, {
+        flat: true,
+        windows: true,
+        windowRows: Math.floor(h / 2.1),
+        windowCols: Math.floor(w / 0.72),
+        metalness: 0.12,
+        roofMetalness: 0.18
+      });
+      tower.children[0].material.roughness = 0.34;
+      tower.children[0].material.metalness = 0.16;
+      placeObject(tower, x, z, pick([0, Math.PI / 2]) + rand(-0.12, 0.12));
+      this.world.add(tower);
+    }
+
+    for (let i = 0; i < 34; i++) {
+      const x = rand(-61, 62);
+      const z = rand(20, 50);
+      if (!isLand(x, z, 3) || !clearOfProtected(x, z, 1.2)) continue;
+      const h = rand(4.0, 12.5);
+      const block = createSimpleHouse(rand(4.0, 8.5), rand(3.6, 7.8), h, pick(masonry), 0x586166, {
+        flat: true,
+        windows: true,
+        windowRows: Math.floor(h / 1.85),
+        windowCols: randInt(4, 8),
+        metalness: 0.04
+      });
+      placeObject(block, x, z, pick([0, Math.PI / 2]) + rand(-0.1, 0.1));
+      this.world.add(block);
+    }
+
+    for (let i = 0; i < 7; i++) {
+      const x = -34 + i * 10.8;
+      const z = 34 + Math.sin(i * 0.9) * 2.2;
+      if (!isLand(x, z, 3) || !clearOfProtected(x, z, 1)) continue;
+      const plaza = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.10, 3.0), plazaMat);
+      plaza.position.set(x, groundY(x, z) + 0.10, z);
+      plaza.rotation.y = rand(-0.05, 0.05);
+      plaza.receiveShadow = true;
+      this.world.add(plaza);
+      if (chance(0.55)) addCylinder(this.world, 0.18, 2.4, [x, groundY(x, z) + 1.3, z], makeMat(0x596060, { roughness: 0.58, metalness: 0.18 }), 12, 'street light');
+    }
+
+    this.createContainerHarbor();
+  }
+
+  createContainerHarbor() {
+    const portMat = makeMat(0x858b8e, { roughness: 0.72, metalness: 0.04 });
+    const yard = new THREE.Mesh(new THREE.BoxGeometry(30, 0.55, 15.5), portMat);
+    const yardX = 45;
+    const yardZ = coastLine(yardX) + 3.0;
+    yard.position.set(yardX, 0.42, yardZ);
+    yard.castShadow = true;
+    yard.receiveShadow = true;
+    this.world.add(yard);
+
+    const containerColors = [0xd74638, 0x3975a9, 0xe1a640, 0x498f5c, 0xdfdfd0, 0x7d5a46];
+    for (let i = 0; i < 56; i++) {
+      const cont = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.55, 0.82), makeMat(pick(containerColors), { roughness: 0.68 }));
+      cont.position.set(31 + rand(0, 27), 0.86 + 0.58 * randInt(0, 2), coastLine(45) - 4.5 + rand(0, 13.5));
+      cont.rotation.y = chance(0.5) ? 0 : Math.PI / 2;
+      cont.castShadow = true;
+      cont.receiveShadow = true;
+      this.world.add(cont);
+    }
+    for (let i = 0; i < 4; i++) {
+      const crane = createGantryCrane();
+      crane.position.set(31.5 + i * 7.4, 0.95, coastLine(45) - 7.6);
+      crane.scale.set(1.18, 1.28, 1.18);
+      this.world.add(crane);
     }
   }
 
@@ -686,6 +1138,63 @@ export class LakeScene {
     this.world.add(publicOffice);
   }
 
+  captureProsperitySurfaces() {
+    const structureNames = [
+      'construction frame',
+      'feed storage',
+      'feed silo',
+      'feed sacks',
+      'hatchery tank',
+      'tank deck',
+      'market stall',
+      'market canopy',
+      'smokestack',
+      'subtle outflow pipe',
+      'truck body',
+      'truck cab',
+      'site pad'
+    ];
+
+    this.prosperityMeshes = [];
+    this.world.traverse(obj => {
+      if (!obj.isMesh || !obj.material || obj === this.waterMesh) return;
+      const isStructure = obj.userData.prosperitySensitive || structureNames.includes(obj.name);
+      if (!isStructure) return;
+      const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+      materials.forEach(rememberMaterialBase);
+      this.prosperityMeshes.push(obj);
+    });
+
+    if (this.cityMode === 'network') return;
+    this.createGrimeMarks();
+  }
+
+  createGrimeMarks() {
+    this.grimeMarks = [];
+    this.entityGroups.forEach(group => {
+      if (!group) return;
+      const markCount = 4;
+      for (let i = 0; i < markCount; i++) {
+        const mark = new THREE.Mesh(
+          new THREE.PlaneGeometry(rand(0.52, 1.18), rand(0.20, 0.54)),
+          makeMat(0x221f1b, { roughness: 0.98, opacity: 0.0 })
+        );
+        mark.material.transparent = true;
+        mark.position.set(rand(-4.8, 4.8), rand(1.05, 3.8), rand(-5.18, 5.18));
+        if (Math.abs(mark.position.z) > 4.9) {
+          mark.rotation.y = mark.position.z > 0 ? 0 : Math.PI;
+        } else {
+          mark.position.x = mark.position.x < 0 ? -6.95 : 6.95;
+          mark.rotation.y = mark.position.x < 0 ? -Math.PI / 2 : Math.PI / 2;
+        }
+        mark.userData.baseOpacity = rand(0.10, 0.24);
+        mark.visible = false;
+        group.add(mark);
+        this.grimeMarks.push(mark);
+      }
+    });
+  }
+
   createBoats() {
     const colors = [0x2f7890, 0x9b4f42, 0xd7a64a, 0x365f7d, 0x4f7f55];
     for (let i = 0; i < 7; i++) {
@@ -730,6 +1239,25 @@ export class LakeScene {
     });
     this.labelRoot.appendChild(div);
     this.labels.push({ index, name, anchor, div });
+  }
+
+  addOutcomeLabel(channel, name, anchor) {
+    const div = document.createElement('div');
+    div.className = 'world-label outcome-label';
+    div.innerHTML = `
+      <span class="label-top"><span class="name"></span><span class="outcome-value">—</span></span>
+      <span class="outcome-fill"><i></i></span>
+      <span class="delta">Outcome channel</span>`;
+    div.querySelector('.name').textContent = name;
+    this.labelRoot.appendChild(div);
+    this.outcomeLabels.push({ channel, name, anchor, div });
+  }
+
+  makeLocalAnchor(parent, x, y, z) {
+    const anchor = new THREE.Object3D();
+    anchor.position.set(x, y, z);
+    parent.add(anchor);
+    return anchor;
   }
 
   updateState(nextState) {
@@ -814,7 +1342,8 @@ export class LakeScene {
   updateLakeColor(netLakeOutcome = 0) {
     if (!waterMaterial) return;
 
-    const clean = new THREE.Color(0x4aa7c8);
+    const sparkling = new THREE.Color(0x72dcec);
+    const clean = new THREE.Color(0x51cbe0);
     const neutral = new THREE.Color(0x6f9fb0);
     const dirty = new THREE.Color(0x2d3a32);
     const ugly = new THREE.Color(0x1d1f1b);
@@ -822,26 +1351,130 @@ export class LakeScene {
     let color;
 
     if (netLakeOutcome >= 0) {
-      const t = Math.min(netLakeOutcome / 20, 1);
-      color = neutral.clone().lerp(clean, t);
+      const t = smoothstep(netLakeOutcome / LAKE_VISUAL_SCALE.positiveFull);
+      color = neutral.clone().lerp(clean, t).lerp(sparkling, Math.max(0, t - 0.62) * 0.65);
+      waterMaterial.opacity = lerp(0.82, 0.66, t);
+      waterMaterial.roughness = lerp(0.55, 0.28, t);
+      waterMaterial.emissive.setHex(0x0b9cb0);
+      waterMaterial.emissiveIntensity = lerp(0.0, 0.08, t);
     } else {
-      const t = Math.min(Math.abs(netLakeOutcome) / 20, 1);
+      const t = smoothstep(Math.abs(netLakeOutcome) / LAKE_VISUAL_SCALE.negativeFull);
       color = neutral.clone().lerp(dirty, t);
+      waterMaterial.opacity = lerp(0.88, 0.95, t);
+      waterMaterial.roughness = lerp(0.58, 0.82, t);
+      waterMaterial.emissive.setHex(0x000000);
+      waterMaterial.emissiveIntensity = 0;
     }
 
-    if (netLakeOutcome < -35) {
-      const t = Math.min((Math.abs(netLakeOutcome) - 35) / 25, 1);
+    if (netLakeOutcome < -LAKE_VISUAL_SCALE.severeNegativeStart) {
+      const t = smoothstep((Math.abs(netLakeOutcome) - LAKE_VISUAL_SCALE.severeNegativeStart) / (LAKE_VISUAL_SCALE.severeNegativeFull - LAKE_VISUAL_SCALE.severeNegativeStart));
       color = dirty.clone().lerp(ugly, t);
     }
 
     waterMaterial.color.copy(color);
-    waterMaterial.opacity = netLakeOutcome < 0 ? 0.92 : 0.84;
+  }
+
+  updateProsperityLook(netProsperityOutcome = 0) {
+    const positive = smoothstep(netProsperityOutcome / PROSPERITY_VISUAL_SCALE.positiveFull);
+    const negative = smoothstep(Math.abs(Math.min(0, netProsperityOutcome)) / PROSPERITY_VISUAL_SCALE.negativeFull);
+    const cleanTint = new THREE.Color(0xfff5dc);
+    const rundownTint = new THREE.Color(0x3a332d);
+
+    this.prosperityMeshes.forEach(mesh => {
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      materials.forEach(material => {
+        restoreMaterialBase(material);
+        const base = material.userData.visualBase;
+        if (!base?.color || !material.color) return;
+        if (positive > 0) {
+          material.color.copy(base.color).lerp(cleanTint, positive * 0.28);
+          if (material.emissive) material.emissive.copy(base.emissive ?? new THREE.Color(0x000000)).lerp(new THREE.Color(0xffd887), positive * 0.36);
+          if (material.emissiveIntensity !== undefined) material.emissiveIntensity = (base.emissiveIntensity ?? 0) + positive * 0.10;
+          if (material.roughness !== undefined) material.roughness = Math.max(0.38, (base.roughness ?? 0.8) - positive * 0.18);
+        }
+        if (negative > 0) {
+          material.color.copy(base.color).lerp(rundownTint, negative * 0.55);
+          material.color.offsetHSL(0, -negative * 0.12, -negative * 0.13);
+          if (material.emissiveIntensity !== undefined) material.emissiveIntensity = (base.emissiveIntensity ?? 0) * (1 - negative * 0.82);
+          if (material.roughness !== undefined) material.roughness = Math.min(1, (base.roughness ?? 0.8) + negative * 0.16);
+        }
+      });
+    });
+
+    this.grimeMarks.forEach(mark => {
+      mark.visible = negative > 0.05;
+      mark.material.opacity = mark.userData.baseOpacity * negative;
+      mark.scale.setScalar(lerp(0.72, 1.25, negative));
+    });
+  }
+
+  updateOutcomeVisuals({ lake = 0, prosperity = 0 } = {}) {
+    this.updateLakeColor(lake);
+    this.updateProsperityLook(prosperity);
+    this.updateNetworkOutcomeLook(lake, prosperity);
+    this.updateOutcomeLabels(lake, prosperity);
+  }
+
+  updateNetworkOutcomeLook(lake = 0, prosperity = 0) {
+    if (this.cityMode !== 'network') return;
+    this.applyNetworkOutcomeChannel('lake', lake, {
+      positive: 0x5fffff,
+      negative: 0xff3f86,
+      neutral: 0x58cfff,
+      scale: LAKE_VISUAL_SCALE.positiveFull
+    });
+    this.applyNetworkOutcomeChannel('prosperity', prosperity, {
+      positive: 0xffee86,
+      negative: 0xff4f68,
+      neutral: 0xffd166,
+      scale: PROSPERITY_VISUAL_SCALE.positiveFull
+    });
+  }
+
+  applyNetworkOutcomeChannel(channel, value, colors) {
+    const meshes = this.networkOutcomeMeshes[channel] || [];
+    const group = this.networkOutcomeGroups[channel];
+    const signedStrength = clamp(Math.abs(value) / colors.scale, 0, 1);
+    const positive = value >= 0;
+    const tint = new THREE.Color(positive ? colors.positive : colors.negative);
+    const neutral = new THREE.Color(colors.neutral);
+    const color = neutral.clone().lerp(tint, smoothstep(signedStrength));
+    meshes.forEach((mesh, i) => {
+      if (!mesh.material) return;
+      if (!mesh.userData.outcomeBaseOpacity) mesh.userData.outcomeBaseOpacity = mesh.material.opacity ?? 0.5;
+      if (!mesh.userData.outcomeBasePulse) mesh.userData.outcomeBasePulse = mesh.userData.pulseBase || 1;
+      mesh.material.color.copy(color);
+      mesh.material.opacity = clamp(mesh.userData.outcomeBaseOpacity + (positive ? 0.22 : -0.12) * signedStrength, 0.12, 0.92);
+      mesh.userData.pulseBase = mesh.userData.outcomeBasePulse * (1 + (positive ? 0.12 : -0.08) * signedStrength * ((i % 3) / 2));
+    });
+    if (group) {
+      const s = 1 + (positive ? 0.18 : -0.08) * smoothstep(signedStrength);
+      group.scale.setScalar(clamp(s, 0.82, 1.22));
+    }
+  }
+
+  updateOutcomeLabels(lake = 0, prosperity = 0) {
+    const values = { lake, prosperity };
+    this.outcomeLabels.forEach(item => {
+      const value = values[item.channel] ?? 0;
+      const max = item.channel === 'lake' ? LAKE_VISUAL_SCALE.positiveFull : PROSPERITY_VISUAL_SCALE.positiveFull;
+      const pct = clamp(Math.abs(value) / max, 0, 1) * 50;
+      const fill = item.div.querySelector('.outcome-fill i');
+      const readout = item.div.querySelector('.outcome-value');
+      if (readout) readout.textContent = signed(value, 1);
+      item.div.classList.toggle('outcome-positive', value >= 0);
+      item.div.classList.toggle('outcome-negative', value < 0);
+      if (fill) {
+        fill.style.width = `${pct}%`;
+        fill.style.left = value >= 0 ? '50%' : `${50 - pct}%`;
+      }
+    });
   }
 
   updateLabels() {
     const width = this.renderer.domElement.clientWidth;
     const height = this.renderer.domElement.clientHeight;
-    for (const item of this.labels) {
+    for (const item of [...this.labels, ...this.outcomeLabels]) {
       item.anchor.getWorldPosition(this.tmpVec);
       this.tmpVec.project(this.camera);
       const visible = this.tmpVec.z < 1 && this.tmpVec.x > -1.12 && this.tmpVec.x < 1.12 && this.tmpVec.y > -1.12 && this.tmpVec.y < 1.12;
@@ -885,6 +1518,25 @@ export class LakeScene {
       puff.position.z = puff.userData.base.z + Math.cos(phase * 0.8) * 0.18 * puff.userData.scale;
       const s = puff.userData.scale * (0.95 + Math.sin(phase * 1.3) * 0.12);
       puff.scale.setScalar(s);
+    });
+
+    this.flowBeads.forEach(bead => {
+      const data = bead.userData;
+      const t = ((data.offset + time * data.speed) % 1 + 1) % 1;
+      data.curve.getPointAt(t, bead.position);
+      const pulse = 0.72 + Math.sin(time * 4.8 + data.pulse) * 0.22;
+      bead.scale.setScalar(data.scale * pulse);
+    });
+
+    this.networkPulseMeshes.forEach((mesh, i) => {
+      const pulse = 0.86 + Math.sin(time * 1.4 + i * 0.37) * 0.10;
+      if (mesh.material?.opacity !== undefined && mesh.material?.userData?.baseOpacity === undefined) {
+        mesh.material.userData.baseOpacity = mesh.material.opacity;
+      }
+      if (mesh.material?.opacity !== undefined) {
+        mesh.material.opacity = (mesh.material.userData.baseOpacity ?? mesh.material.opacity) * (0.86 + pulse * 0.16);
+      }
+      if (mesh.userData?.pulseBase) mesh.scale.setScalar(mesh.userData.pulseBase * pulse);
     });
   }
 

@@ -34,7 +34,7 @@ export default function LakeEconomyHome() {
 
           <div className="brand-block">
             <strong>The Impact Frontier</strong>
-            <span>Research on the impact of capital market systems</span>
+            <span>Research and tools for investor impact</span>
           </div>
 
           <nav className="top-nav" aria-label="Research panels">
@@ -45,14 +45,16 @@ export default function LakeEconomyHome() {
               Papers
             </button>
             <button type="button" data-panel="guides">
-              Guides
+              Guide
             </button>
           </nav>
 
-          <div className="top-help">Drag to orbit - scroll to zoom</div>
+          <a className="top-cta" href="mailto:jonathan@total-portfolio.org">
+            Discuss the work
+          </a>
         </header>
 
-        <main className="world-shell" aria-label="Interactive harbor economy">
+        <main className="world-shell" aria-label="Interactive lake economy">
           <div className="sky-gradient" aria-hidden="true" />
           <canvas id="lakeCanvas" />
           <div id="labels" aria-hidden="false" />
@@ -62,16 +64,32 @@ export default function LakeEconomyHome() {
             role="dialog"
             aria-label="Entity characteristics"
           />
+          <div className="scene-controls" aria-label="Scene controls">
+            <button id="cityModeBtn" type="button" aria-pressed="false">
+              City skyline
+            </button>
+            <div className="scene-help">Drag to orbit · scroll to zoom</div>
+          </div>
         </main>
 
         <section id="welcomePanel" className="welcome-panel" aria-label="Welcome">
-          {/* <div className="welcome-kicker">The Impact Frontier</div> */}
-          <h1>Welcome</h1>
+          <span className="eyebrow">Total Portfolio Project research</span>
+          {/* REVIEW COPY: Jonathan may want to rephrase this headline/body in his own voice. */}
+          <h1>A playable model of capital, markets, and real outcomes.</h1>
           <p>
-            Explore Total Portfolio Project's research on the Impact Frontier and
-            systemic investing. Read the papers and guides above, or dive into
-            the lake economy game to try investing on the frontier yourself.
+            Set offers in a stylized lake economy. The economy clears. Compare the result with the Impact Frontier.
           </p>
+          <div className="welcome-actions">
+            <button type="button" className="primary-action" data-open-play>
+              Play the model
+            </button>
+            <button type="button" className="secondary-action" data-panel="papers">
+              Read the papers
+            </button>
+            <button type="button" className="secondary-action" data-panel="guides">
+              Open the guide
+            </button>
+          </div>
         </section>
 
         <button
@@ -227,7 +245,7 @@ export default function LakeEconomyHome() {
           </section>
 
           <footer className="status-line" id="statusLine">
-            Open the play panel when you want to test the harbor economy. Research panels remain available at all times.
+            Open the play panel when you want to test the lake economy. Research panels remain available at all times.
           </footer>
         </aside>
 

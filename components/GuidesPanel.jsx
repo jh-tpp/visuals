@@ -4,12 +4,12 @@ const GUIDES = [
   {
     id: "goals-based-guide",
     title: "Investor’s Guide to Goals-based Investing and Philanthropy",
-    status: "Preview cover only. Full guide not yet public.",
+    status: "CSP landing page with cover preview here.",
     previewSrc: "/guides/ig-goals-cover.jpg",
     previewType: "image",
-    downloadHref: "",
-    downloadLabel: "Download from CSP",
-    downloadDisabled: true,
+    downloadHref: "https://www.cspglobal.org/research/publications/investors-guide-goals-based-investing-and-philanthropy",
+    downloadLabel: "Open guide on CSP",
+    downloadDisabled: false,
   },
 ];
 
@@ -100,10 +100,10 @@ export default function GuidesPanel() {
     <div className="space-y-8">
       <div className="max-w-3xl space-y-2">
         <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-          Guides
+          Guide
         </h2>
         <p className="text-sm leading-6 text-slate-600">
-          Preview pages for practitioner-facing publications.
+          Practitioner-facing publication connected to the model.
         </p>
       </div>
 

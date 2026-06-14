@@ -26,18 +26,21 @@ function pct(v, digits = 1) { return Number.isFinite(v) ? `${(v * 100).toFixed(d
 
 const state = {
   lakeIndex: 0,
-  seed: 'harbor-2025-a',
+  seed: 'lake-2026-a',
   templateKey: 'feed-bottleneck',
   goalWeight: null,
   goalChosen: false,
   tokens: [0, 0, 0, 0, 0, 0],
   lastScore: null,
   bestScore: null,
+  cityMode: 'town',
   frontierCache: new Map(),
   selectedEntity: null,
   panelOpen: false,
   panelMode: null
 };
+
+const CITY_MODES = ['town', 'skyline', 'network'];
 
 let params;
 let scene;
@@ -85,6 +88,7 @@ function init(signal) {
     freshBtn: $('#freshBtn'),
     newLakeBtn: $('#newLakeBtn'),
     resetViewBtn: $('#resetViewBtn'),
+    cityModeBtn: $('#cityModeBtn'),
     resultSection: $('#resultSection'),
     resultSummary: $('#resultSummary'),
     resultTable: $('#resultTable'),
@@ -93,6 +97,8 @@ function init(signal) {
     statusLine: $('#statusLine'),
     topbar: $('.topbar'),
     topButtons: $$('.top-nav [data-panel]'),
+    panelButtons: $$('[data-panel]'),
+    playButtons: $$('[data-open-play]'),
     welcomePanel: $('#welcomePanel'),
     contentPanel: $('#contentPanel'),
     contentTitle: $('#contentTitle'),
@@ -111,7 +117,8 @@ function init(signal) {
   scene.setFrameCallback(() => positionEntityPopup());
   scene.setLake(params);
   scene.updateState({ offers: state.tokens, lastRun: null });
-  scene.updateLakeColor(0);
+  scene.updateOutcomeVisuals();
+  scene.setCityMode(state.cityMode);
 
   bindEvents(signal);
   renderAll();
@@ -122,20 +129,32 @@ function on(target, type, handler, signal) {
 }
 
 function bindEvents(signal) {
-  on(elements.panelToggle, 'click', () => setPanelOpen(!state.panelOpen), signal);
-  on(elements.panelToggle, 'click', dismissWelcome, signal);
+  on(elements.panelToggle, 'click', () => {
+    dismissWelcome();
+    setPanelOpen(!state.panelOpen);
+  }, signal);
   on(elements.canvas, 'pointerdown', dismissWelcome, signal);
   on(elements.minimizePanel, 'click', () => setPanelOpen(false), signal);
-  on(elements.goalSlider, 'input', () => setGoal(Number(elements.goalSlider.value) / 100), signal);
+  on(elements.goalSlider, 'input', () => setGoal(1 - Number(elements.goalSlider.value) / 100), signal);
   elements.goalButtons.forEach(btn => on(btn, 'click', () => setGoal(Number(btn.dataset.goal) / 100), signal));
   elements.presetButtons.forEach(btn => on(btn, 'click', () => applyPreset(btn.dataset.preset), signal));
   on(elements.runBtn, 'click', runEconomy, signal);
   on(elements.freshBtn, 'click', startFresh, signal);
   on(elements.newLakeBtn, 'click', newLake, signal);
-  on(elements.resetViewBtn, 'click', () => scene.resetView(), signal);
-  elements.topButtons.forEach(btn => on(btn, 'click', () => {
+  on(elements.resetViewBtn, 'click', () => {
+    scene.resetView();
+    scene.updateState({ offers: state.tokens, lastRun: null });
+    scene.updateOutcomeVisuals();
+  }, signal);
+  on(elements.cityModeBtn, 'click', toggleCityMode, signal);
+  elements.panelButtons.forEach(btn => on(btn, 'click', () => {
     dismissWelcome();
     openContentPanel(btn.dataset.panel);
+  }, signal));
+  elements.playButtons.forEach(btn => on(btn, 'click', () => {
+    dismissWelcome();
+    closeContentPanel();
+    setPanelOpen(true);
   }, signal));
   on(elements.closeContent, 'click', closeContentPanel, signal);
   on(elements.contentPanel, 'pointerdown', e => {
@@ -186,6 +205,27 @@ function setPanelOpen(open) {
   elements.playPanel.classList.toggle('collapsed', !open);
   elements.panelToggle.setAttribute('aria-expanded', String(open));
   elements.panelToggle.textContent = open ? 'Playing' : 'Play';
+  elements.playButtons.forEach(btn => btn.classList.toggle('active', open));
+}
+
+function toggleCityMode() {
+  dismissWelcome();
+  const index = CITY_MODES.indexOf(state.cityMode);
+  state.cityMode = CITY_MODES[(index + 1) % CITY_MODES.length];
+  scene.setCityMode(state.cityMode);
+  scene.updateState({ offers: state.tokens, lastRun: state.lastScore?.current ?? null });
+  scene.updateOutcomeVisuals(state.lastScore
+    ? {
+        lake: state.lastScore.lakeGainVsEqual,
+        prosperity: state.lastScore.prosperityGainVsEqual
+      }
+    : {});
+  elements.statusLine.textContent = state.cityMode === 'skyline'
+    ? 'City skyline enabled. The lake and ground are unchanged; the harbor economy is denser.'
+    : state.cityMode === 'network'
+      ? 'Light network enabled. The physical terrain falls away, leaving entities, flows, and outcomes.'
+      : 'Harbor town enabled. The lake and ground are unchanged; the built environment is quieter.';
+  renderAll();
 }
 
 function setGoal(weight) {
@@ -196,7 +236,6 @@ function setGoal(weight) {
     state.lastScore = scoreCurrentOffers();
     state.bestScore = state.lastScore;
     scene.updateState({ offers: state.tokens, lastRun: state.lastScore.current });
-    scene.updateLakeColor(state.lastScore.lakeGainVsEqual);
   } else {
     state.bestScore = null;
   }
@@ -239,8 +278,7 @@ function adjustToken(index, value) {
 
 function clearStaleRun(message) {
   state.lastScore = null;
-  scene.updateState({ offers: state.tokens, lastRun: null });
-  scene.updateLakeColor(0);
+  scene.updateState({ offers: state.tokens });
   elements.statusLine.textContent = message;
   renderAll();
 }
@@ -266,7 +304,10 @@ function runEconomy() {
     state.bestScore = state.lastScore;
   }
   scene.updateState({ offers: state.tokens, lastRun: state.lastScore.current });
-  scene.updateLakeColor(state.lastScore.lakeGainVsEqual);
+  scene.updateOutcomeVisuals({
+    lake: state.lastScore.lakeGainVsEqual,
+    prosperity: state.lastScore.prosperityGainVsEqual
+  });
   elements.statusLine.textContent = 'Economy cleared. Compare your offers with total capital change and other-investor response.';
   renderAll();
 }
@@ -276,10 +317,10 @@ function startFresh() {
   state.lastScore = null;
   closeEntityPopup();
   scene.updateState({ offers: state.tokens, lastRun: null });
-  scene.updateLakeColor(0);
+  scene.updateOutcomeVisuals();
   elements.statusLine.textContent = state.goalChosen
-    ? 'Same harbor economy, fresh offer sheet. Allocate 100 tokens before running.'
-    : 'Same harbor economy. Choose a goal first, then allocate offers.';
+    ? 'Same lake economy, fresh offer sheet. Allocate 100 tokens before running.'
+    : 'Same lake economy. Choose a goal first, then allocate offers.';
   renderAll();
 }
 
@@ -287,7 +328,7 @@ function newLake() {
   state.lakeIndex += 1;
   const template = templateForIndex(state.lakeIndex);
   state.templateKey = template.key;
-  state.seed = `harbor-${2025 + state.lakeIndex}-${template.key}`;
+  state.seed = `lake-${2026 + state.lakeIndex}-${template.key}`;
   state.tokens = [0, 0, 0, 0, 0, 0];
   state.lastScore = null;
   state.bestScore = null;
@@ -296,10 +337,10 @@ function newLake() {
   params = buildLakeParams({ seed: state.seed, templateKey: state.templateKey, lakeOutcomeWeight: state.goalChosen ? state.goalWeight : 0.5 });
   scene.setLake(params);
   scene.updateState({ offers: state.tokens, lastRun: null });
-  scene.updateLakeColor(0);
+  scene.updateOutcomeVisuals();
   elements.statusLine.textContent = state.goalChosen
-    ? 'New harbor economy generated. The goal is unchanged, but the hidden response system is new.'
-    : 'New harbor economy generated. Choose a goal to begin.';
+    ? 'New lake economy generated. The goal is unchanged, but the hidden response system is new.'
+    : 'New lake economy generated. Choose a goal to begin.';
   renderAll();
 }
 
@@ -310,7 +351,18 @@ function renderAll() {
   renderResults();
   renderFlowLocks();
   renderButtons();
+  renderCityMode();
   renderEntityPopup();
+}
+
+function renderCityMode() {
+  if (!elements.cityModeBtn) return;
+  const skyline = state.cityMode === 'skyline';
+  const network = state.cityMode === 'network';
+  rootNode.classList.toggle('light-network-mode', network);
+  elements.cityModeBtn.classList.toggle('active', skyline || network);
+  elements.cityModeBtn.setAttribute('aria-pressed', String(skyline || network));
+  elements.cityModeBtn.textContent = skyline ? 'Light network' : network ? 'Harbor town' : 'City skyline';
 }
 
 function renderScenario() {
@@ -330,7 +382,7 @@ function renderGoal() {
   }
   const lakePct = Math.round(state.goalWeight * 100);
   const prosperityPct = 100 - lakePct;
-  elements.goalSlider.value = lakePct;
+  elements.goalSlider.value = prosperityPct;
   elements.goalReadout.textContent = `${lakePct}% lake · ${prosperityPct}% prosperity`;
   elements.goalHint.textContent = state.goalWeight > 0.72
     ? 'Frontier is judged mainly by lake health.'
@@ -395,7 +447,7 @@ function renderResults() {
       </div>`;
     elements.resultTable.innerHTML = '';
     renderFrontierChart(elements.chartBox, null, null);
-    elements.bestReadout.textContent = state.bestScore ? `${Math.round(state.bestScore.frontierRecovery * 100)}% best in this harbor` : 'No run yet';
+    elements.bestReadout.textContent = state.bestScore ? `${Math.round(state.bestScore.frontierRecovery * 100)}% best in this lake` : 'No run yet';
     return;
   }
 
@@ -443,10 +495,10 @@ function renderResults() {
           </div>`;
       }).join('')}
     </div>
-    <div class="table-key"><span>Entity</span><span>Offer</span><span>Total ΔK</span><span>Player ΔK</span><span>Other ΔK</span></div>`;
+    <div class="table-key"><span>Entity</span><span>Your offer</span><span>Actual capital</span><span>Your ΔK</span><span>Other investors</span></div>`;
 
   renderFrontierChart(elements.chartBox, score.grid, score);
-  elements.bestReadout.textContent = state.bestScore ? `${Math.round(state.bestScore.frontierRecovery * 100)}% best in this harbor` : 'No run yet';
+  elements.bestReadout.textContent = state.bestScore ? `${Math.round(state.bestScore.frontierRecovery * 100)}% best in this lake` : 'No run yet';
 }
 
 function renderFlowLocks() {
@@ -461,7 +513,7 @@ function renderButtons() {
   const canRun = state.goalChosen && total === 100;
   elements.runBtn.disabled = !canRun;
   elements.runBtn.title = canRun
-    ? 'Clear this harbor economy'
+    ? 'Clear this lake economy'
     : state.goalChosen
       ? 'Allocate exactly 100 offer tokens first'
       : 'Choose a goal first';
@@ -507,10 +559,10 @@ function renderEntityPopup() {
       <span><b>${signed(e.lakeHealthIntensity, 2)}</b><small>Lake intensity</small></span>
       <span><b>${signed(e.localProsperityIntensity, 2)}</b><small>Prosperity intensity</small></span>
     </div>
-    <p class="popup-copy">The hidden response system is not shown up front. Learn it by comparing your offers with capital that actually clears.</p>
+    <p class="popup-copy">The hidden response system is not shown up front. Learn it by comparing your offers with capital after the economy clears.</p>
     ${actual !== null ? `
       <div class="entity-after-run">
-        <span>After market clearing, relative to the equal-offer baseline</span>
+        <span>After the economy clears, relative to the equal-offer baseline</span>
         <strong>Total ΔK ${signed(actual, 1)}</strong>
         <small>Player ΔK ${signed(playerDelta, 1)} · Other investors ΔK ${signed(otherDelta, 1)}</small><br>
         <small>Lake ${signed(lakeEff, 1)} · Prosperity ${signed(prosperEff, 1)}</small>
@@ -555,10 +607,39 @@ function contentForMode(mode) {
     return {
       title: 'About',
       body: `
-        <section class="method-copy">
-          <p>The Impact Frontier explores how capital can move real economies toward a chosen goal. The harbor economy behind this panel is a playable version of that idea: choose a goal, make offers to different parts of the local system, then see how the market clears once other investors and business responses are included.</p>
-          <p>Offers are not the same as final capital. The demo lets you test how complements, bottlenecks, and spillovers can make the best strategy different from simply backing the most obvious individual opportunity.</p>
-          <p>Use the Play panel when you want to experiment. Use Papers and Guides for the research and practitioner materials connected to the model.</p>
+        <section class="about-layout">
+          <article class="about-lede">
+            <span class="eyebrow">What this is</span>
+            <h3>Research you can play with.</h3>
+            <!-- REVIEW COPY: Jonathan may want to rephrase this About-panel language. -->
+            <p>The Impact Frontier studies how capital-market choices affect real outcomes through the way firms, prices, and other investors respond. The Lake Economy turns that idea into a small playable model.</p>
+            <p>You set offers. The economy clears. The result shows what actually got funded, how lake health and local prosperity changed, and how close the strategy came to the frontier.</p>
+          </article>
+          <article class="about-card">
+            <span class="eyebrow">Project</span>
+            <h3>The Lake Economy</h3>
+            <p>The demo is stylized. It is not a forecast or a calibrated policy model. It is a way to make the research intuition visible: impact depends on the response system, not just raw scores or expected payoff.</p>
+          </article>
+          <article class="about-card collaboration-card">
+            <span class="eyebrow">Collaboration</span>
+            <h3>Connected research and practitioner work</h3>
+            <p>This work is connected to research and guide materials developed with CSP, MIT Sloan Sustainability Initiative, the University of St.Gallen, and Impact Frontiers.</p>
+            <div class="text-logo-row" aria-label="Collaborating organizations">
+              <span>CSP</span>
+              <span>MIT Sloan</span>
+              <span>University of St.Gallen</span>
+              <span>Impact Frontiers</span>
+            </div>
+          </article>
+          <article class="about-card contact-card">
+            <span class="eyebrow">Contact</span>
+            <h3>Discuss the work</h3>
+            <p>For research, teaching, investment strategy, or collaboration conversations, contact Jonathan Harris.</p>
+            <!-- REVIEW COPY: add a booking URL here if you want a second contact action. -->
+            <div class="contact-actions">
+              <a class="research-action" href="mailto:jonathan@total-portfolio.org">Email Jonathan</a>
+            </div>
+          </article>
         </section>`
     };
   }
@@ -567,12 +648,15 @@ function contentForMode(mode) {
     return {
       title: 'Papers',
       body: `
+        <p class="panel-intro">Working papers behind the model.</p>
         <div class="content-grid">
           <article class="research-card">
             <span class="eyebrow">Paper 1</span>
             <h3>The Impact Frontier</h3>
-            <p>Working paper. Preview the opening page here; the SSRN download link will be enabled when available.</p>
-            <button type="button" class="research-action" disabled>Download from SSRN</button>
+            <!-- REVIEW COPY: replace with final abstract language if desired. -->
+            <p>How portfolio tilts move capital, returns, and external outcomes through an equilibrium response system. The Lake Economy game is a stylized front-end version of this idea.</p>
+            <p class="status-note">Working paper. SSRN link coming soon.</p>
+            <a class="research-action secondary-link" href="/papers/impact-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Preview paper</a>
             <div class="paper-preview">
               <object data="/papers/impact-frontier-preview.pdf#navpanes=0&scrollbar=0&view=FitH" type="application/pdf">
                 <a href="/papers/impact-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Open preview PDF</a>
@@ -582,8 +666,10 @@ function contentForMode(mode) {
           <article class="research-card">
             <span class="eyebrow">Paper 2</span>
             <h3>Shifting the Frontier</h3>
-            <p>In development. Preview the title and abstract page here; the SSRN download link will be enabled when available.</p>
-            <button type="button" class="research-action" disabled>Download from SSRN</button>
+            <!-- REVIEW COPY: replace with final abstract language if desired. -->
+            <p>How larger coalitions, policy, stewardship, and other instruments can change the response system itself, not just move along a fixed frontier.</p>
+            <p class="status-note">In development. SSRN link coming soon.</p>
+            <a class="research-action secondary-link" href="/papers/shifting-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Preview paper</a>
             <div class="paper-preview">
               <object data="/papers/shifting-frontier-preview.pdf#navpanes=0&scrollbar=0&view=FitH" type="application/pdf">
                 <a href="/papers/shifting-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Open preview PDF</a>
@@ -595,17 +681,18 @@ function contentForMode(mode) {
   }
   if (mode === 'guides') {
     return {
-      title: 'Guides',
+      title: 'Guide',
       body: `
-        <div class="content-grid guides">
-          <article class="research-card wide">
+        <section class="guide-hero-card">
+          <img class="guide-cover-small" src="/guides/ig-goals-cover.jpg" alt="Investor's Guide to Goals-based Investing and Philanthropy cover">
+          <div class="guide-copy">
             <span class="eyebrow">Investor's guide</span>
             <h3>Goals-based investing and philanthropy</h3>
+            <!-- REVIEW COPY: Jonathan may want to adjust this practitioner-facing description. -->
             <p>A practical starting point for turning clear goals into coherent strategies across your portfolio.</p>
-            <a class="research-action" href="https://www.cspglobal.org/research/publications/investors-guide-goals-based-investing-and-philanthropy" target="_blank" rel="noopener noreferrer">Download from CSP</a>
-            <img class="guide-preview" src="/guides/ig-goals-cover.jpg" alt="Investor's Guide to Goals-based Investing and Philanthropy preview">
-          </article>
-        </div>`
+            <a class="research-action" href="https://www.cspglobal.org/research/publications/investors-guide-goals-based-investing-and-philanthropy" target="_blank" rel="noopener noreferrer">Open guide on CSP</a>
+          </div>
+        </section>`
     };
   }
 
