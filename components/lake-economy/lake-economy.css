@@ -869,7 +869,7 @@ button.research-action.secondary-link:hover { background: rgba(41, 40, 95, 0.08)
 }
 .contact-email-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   margin: 20px 24px 24px;
@@ -885,6 +885,13 @@ button.research-action.secondary-link:hover { background: rgba(41, 40, 95, 0.08)
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+.contact-email-copy-group {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  justify-self: start;
+  gap: 4px;
+}
 .contact-email-address {
   min-width: 0;
   overflow-wrap: anywhere;
@@ -892,9 +899,38 @@ button.research-action.secondary-link:hover { background: rgba(41, 40, 95, 0.08)
   font-size: 14px;
   font-weight: 760;
 }
-.contact-email-row .secondary-action {
-  margin: 0;
-  white-space: nowrap;
+.contact-copy-button {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(68, 116, 122, 0.22);
+  border-radius: 8px;
+  background: rgba(255, 253, 251, 0.86);
+  color: var(--csp-deep-teal);
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+.contact-copy-button svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+.contact-copy-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(68, 116, 122, 0.42);
+  background: #fffdfb;
+  box-shadow: 0 8px 18px rgba(45, 66, 90, 0.10);
+}
+.contact-copy-button:focus-visible {
+  outline: 2px solid var(--csp-sky);
+  outline-offset: 2px;
 }
 .copy-status {
   min-width: 48px;

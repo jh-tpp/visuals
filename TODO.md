@@ -12,3 +12,9 @@ Increase font on the banner buttons so they seem more important and not secondar
 "The Impact Frontier Economy": This, you know, it's, or the Impact Frontier, I was kind of thinking the Impact Frontier game, but then that's a bit like shooting myself in the foot maybe. Just to write thing, write it off as a game, even though that's like the jargon I use as we're developing it as a game. I mean the Impact Frontier game is a candidate like let me know if my fears of it are unfounded or should I should get over them the Impact Frontier world or you know I'm conscious that there is an organization called Impact Frontiers unfortunately friendly with them and the guide is published for them but You know, not trying to create confusion. But I have a legitimate intellectual claim to the name in that my paper is The Impact Frontier. Saying all that to say that, like, adding world or model or game or economy would kind of like, okay, the Impact Frontier world, that's Jon's website. It would be, the Impact Frontier concept is still everybody's concept and Mike wrote about it first.
 
 any background that could be more effective than the bland grey/white? or is that effective because people focus on the content? could a nice matte shade of blue work though? or some way of suggesting we are in a mountain valley?
+
+include three case studies report from tpp times?
+
+include links to OG CSP IG?
+
+include links to MIT OIP materials? other CSP guides?

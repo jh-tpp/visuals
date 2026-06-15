@@ -150,7 +150,7 @@ function bindEvents(signal) {
   on(elements.cityModeBtn, 'click', toggleCityMode, signal);
   elements.panelButtons.forEach(btn => on(btn, 'click', () => {
     dismissWelcome();
-    openContentPanel(btn.dataset.panel);
+    toggleContentPanel(btn.dataset.panel);
   }, signal));
   elements.playButtons.forEach(btn => on(btn, 'click', () => {
     dismissWelcome();
@@ -594,6 +594,15 @@ function openContentPanel(mode) {
   elements.contentBody.innerHTML = content.body;
 }
 
+function toggleContentPanel(mode) {
+  if (state.panelMode === mode && !elements.contentPanel.classList.contains('hidden')) {
+    closeContentPanel();
+    return;
+  }
+
+  openContentPanel(mode);
+}
+
 function closeContentPanel() {
   state.panelMode = null;
   elements.contentPanel.classList.add('hidden');
@@ -608,15 +617,15 @@ function contentForMode(mode) {
         <section class="about-layout">
           <article class="about-lede">
             <span class="eyebrow">What this is</span>
-            <h3>Research you can interact with.</h3>
+            <h3>Interactive research.</h3>
             <!-- REVIEW COPY: Jonathan may want to rephrase this About-panel language. -->
             <p>The Impact Frontier studies how investment choices affect real outcomes through the way firms, prices, and other investors respond. The Lake Economy turns that idea into a small playable model.</p>
-            <p>You set offers. The economy clears. The result shows what actually got funded, how lake health and local prosperity changed, and how close the strategy came to the frontier.</p>
-             <p>The demo is stylized. It is not a forecast or a calibrated policy model. It is a way to make the research intuition visible: impact depends on the response system, not just raw scores or expected payoff.</p>
+            <p>You make investment offers. The model financial market responds. The result shows what actually got funded, how lake health and local prosperity changed, and how close the strategy came to the frontier.</p>
+             <p>The demo is stylized. It is not a forecast or a calibrated policy model. It is a way to make the research intuition visible: impact and financial returns depend on the system, not just raw company impact or profitability in isolation.</p>
           </article>
           <article class="about-card collaboration-card">
             <span class="eyebrow">Collaboration</span>
-            <h3>Connected research and practitioner work</h3>
+            <h3>Connected academic and applied work</h3>
             <p>This work is connected to research and guide materials developed with CSP, MIT Sloan Sustainability Initiative, Stanford PACS, the University of St.Gallen, and Impact Frontiers.</p>
             <div class="partner-logo-row" aria-label="Collaborating organizations">
               <a class="partner-logo partner-logo-wide" href="https://www.cspglobal.org/" target="_blank" rel="noopener noreferrer" aria-label="Visit CSP">

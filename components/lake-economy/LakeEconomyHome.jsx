@@ -195,7 +195,7 @@ export default function LakeEconomyHome() {
           <div className="panel-topline">
             <div>
               <span className="eyebrow">Interactive demo</span>
-              <h1>Make investments bids. Watch how the system reacts.</h1>
+              <h1>Make investment offers. See how the system reacts.</h1>
             </div>
             <button id="minimizePanel" type="button" className="icon-button" aria-label="Minimize controls">
               -
@@ -335,9 +335,9 @@ export default function LakeEconomyHome() {
             </details>
           </section>
 
-          <footer className="status-line" id="statusLine">
+          {/* <footer className="status-line" id="statusLine">
             Open the play panel when you want to test the lake economy. Research panels remain available at all times.
-          </footer>
+          </footer> */}
         </aside>
 
         <section id="contentPanel" className="content-panel hidden" aria-label="Research content panel">
@@ -405,10 +405,22 @@ export default function LakeEconomyHome() {
             {!BOOKING_URL ? <span className="contact-placeholder">Booking link coming soon.</span> : null}
             <div className="contact-email-row">
               <span className="contact-email-label">Email</span>
-              <span className="contact-email-address">{CONTACT_EMAIL}</span>
-              <button id="copyContactEmail" type="button" className="secondary-action" onClick={copyContactEmail}>
-                Copy email
-              </button>
+              <span className="contact-email-copy-group">
+                <span className="contact-email-address">{CONTACT_EMAIL}</span>
+                <button
+                  id="copyContactEmail"
+                  type="button"
+                  className="contact-copy-button"
+                  aria-label="Copy email"
+                  title="Copy email"
+                  onClick={copyContactEmail}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="9" y="9" width="10" height="10" rx="2" />
+                    <path d="M5 15V7a2 2 0 0 1 2-2h8" />
+                  </svg>
+                </button>
+              </span>
               <span id="copyEmailStatus" className="copy-status" aria-live="polite">
                 {copyStatus}
               </span>
