@@ -34,6 +34,22 @@ The model should run client-side.
 
 Keep the economic model separate from the visual layer.
 
+Current active implementation map:
+
+- `app/page.tsx` renders `components/lake-economy/LakeEconomyHome.jsx`.
+- `LakeEconomyHome.jsx` mounts the interactive runtime from
+  `components/lake-economy/runtime.js`.
+- The active About, Papers, and Guide panel markup is generated in
+  `runtime.js` by `contentForMode(mode)`.
+- The active homepage styling is in
+  `components/lake-economy/lake-economy.css`.
+
+Agents should not assume a file in `components/` is active just because it has
+a plausible name. Before changing user-visible content, search for imports and
+call sites, then verify the rendered page. If a duplicate implementation is no
+longer active, move it to `archive/` or delete it rather than letting it remain
+beside active components.
+
 Suggested production structure:
 
 ```text

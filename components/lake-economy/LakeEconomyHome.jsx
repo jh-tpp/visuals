@@ -335,9 +335,6 @@ export default function LakeEconomyHome() {
             </details>
           </section>
 
-          {/* <footer className="status-line" id="statusLine">
-            Open the play panel when you want to test the lake economy. Research panels remain available at all times.
-          </footer> */}
         </aside>
 
         <section id="contentPanel" className="content-panel hidden" aria-label="Research content panel">

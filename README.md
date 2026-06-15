@@ -6,6 +6,18 @@ The current prototype is a browser-based visual tool that shows how an investor'
 
 ## Current prototype
 
+The active homepage route is `app/page.tsx`, which renders
+`components/lake-economy/LakeEconomyHome.jsx`. The homepage panels for
+About, Papers, and Guide are currently generated inside
+`components/lake-economy/runtime.js`, with their visual styling in
+`components/lake-economy/lake-economy.css`.
+
+Do not update unused standalone panel components when changing homepage
+content. Before editing a page or component, search for imports/references and
+confirm that the code is on the active render path. If an inactive duplicate is
+kept for reference, move it under `archive/` and label it as inactive rather
+than leaving it in `components/`.
+
 The current visualization includes the following stages:
 
 - Investor

@@ -632,8 +632,6 @@
 .table-key { display: grid; grid-template-columns: 1fr 44px 46px 46px 46px; gap: 5px; margin-top: 5px; color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; }
 .table-key span { text-align: right; }
 .table-key span:first-child { text-align: left; }
-.status-line { margin-top: 10px; color: var(--muted); font-size: 11px; line-height: 1.35; }
-
 .world-label {
   position: absolute;
   transform: translate(-50%, -100%);
@@ -804,6 +802,15 @@ button.research-action.secondary-link:hover {
 }
 a.research-action.secondary-link:hover,
 button.research-action.secondary-link:hover { background: rgba(41, 40, 95, 0.08); color: var(--csp-indigo); }
+button.research-action.disabled-action,
+button.research-action.disabled-action:hover {
+  background: rgba(41, 40, 95, 0.07);
+  color: rgba(41, 40, 95, 0.38);
+  border-color: rgba(41, 40, 95, 0.14);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
 .contact-panel {
   position: fixed;
   inset: 0;

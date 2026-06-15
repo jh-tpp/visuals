@@ -94,7 +94,6 @@ function init(signal) {
     resultTable: $('#resultTable'),
     chartBox: $('#frontierChart'),
     bestReadout: $('#bestReadout'),
-    statusLine: $('#statusLine'),
     topbar: $('.topbar'),
     topButtons: $$('.top-nav [data-panel]'),
     panelButtons: $$('[data-panel]'),
@@ -221,11 +220,6 @@ function toggleCityMode() {
         prosperity: state.lastScore.prosperityGainVsEqual
       }
     : {});
-  elements.statusLine.textContent = state.cityMode === 'skyline'
-    ? 'City skyline enabled. The lake and ground are unchanged; the harbor economy is denser.'
-    : state.cityMode === 'network'
-      ? 'Light network enabled. The physical terrain falls away, leaving entities, flows, and outcomes.'
-      : 'Harbor town enabled. The lake and ground are unchanged; the built environment is quieter.';
   renderAll();
 }
 
@@ -240,7 +234,6 @@ function setGoal(weight) {
   } else {
     state.bestScore = null;
   }
-  elements.statusLine.textContent = 'Goal selected. Allocate exactly 100 offer tokens, then run the economy.';
   renderAll();
 }
 
@@ -252,7 +245,7 @@ function applyPreset(preset) {
   if (preset === 'outcome') shares = presets.highestRawOutcome;
   if (preset === 'soft-outcome') shares = presets.outcomeTiltSoft;
   state.tokens = tokenVectorFromShares(shares);
-  clearStaleRun('Preset loaded. Run the economy to see what actually clears.');
+  clearStaleRun();
 }
 
 function adjustToken(index, value) {
@@ -274,13 +267,12 @@ function adjustToken(index, value) {
     if (over > 0) next[index] = Math.max(0, next[index] - over);
   }
   state.tokens = next;
-  clearStaleRun('Offer sheet changed. Run the economy when the token budget reaches 100.');
+  clearStaleRun();
 }
 
-function clearStaleRun(message) {
+function clearStaleRun() {
   state.lastScore = null;
   scene.updateState({ offers: state.tokens });
-  elements.statusLine.textContent = message;
   renderAll();
 }
 
@@ -309,7 +301,6 @@ function runEconomy() {
     lake: state.lastScore.lakeGainVsEqual,
     prosperity: state.lastScore.prosperityGainVsEqual
   });
-  elements.statusLine.textContent = 'Economy cleared. Compare your offers with total capital change and other-investor response.';
   renderAll();
 }
 
@@ -319,9 +310,6 @@ function startFresh() {
   closeEntityPopup();
   scene.updateState({ offers: state.tokens, lastRun: null });
   scene.updateOutcomeVisuals();
-  elements.statusLine.textContent = state.goalChosen
-    ? 'Same lake economy, fresh offer sheet. Allocate 100 tokens before running.'
-    : 'Same lake economy. Choose a goal first, then allocate offers.';
   renderAll();
 }
 
@@ -339,9 +327,6 @@ function newLake() {
   scene.setLake(params);
   scene.updateState({ offers: state.tokens, lastRun: null });
   scene.updateOutcomeVisuals();
-  elements.statusLine.textContent = state.goalChosen
-    ? 'New lake economy generated. The goal is unchanged, but the hidden response system is new.'
-    : 'New lake economy generated. Choose a goal to begin.';
   renderAll();
 }
 
@@ -663,7 +648,7 @@ function contentForMode(mode) {
               <!-- REVIEW COPY: replace with final abstract language if desired. -->
               <p>How portfolio tilts move capital, returns, and external outcomes through an equilibrium response system. The Lake Economy game is a stylized front-end version of this idea.</p>
               <p class="status-note">Working paper. SSRN link coming soon.</p>
-              <a class="research-action secondary-link" href="/papers/impact-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Preview paper</a>
+              <button class="research-action secondary-link disabled-action" type="button" disabled aria-disabled="true">View on SSRN</button>
             </div>
           </article>
           <article class="paper-hero-card">
@@ -674,7 +659,7 @@ function contentForMode(mode) {
               <!-- REVIEW COPY: replace with final abstract language if desired. -->
               <p>How larger coalitions, policy, stewardship, and other instruments can change the response system itself, not just move along a fixed frontier.</p>
               <p class="status-note">In development. SSRN link coming soon.</p>
-              <a class="research-action secondary-link" href="/papers/shifting-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Preview paper</a>
+              <button class="research-action secondary-link disabled-action" type="button" disabled aria-disabled="true">View on SSRN</button>
             </div>
           </article>
         </div>`

@@ -10,9 +10,9 @@ const PAPERS = [
       "How portfolio tilts move capital, returns, and external outcomes through an equilibrium response system. The Lake Economy game is a stylized front-end version of this idea.",
     imageSrc: "/papers/paper1.png",
     imageAlt: "The Impact Frontier paper preview",
-    primaryLabel: "Preview paper",
+    primaryLabel: "View on SSRN",
     primaryHref: "/papers/impact-frontier-preview.pdf",
-    downloadDisabled: false,
+    primaryDisabled: true,
   },
   {
     id: "paper-2",
@@ -23,29 +23,32 @@ const PAPERS = [
       "How larger coalitions, policy, stewardship, and other instruments can change the response system itself, not just move along a fixed frontier.",
     imageSrc: "/papers/paper2.png",
     imageAlt: "Shifting the Frontier paper preview",
-    primaryLabel: "Preview paper",
+    primaryLabel: "View on SSRN",
     primaryHref: "/papers/shifting-frontier-preview.pdf",
-    downloadDisabled: false,
+    primaryDisabled: true,
   },
 ];
 
-function ActionLink({ href, 
-  disabled = false, children, variant = "primary" 
+function ActionLink({
+  href,
+  disabled = false,
+  children,
+  variant = "primary",
 }) {
+  const base =
+    "inline-flex items-center justify-center rounded-2xl border px-4 py-2 text-sm font-medium transition";
+
   if (disabled || !href) {
-    const base =
-      "inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium transition border";
-  
     const styles =
       variant === "secondary"
-        ? "bg-white text-slate-900 border-slate-300"
-        : "bg-slate-900 text-white border-slate-900";
-  
+        ? "border-slate-200 bg-slate-100 text-slate-400"
+        : "border-slate-300 bg-slate-200 text-slate-500";
+
     return (
       <button
         type="button"
         disabled
-        className={`${base} ${styles} cursor-not-allowed opacity-50`}
+        className={`${base} ${styles} cursor-not-allowed`}
         aria-disabled="true"
       >
         {children}
@@ -58,7 +61,7 @@ function ActionLink({ href,
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center justify-center rounded-2xl border border-slate-900 bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+      className={`${base} border-slate-900 bg-slate-900 text-white hover:bg-slate-800`}
     >
       {children}
     </a>
@@ -74,6 +77,7 @@ function PaperCard({
   imageAlt,
   primaryLabel,
   primaryHref,
+  primaryDisabled,
 }) {
   return (
     <section className="grid gap-6">
@@ -99,7 +103,9 @@ function PaperCard({
           <p className="max-w-xl text-sm leading-6 text-slate-600">
             {description}
           </p>
-          <ActionLink href={primaryHref}>{primaryLabel}</ActionLink>
+          <ActionLink href={primaryHref} disabled={primaryDisabled}>
+            {primaryLabel}
+          </ActionLink>
         </div>
       </div>
     </section>
