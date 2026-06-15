@@ -6,9 +6,10 @@ const PAPERS = [
     label: "Paper 1",
     title: "The Impact Frontier",
     status: "Working paper",
-    // description:
-    //   "Preview the opening page here. Use the main link for the full paper when ready.",
-    previewUrl: "/papers/impact-frontier-preview.pdf",
+    description:
+      "How portfolio tilts move capital, returns, and external outcomes through an equilibrium response system. The Lake Economy game is a stylized front-end version of this idea.",
+    imageSrc: "/papers/paper1.png",
+    imageAlt: "The Impact Frontier paper preview",
     primaryLabel: "Preview paper",
     primaryHref: "/papers/impact-frontier-preview.pdf",
     downloadDisabled: false,
@@ -18,9 +19,10 @@ const PAPERS = [
     label: "Paper 2",
     title: "Shifting the Frontier",
     status: "In development",
-    // description:
-    //   "This currently shows the title and abstract page only.",
-    previewUrl: "/papers/shifting-frontier-preview.pdf",
+    description:
+      "How larger coalitions, policy, stewardship, and other instruments can change the response system itself, not just move along a fixed frontier.",
+    imageSrc: "/papers/paper2.png",
+    imageAlt: "Shifting the Frontier paper preview",
     primaryLabel: "Preview paper",
     primaryHref: "/papers/shifting-frontier-preview.pdf",
     downloadDisabled: false,
@@ -63,62 +65,41 @@ function ActionLink({ href,
   );
 }
 
-function PdfPreview({ title, previewUrl }) {
-  const pdfSrc = `${previewUrl}#navpanes=0&scrollbar=0&view=FitH`;
-
-  return (
-    <div className="w-[600px] max-w-full overflow-hidden rounded-[28px] border border-slate-200 bg-slate-100 shadow-sm">
-      <div className="aspect-[3/4] w-full bg-white">
-        <object data={pdfSrc} type="application/pdf" className="h-full w-full">
-          <div className="flex h-full items-center justify-center p-6 text-center text-sm text-slate-600">
-            <div className="space-y-3">
-              <p>PDF preview not available in this browser.</p>
-              <a
-                href={previewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2 font-medium text-slate-900 hover:bg-slate-50"
-              >
-                Open {title} preview PDF
-              </a>
-            </div>
-          </div>
-        </object>
-      </div>
-    </div>
-  );
-}
-
 function PaperCard({
   label,
   title,
   status,
-  previewUrl,
+  description,
+  imageSrc,
+  imageAlt,
   primaryLabel,
   primaryHref,
 }) {
   return (
-    <section className="grid gap-6 justify-start">
-      <div className="w-[648px] max-w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center gap-3">
+    <section className="grid gap-6">
+      <div className="grid w-full max-w-full grid-cols-[minmax(160px,240px)_1fr] items-center gap-[clamp(24px,5vw,64px)] rounded-2xl border border-slate-200 bg-white p-[clamp(24px,5vw,56px)] shadow-sm max-md:grid-cols-1">
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 shadow-[0_18px_40px_rgba(24,24,39,0.12)]">
+          <img
+            src={imageSrc}
+            alt={imageAlt}
+            className="aspect-[3/4] w-full object-cover"
+          />
+        </div>
+
+        <div className="space-y-4">
           <div className="inline-flex w-fit items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
             {label}
           </div>
-
-          <div className="shrink-0">
-            <ActionLink href={primaryHref}>{primaryLabel}</ActionLink>
+          <div className="space-y-2">
+            <h3 className="text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl">
+              {title}
+            </h3>
+            <p className="text-sm font-medium text-slate-500">{status}</p>
           </div>
-        </div>
-
-        <div className="mt-4 space-y-2">
-          <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
-            {title}
-          </h3>
-          <p className="text-sm font-medium text-slate-500">{status}</p>
-        </div>
-
-        <div className="mt-8">
-          <PdfPreview title={title} previewUrl={previewUrl} />
+          <p className="max-w-xl text-sm leading-6 text-slate-600">
+            {description}
+          </p>
+          <ActionLink href={primaryHref}>{primaryLabel}</ActionLink>
         </div>
       </div>
     </section>
@@ -137,9 +118,9 @@ export default function PapersPanel() {
         </p>
       </div>
 
-      <div className="flex flex-wrap items-start gap-8">
+      <div className="grid gap-8">
         {PAPERS.map((paper) => (
-          <div key={paper.id} className="flex-none">
+          <div key={paper.id}>
             <PaperCard {...paper} />
           </div>
         ))}

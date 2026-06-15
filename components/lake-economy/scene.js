@@ -1229,8 +1229,8 @@ export class LakeScene {
     div.className = 'world-label';
     div.innerHTML = `
       <span class="label-top"><span class="name"></span><span class="offer-bubble">0</span></span>
-      <span class="offer-fill"><i></i></span>
-      <span class="delta">Δ capital —</span>`;
+      <span class="offer-fill"><i></i></span>`;
+      // <span class="delta">Δ capital —</span>`;
     div.querySelector('.name').textContent = name;
     div.addEventListener('click', e => {
       e.stopPropagation();
@@ -1268,8 +1268,6 @@ export class LakeScene {
       const offer = offers[item.index] || 0;
       item.div.style.setProperty('--offer-fill', `${clamp(offer, 0, 100)}%`);
       item.div.querySelector('.offer-bubble').textContent = String(offer);
-      const deltaText = lastRun ? `Δ capital ${signed(lastRun.deltaK[item.index], 1)}` : 'Δ capital —';
-      item.div.querySelector('.delta').textContent = deltaText;
     });
     offers.forEach((offer, i) => {
       const bar = this.offerBars[i];

@@ -125,6 +125,7 @@ function init(signal) {
 }
 
 function on(target, type, handler, signal) {
+  if (!target) return;
   target.addEventListener(type, handler, { signal });
 }
 
@@ -366,10 +367,10 @@ function renderCityMode() {
 }
 
 function renderScenario() {
-  elements.scenarioName.textContent = params.template.name;
-  elements.scenarioText.textContent = params.template.story;
-  elements.scenarioNote.textContent = params.template.note;
-  elements.lakeSeed.textContent = params.seed;
+  if (elements.scenarioName) elements.scenarioName.textContent = `Scenario: ${params.template.name}`;
+  if (elements.scenarioText) elements.scenarioText.textContent = params.template.story;
+  if (elements.scenarioNote) elements.scenarioNote.textContent = params.template.note;
+  if (elements.lakeSeed) elements.lakeSeed.textContent = params.seed;
 }
 
 function renderGoal() {
@@ -397,9 +398,7 @@ function renderGoal() {
 
 function renderOfferRows() {
   const cards = entityCardData(params, state.goalChosen ? state.goalWeight : 0.5);
-  const last = state.lastScore;
   elements.offersList.innerHTML = cards.map((e, i) => {
-    const actual = last ? signed(last.current.deltaK[i], 1) : '—';
     const offer = state.tokens[i] || 0;
     return `
       <article class="offer-row" data-index="${i}">
@@ -411,7 +410,6 @@ function renderOfferRows() {
           <input type="range" min="0" max="100" value="${offer}" step="1" data-slider="${i}" aria-label="Offer tokens for ${e.name}" ${state.goalChosen ? '' : 'disabled'}>
           <output>${offer}</output>
         </div>
-        <div class="actual-mini" title="Total capital change after market clearing"><span>Δ capital</span><strong>${actual}</strong></div>
       </article>`;
   }).join('');
 
@@ -610,34 +608,32 @@ function contentForMode(mode) {
         <section class="about-layout">
           <article class="about-lede">
             <span class="eyebrow">What this is</span>
-            <h3>Research you can play with.</h3>
+            <h3>Research you can interact with.</h3>
             <!-- REVIEW COPY: Jonathan may want to rephrase this About-panel language. -->
-            <p>The Impact Frontier studies how capital-market choices affect real outcomes through the way firms, prices, and other investors respond. The Lake Economy turns that idea into a small playable model.</p>
+            <p>The Impact Frontier studies how investment choices affect real outcomes through the way firms, prices, and other investors respond. The Lake Economy turns that idea into a small playable model.</p>
             <p>You set offers. The economy clears. The result shows what actually got funded, how lake health and local prosperity changed, and how close the strategy came to the frontier.</p>
-          </article>
-          <article class="about-card">
-            <span class="eyebrow">Project</span>
-            <h3>The Lake Economy</h3>
-            <p>The demo is stylized. It is not a forecast or a calibrated policy model. It is a way to make the research intuition visible: impact depends on the response system, not just raw scores or expected payoff.</p>
+             <p>The demo is stylized. It is not a forecast or a calibrated policy model. It is a way to make the research intuition visible: impact depends on the response system, not just raw scores or expected payoff.</p>
           </article>
           <article class="about-card collaboration-card">
             <span class="eyebrow">Collaboration</span>
             <h3>Connected research and practitioner work</h3>
-            <p>This work is connected to research and guide materials developed with CSP, MIT Sloan Sustainability Initiative, the University of St.Gallen, and Impact Frontiers.</p>
-            <div class="text-logo-row" aria-label="Collaborating organizations">
-              <span>CSP</span>
-              <span>MIT Sloan</span>
-              <span>University of St.Gallen</span>
-              <span>Impact Frontiers</span>
-            </div>
-          </article>
-          <article class="about-card contact-card">
-            <span class="eyebrow">Contact</span>
-            <h3>Discuss the work</h3>
-            <p>For research, teaching, investment strategy, or collaboration conversations, contact Jonathan Harris.</p>
-            <!-- REVIEW COPY: add a booking URL here if you want a second contact action. -->
-            <div class="contact-actions">
-              <a class="research-action" href="mailto:jonathan@total-portfolio.org">Email Jonathan</a>
+            <p>This work is connected to research and guide materials developed with CSP, MIT Sloan Sustainability Initiative, Stanford PACS, the University of St.Gallen, and Impact Frontiers.</p>
+            <div class="partner-logo-row" aria-label="Collaborating organizations">
+              <a class="partner-logo partner-logo-wide" href="https://www.cspglobal.org/" target="_blank" rel="noopener noreferrer" aria-label="Visit CSP">
+                <img src="/logos/CSP Logo-01.png" alt="CSP">
+              </a>
+              <a class="partner-logo partner-logo-wide" href="https://mitsloan.mit.edu/sustainability-initiative" target="_blank" rel="noopener noreferrer" aria-label="Visit MIT Sloan Sustainability Initiative">
+                <img src="/logos/MITSloanLogo_MASTER-Horizontal_Print.png" alt="MIT Sloan Sustainability Initiative">
+              </a>
+              <a class="partner-logo partner-logo-wide" href="https://pacscenter.stanford.edu/" target="_blank" rel="noopener noreferrer" aria-label="Visit Stanford PACS">
+                <img src="/logos/StanfordPACS_4C_HR_RGB 1.png" alt="Stanford PACS">
+              </a>
+              <a class="partner-logo partner-logo-wide" href="https://www.unisg.ch/en/" target="_blank" rel="noopener noreferrer" aria-label="Visit the University of St.Gallen">
+                <img src="/logos/HSG_Logo_EN_RGB.png" alt="University of St.Gallen">
+              </a>
+              <a class="partner-logo partner-logo-impact-frontiers" href="https://impactfrontiers.org/" target="_blank" rel="noopener noreferrer" aria-label="Visit Impact Frontiers">
+                <img src="/logos/impactfrontiers.jpg" alt="Impact Frontiers">
+              </a>
             </div>
           </article>
         </section>`
@@ -648,32 +644,28 @@ function contentForMode(mode) {
     return {
       title: 'Papers',
       body: `
-        <p class="panel-intro">Working papers behind the model.</p>
-        <div class="content-grid">
-          <article class="research-card">
-            <span class="eyebrow">Paper 1</span>
-            <h3>The Impact Frontier</h3>
-            <!-- REVIEW COPY: replace with final abstract language if desired. -->
-            <p>How portfolio tilts move capital, returns, and external outcomes through an equilibrium response system. The Lake Economy game is a stylized front-end version of this idea.</p>
-            <p class="status-note">Working paper. SSRN link coming soon.</p>
-            <a class="research-action secondary-link" href="/papers/impact-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Preview paper</a>
-            <div class="paper-preview">
-              <object data="/papers/impact-frontier-preview.pdf#navpanes=0&scrollbar=0&view=FitH" type="application/pdf">
-                <a href="/papers/impact-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Open preview PDF</a>
-              </object>
+        <p class="panel-intro">The technical results that inspired the model.</p>
+        <div class="paper-stack">
+          <article class="paper-hero-card">
+            <img class="paper-cover-small" src="/papers/paper1.png" alt="The Impact Frontier paper preview">
+            <div class="guide-copy">
+              <span class="eyebrow">Paper 1</span>
+              <h3>The Impact Frontier</h3>
+              <!-- REVIEW COPY: replace with final abstract language if desired. -->
+              <p>How portfolio tilts move capital, returns, and external outcomes through an equilibrium response system. The Lake Economy game is a stylized front-end version of this idea.</p>
+              <p class="status-note">Working paper. SSRN link coming soon.</p>
+              <a class="research-action secondary-link" href="/papers/impact-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Preview paper</a>
             </div>
           </article>
-          <article class="research-card">
-            <span class="eyebrow">Paper 2</span>
-            <h3>Shifting the Frontier</h3>
-            <!-- REVIEW COPY: replace with final abstract language if desired. -->
-            <p>How larger coalitions, policy, stewardship, and other instruments can change the response system itself, not just move along a fixed frontier.</p>
-            <p class="status-note">In development. SSRN link coming soon.</p>
-            <a class="research-action secondary-link" href="/papers/shifting-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Preview paper</a>
-            <div class="paper-preview">
-              <object data="/papers/shifting-frontier-preview.pdf#navpanes=0&scrollbar=0&view=FitH" type="application/pdf">
-                <a href="/papers/shifting-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Open preview PDF</a>
-              </object>
+          <article class="paper-hero-card">
+            <img class="paper-cover-small" src="/papers/paper2.png" alt="Shifting the Frontier paper preview">
+            <div class="guide-copy">
+              <span class="eyebrow">Paper 2</span>
+              <h3>Shifting the Frontier</h3>
+              <!-- REVIEW COPY: replace with final abstract language if desired. -->
+              <p>How larger coalitions, policy, stewardship, and other instruments can change the response system itself, not just move along a fixed frontier.</p>
+              <p class="status-note">In development. SSRN link coming soon.</p>
+              <a class="research-action secondary-link" href="/papers/shifting-frontier-preview.pdf" target="_blank" rel="noopener noreferrer">Preview paper</a>
             </div>
           </article>
         </div>`
@@ -683,6 +675,7 @@ function contentForMode(mode) {
     return {
       title: 'Guide',
       body: `
+        <p class="panel-intro">Clear goals: the essential first step.</p>
         <section class="guide-hero-card">
           <img class="guide-cover-small" src="/guides/ig-goals-cover.jpg" alt="Investor's Guide to Goals-based Investing and Philanthropy cover">
           <div class="guide-copy">

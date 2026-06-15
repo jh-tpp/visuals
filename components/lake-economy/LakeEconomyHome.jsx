@@ -1,10 +1,29 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { BOOKING_URL, CONTACT_EMAIL, SUPPORT_URL } from "./contact-config.js";
+
+function copyTextWithFallback(text) {
+  const field = document.createElement("textarea");
+  field.value = text;
+  field.setAttribute("readonly", "");
+  field.style.position = "fixed";
+  field.style.left = "-9999px";
+  document.body.appendChild(field);
+  field.select();
+  document.execCommand("copy");
+  field.remove();
+}
 
 export default function LakeEconomyHome() {
   const rootRef = useRef(null);
+  const closeContactRef = useRef(null);
+  const contactModalRef = useRef(null);
+  const lastFocusedRef = useRef(null);
+  const copyTimerRef = useRef(null);
+  const [isContactOpen, setContactOpen] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("");
 
   useEffect(() => {
     let cleanup = null;
@@ -23,6 +42,68 @@ export default function LakeEconomyHome() {
       cleanup?.();
     };
   }, []);
+
+  useEffect(() => {
+    if (!isContactOpen) return;
+
+    lastFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    closeContactRef.current?.focus();
+
+    function onKeyDown(event) {
+      if (event.key === "Escape") {
+        setContactOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(
+        contactModalRef.current?.querySelectorAll(
+          'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        ) || []
+      ).filter((element) => element instanceof HTMLElement && element.offsetParent !== null);
+
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isContactOpen]);
+
+  useEffect(() => {
+    if (isContactOpen) return;
+    setCopyStatus("");
+    if (copyTimerRef.current) window.clearTimeout(copyTimerRef.current);
+    lastFocusedRef.current?.focus?.();
+    lastFocusedRef.current = null;
+  }, [isContactOpen]);
+
+  async function copyContactEmail() {
+    try {
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(CONTACT_EMAIL);
+        } catch {
+          copyTextWithFallback(CONTACT_EMAIL);
+        }
+      } else {
+        copyTextWithFallback(CONTACT_EMAIL);
+      }
+      setCopyStatus("Copied");
+      if (copyTimerRef.current) window.clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = window.setTimeout(() => setCopyStatus(""), 2200);
+    } catch {
+      setCopyStatus("Copy failed");
+    }
+  }
 
   return (
     <main ref={rootRef} className="lake-economy-root">
@@ -49,9 +130,17 @@ export default function LakeEconomyHome() {
             </button>
           </nav>
 
-          <a className="top-cta" href="mailto:jonathan@total-portfolio.org">
-            Discuss the work
-          </a>
+          <button
+            className="top-cta"
+            type="button"
+            data-open-contact
+            aria-haspopup="dialog"
+            aria-controls="contactPanel"
+            aria-expanded={isContactOpen}
+            onClick={() => setContactOpen(true)}
+          >
+            Contact
+          </button>
         </header>
 
         <main className="world-shell" aria-label="Interactive lake economy">
@@ -73,11 +162,11 @@ export default function LakeEconomyHome() {
         </main>
 
         <section id="welcomePanel" className="welcome-panel" aria-label="Welcome">
-          <span className="eyebrow">Total Portfolio Project research</span>
+          <span className="eyebrow">Total Portfolio Project presents</span>
           {/* REVIEW COPY: Jonathan may want to rephrase this headline/body in his own voice. */}
-          <h1>A playable model of capital, markets, and real outcomes.</h1>
+          <h1>An interactive model of investing with real outcomes.</h1>
           <p>
-            Set offers in a stylized lake economy. The economy clears. Compare the result with the Impact Frontier.
+            Make investment bids in a stylized lake economy. See how close you can get to the Impact Frontier.
           </p>
           <div className="welcome-actions">
             <button type="button" className="primary-action" data-open-play>
@@ -106,7 +195,7 @@ export default function LakeEconomyHome() {
           <div className="panel-topline">
             <div>
               <span className="eyebrow">Interactive demo</span>
-              <h1>Set offers. Watch the economy clear.</h1>
+              <h1>Make investments bids. Watch how the system reacts.</h1>
             </div>
             <button id="minimizePanel" type="button" className="icon-button" aria-label="Minimize controls">
               -
@@ -115,8 +204,10 @@ export default function LakeEconomyHome() {
 
           <section className="scenario-card" aria-label="Current scenario">
             <div className="scenario-heading">
-              <strong id="scenarioName">Scenario</strong>
-              <span id="lakeSeed">seed</span>
+              <strong id="scenarioName">Scenario:</strong>
+              <span id="lakeSeed" className="sr-only" aria-hidden="true">
+                seed
+              </span>
             </div>
             <p id="scenarioText" />
             <small id="scenarioNote" />
@@ -126,8 +217,8 @@ export default function LakeEconomyHome() {
             <div className="section-title">
               <span className="step-dot">1</span>
               <div>
-                <strong>What are you trying to improve?</strong>
-                <small id="goalHint">Choose a goal to unlock the offer sheet.</small>
+                <strong>What is your impact goal?</strong>
+                <small id="goalHint">Choose which outcomes you want to prioritize.</small>
               </div>
             </div>
             <div className="goal-pills" role="group" aria-label="Goal presets">
@@ -212,9 +303,9 @@ export default function LakeEconomyHome() {
             <button id="newLakeBtn" type="button">
               New lake
             </button>
-            <button id="resetViewBtn" type="button">
+            {/* <button id="resetViewBtn" type="button">
               Reset view
-            </button>
+            </button> */}
           </section>
 
           <section
@@ -223,11 +314,11 @@ export default function LakeEconomyHome() {
             aria-label="Results and frontier"
             data-step="3"
           >
-            <div className="lock-scrim">Run the economy to reveal the cleared result.</div>
+            <div className="lock-scrim">Run the economy to reveal the result.</div>
             <div className="section-title compact-title">
               <span className="step-dot">3</span>
               <div>
-                <strong>Cleared result</strong>
+                <strong>Market result</strong>
                 <small id="bestReadout">No run yet</small>
               </div>
             </div>
@@ -259,6 +350,81 @@ export default function LakeEconomyHome() {
               </button>
             </div>
             <div id="contentBody" className="content-body" />
+          </div>
+        </section>
+
+        <section
+          id="contactPanel"
+          className={`contact-panel${isContactOpen ? "" : " hidden"}`}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="contactPanelTitle"
+          aria-describedby="contactPanelBody"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) setContactOpen(false);
+          }}
+        >
+          <div className="contact-modal" ref={contactModalRef}>
+            <div className="contact-modal-header">
+              <span className="eyebrow">Contact</span>
+              <h2 id="contactPanelTitle">Discuss this work</h2>
+              <button
+                id="closeContact"
+                type="button"
+                className="icon-button"
+                aria-label="Close contact panel"
+                ref={closeContactRef}
+                onClick={() => setContactOpen(false)}
+              >
+                x
+              </button>
+            </div>
+            <p id="contactPanelBody" className="contact-intro">
+              The Impact Frontier is independent research on how capital-market choices affect real outcomes. For
+              collaboration, funding, talks, research partnerships, or technical discussion, please get in touch.
+            </p>
+            <div className="contact-primary-actions">
+              {BOOKING_URL ? (
+                <a className="research-action" href={BOOKING_URL} target="_blank" rel="noopener noreferrer">
+                  Book a conversation
+                </a>
+              ) : (
+                <button
+                  className="research-action"
+                  type="button"
+                  disabled
+                  title="Booking link coming soon"
+                >
+                  Book a conversation
+                </button>
+              )}
+              <a className="research-action secondary-link" href={`mailto:${CONTACT_EMAIL}`}>
+                Email Jon
+              </a>
+            </div>
+            {!BOOKING_URL ? <span className="contact-placeholder">Booking link coming soon.</span> : null}
+            <div className="contact-email-row">
+              <span className="contact-email-label">Email</span>
+              <span className="contact-email-address">{CONTACT_EMAIL}</span>
+              <button id="copyContactEmail" type="button" className="secondary-action" onClick={copyContactEmail}>
+                Copy email
+              </button>
+              <span id="copyEmailStatus" className="copy-status" aria-live="polite">
+                {copyStatus}
+              </span>
+            </div>
+            {SUPPORT_URL ? (
+              <section className="contact-support-section" aria-labelledby="supportPanelTitle">
+                <h3 id="supportPanelTitle">Support the next stage</h3>
+                <p>
+                  This site is free to read and play with. If it helped you understand the research, you can support
+                  the next stage of the project.
+                </p>
+                <a className="research-action secondary-link" href={SUPPORT_URL} target="_blank" rel="noopener noreferrer">
+                  Support this work
+                </a>
+              </section>
+            ) : null}
           </div>
         </section>
       </div>
