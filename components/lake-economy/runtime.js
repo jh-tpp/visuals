@@ -441,7 +441,7 @@ function renderResults() {
     <div class="score-card ${recovery >= 85 ? 'strong' : recovery >= 55 ? 'ok' : 'learning'}">
       <span>Frontier score</span>
       <strong>${recovery}%</strong>
-      <small>${recovery >= 85 ? 'Coherent strategy for this goal.' : 'There is still room to learn the response system.'}</small>
+      <small>${recovery >= 85 ? 'Coherent strategy for this goal.' : "You're still leaving value on the table."}</small>
     </div>
     <div class="meter-row">
       <div class="mini-meter">
@@ -667,19 +667,30 @@ function contentForMode(mode) {
   }
   if (mode === 'guides') {
     return {
-      title: 'Guide',
+      title: 'Guides',
       body: `
         <p class="panel-intro">Clear goals: the essential first step.</p>
-        <section class="guide-hero-card">
-          <img class="guide-cover-small" src="/guides/ig-goals-cover.jpg" alt="Investor's Guide to Goals-based Investing and Philanthropy cover">
-          <div class="guide-copy">
-            <span class="eyebrow">Investor's guide</span>
-            <h3>Goals-based investing and philanthropy</h3>
-            <!-- REVIEW COPY: Jonathan may want to adjust this practitioner-facing description. -->
-            <p>A practical starting point for turning clear goals into coherent strategies across your portfolio.</p>
-            <a class="research-action" href="https://www.cspglobal.org/research/publications/investors-guide-goals-based-investing-and-philanthropy" target="_blank" rel="noopener noreferrer">Open guide on CSP</a>
-          </div>
-        </section>`
+        <div class="guide-stack">
+          <section class="guide-hero-card">
+            <img class="guide-cover-small" src="/guides/ig-goals-cover.jpg" alt="Investor's Guide to Goals-based Investing and Philanthropy cover">
+            <div class="guide-copy">
+              <span class="eyebrow">Current featured guide</span>
+              <h3>Goals-based investing and philanthropy</h3>
+              <!-- REVIEW COPY: Jonathan may want to adjust this practitioner-facing description. -->
+              <p>A practical starting point for turning clear goals into coherent strategies across your portfolio.</p>
+              <a class="research-action" href="https://www.cspglobal.org/research/publications/investors-guide-goals-based-investing-and-philanthropy" target="_blank" rel="noopener noreferrer">Open guide on CSP</a>
+            </div>
+          </section>
+          <section class="guide-hero-card legacy-guide-card">
+            <img class="guide-cover-small" src="/guides/three_cases_TPP.png" alt="Impact Returns: Three Case Studies report cover">
+            <div class="guide-copy">
+              <span class="eyebrow">Legacy report by Total Portfolio Project</span>
+              <h3>Impact Returns: Three Case Studies</h3>
+              <p>Three high-provenance cases and one next-generation approach to integrating impact and financial analysis.</p>
+              <p class="status-note">Early Total Portfolio Project report, formerly featured and included here for legacy context.</p>
+            </div>
+          </section>
+        </div>`
     };
   }
 

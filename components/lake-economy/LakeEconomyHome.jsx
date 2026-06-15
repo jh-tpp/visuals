@@ -126,7 +126,7 @@ export default function LakeEconomyHome() {
               Papers
             </button>
             <button type="button" data-panel="guides">
-              Guide
+              Guides
             </button>
           </nav>
 
@@ -176,7 +176,7 @@ export default function LakeEconomyHome() {
               Read the papers
             </button>
             <button type="button" className="secondary-action" data-panel="guides">
-              Open the guide
+              Open the guides
             </button>
           </div>
         </section>
