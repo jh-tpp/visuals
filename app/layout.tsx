@@ -22,6 +22,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "The Impact Frontier",
   description: "Interactive research on the impact of capital market systems",
+  icons: {
+    icon: "/TPP_favicon.png",
+  },
 };
 
 export default function RootLayout({
