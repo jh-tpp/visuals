@@ -240,7 +240,7 @@
   letter-spacing: 0.13em;
   font-weight: 850;
 }
-.top-nav { display: flex; gap: 6px; align-items: center; margin-left: 4px; }
+.top-nav { display: flex; gap: 8px; align-items: center; margin-left: 8px; }
 .top-nav button, .preset-btn, .goal-pill, .action-strip button, .icon-button, .panel-toggle, .popup-close, .secondary-action, #cityModeBtn {
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -251,6 +251,12 @@
   font-size: 12px;
   font-weight: 780;
   transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+.top-nav button {
+  min-height: 40px;
+  padding: 9px 15px;
+  font-size: 13px;
+  font-weight: 820;
 }
 .goal-pill, .panel-toggle, .preset-btn, .action-strip button, #cityModeBtn { border-radius: 999px; }
 .top-nav button:hover, .preset-btn:hover, .goal-pill:hover, .action-strip button:hover, .icon-button:hover, .panel-toggle:hover, .popup-close:hover, .secondary-action:hover, #cityModeBtn:hover {
