@@ -53,7 +53,7 @@ For example:
 - A fish farm may have high local prosperity intensity but weak scale unless feed and markets improve.
 - A feed mill may look less directly impactful but can unlock fish farm growth.
 - Cold chain infrastructure may not look glamorous but can determine whether farm output reaches markets.
-- A high-payoff lakefront industry may create jobs while damaging lake health.
+- A high-return lakefront industry may create jobs while damaging lake health.
 
 This creates a richer game than simply ranking firms by raw scores.
 
@@ -135,7 +135,7 @@ These links can be represented through off-diagonal terms in the hidden response
 
 The game should be charming but not simplistic.
 
-Avoid a cartoon morality play. The lakefront industry should not be an evil villain. It can create jobs and payoff while damaging lake health. The feed mill should not automatically be good in every scenario. Different generated lakes should make different choices attractive.
+Avoid a cartoon morality play. The lakefront industry should not be an evil villain. It can create jobs and return while damaging lake health. The feed mill should not automatically be good in every scenario. Different generated lakes should make different choices attractive.
 
 ## What not to overclaim
 

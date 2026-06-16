@@ -38,7 +38,7 @@ const TEMPLATES = [
   {
     key: 'dirty-growth-trap',
     name: 'Dirty growth trap',
-    story: 'A lakefront industry offers jobs and payoff, but its growth can crowd out lake health.',
+    story: 'A lakefront industry offers jobs and return, but its growth can crowd out lake health.',
     note: 'The trade-off is real: not villainy, but costly spillovers.'
   }
 ];
@@ -400,12 +400,12 @@ export function computeLakeMetrics(eq, params, lakeOutcomeWeight = params.lakeOu
   const lake = dot(params.gLake, eq.K);
   const prosperity = dot(params.gProsperity, eq.K);
   const blended = lakeOutcomeWeight * lake + (1 - lakeOutcomeWeight) * prosperity;
-  const playerExpectedPayoff = dot(eq.P, eq.KPlayer);
+  const playerExpectedReturn = dot(eq.P, eq.KPlayer);
   const playerVariance = dot(eq.KPlayer, matVec(params.Sigma, eq.KPlayer));
   const playerRiskPenalty = 0.5 * params.gammaPlayer / params.playerWealth * playerVariance;
-  const playerCE = playerExpectedPayoff - playerRiskPenalty;
+  const playerCE = playerExpectedReturn - playerRiskPenalty;
 
-  return { lake, prosperity, blended, playerExpectedPayoff, playerVariance, playerRiskPenalty, playerCE };
+  return { lake, prosperity, blended, playerExpectedReturn, playerVariance, playerRiskPenalty, playerCE };
 }
 
 export function runLake(bShare, params, lakeOutcomeWeight = params.lakeOutcomeWeight) {
@@ -423,9 +423,9 @@ export function makePresets(params, lakeOutcomeWeight = params.lakeOutcomeWeight
   const blendedG = params.gLake.map((g, i) => lakeOutcomeWeight * g + (1 - lakeOutcomeWeight) * params.gProsperity[i]);
   return {
     equal: Array.from({ length: params.n }, () => 1 / params.n),
-    highestBusinessPayoff: oneHot(params.muBusiness.indexOf(Math.max(...params.muBusiness)), params.n),
+    highestBusinessReturn: oneHot(params.muBusiness.indexOf(Math.max(...params.muBusiness)), params.n),
     highestRawOutcome: oneHot(blendedG.indexOf(Math.max(...blendedG)), params.n),
-    payoffTiltSoft: softmax(params.muBusiness, 25),
+    returnTiltSoft: softmax(params.muBusiness, 25),
     outcomeTiltSoft: softmax(blendedG, 4)
   };
 }
@@ -434,7 +434,7 @@ export function entityCardData(params, lakeOutcomeWeight = params.lakeOutcomeWei
   return params.entities.map((entity, i) => ({
     ...entity,
     currentSizeK0: params.K0[i],
-    expectedBusinessPayoff: params.muBusiness[i],
+    expectedBusinessReturn: params.muBusiness[i],
     riskSigma: params.sigma[i],
     lakeHealthIntensity: params.gLake[i],
     localProsperityIntensity: params.gProsperity[i],

@@ -68,7 +68,7 @@ The R model distinguishes:
 - player capital,
 - other-investor capital,
 - total equilibrium capital,
-- equilibrium price/payoff,
+- equilibrium price/return,
 - lake health,
 - local prosperity,
 - risk-adjusted return / CE,

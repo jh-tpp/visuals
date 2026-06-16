@@ -390,7 +390,7 @@ The offer controls should remain visible after each run so the player can revise
 
 Include helpful presets:
 
-- Highest business payoff,
+- Highest business return,
 - Highest raw outcome intensity,
 - Equal offers.
 
@@ -500,7 +500,7 @@ Popup behavior:
 
 Before a run, show only:
 
-- expected business payoff,
+- expected business return,
 - risk,
 - lake health intensity,
 - local prosperity intensity.
@@ -554,8 +554,8 @@ Include a small preset menu to help users start.
 
 Recommended presets:
 
-1. **Highest business payoff**
-   - Put most or all offer tokens into the entity with the highest expected business payoff.
+1. **Highest business return**
+   - Put most or all offer tokens into the entity with the highest expected business return.
 
 2. **Highest raw outcome intensity**
    - Put most or all offer tokens into the entity with the highest chosen blended raw outcome intensity.

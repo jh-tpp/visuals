@@ -75,11 +75,11 @@ The player shifts supply toward investable entities.
 
 ### Policy
 
-A public actor changes terms, such as subsidies, taxes, rules, or public guarantees. This can alter payoffs, costs, or firm-demand slopes.
+A public actor changes terms, such as subsidies, taxes, rules, or public guarantees. This can alter returns, costs, or firm-demand slopes.
 
 ### Stewardship
 
-An owner or coalition asks a firm to change how it operates. This can change an outcome intensity, business payoff, risk, or scalability.
+An owner or coalition asks a firm to change how it operates. This can change an outcome intensity, business return, risk, or scalability.
 
 ## Future extension examples
 
@@ -124,7 +124,7 @@ Lake protection rule
 Effect:
 
 - lakefront industry becomes less damaging,
-- operating payoff falls slightly,
+- operating return falls slightly,
 - fish farms become more viable.
 
 ## Design principle

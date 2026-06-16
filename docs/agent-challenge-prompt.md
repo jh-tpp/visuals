@@ -157,7 +157,7 @@ Popups should close when the user clicks outside them or clicks close.
 
 Before a run, show only visible characteristics:
 
-- expected business payoff,
+- expected business return,
 - risk,
 - lake health intensity,
 - local prosperity intensity.

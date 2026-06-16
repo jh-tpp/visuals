@@ -35,6 +35,11 @@ const PROSPERITY_VISUAL_SCALE = {
   positiveFull: 3.8
 };
 
+const BOAT_SHORE_CLEARANCE = 6.0;
+const BOAT_PEN_CLEARANCE = 4.8;
+const BOAT_CLEARANCE = 2.8;
+const BOAT_MAX_SPEED = 18;
+
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 function lerp(a, b, t) { return a + (b - a) * t; }
 function smoothstep(t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
@@ -264,12 +269,14 @@ function createPad(parent, w, d, mat, name = 'site pad') {
   parent.add(pad);
   return pad;
 }
-function createPond(parent, x, z, sx, sz) {
+function createPond(parent, x, z, sx, sz, y = 0.18) {
   const pond = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.16, 36), makeMat(0x58aeca, { roughness: 0.42, metalness: 0.04, opacity: 0.86, emissive: 0x1d6f85, emissiveIntensity: 0.05 }));
   pond.scale.set(sx, 1, sz);
-  pond.position.set(x, 0.18, z);
+  pond.position.set(x, y, z);
   pond.castShadow = false;
   pond.receiveShadow = true;
+  pond.name = 'fish pen';
+  pond.userData.boatAvoidanceRadius = Math.max(sx, sz) + BOAT_PEN_CLEARANCE;
   parent.add(pond);
   return pond;
 }
@@ -395,6 +402,7 @@ export class LakeScene {
     this.responseBars = [];
     this.anchors = [];
     this.movingBoats = [];
+    this.boatAvoidanceZones = [];
     this.smokePuffs = [];
     this.flowBeads = [];
     this.networkPulseMeshes = [];
@@ -540,6 +548,7 @@ export class LakeScene {
     this.responseBars = [];
     this.anchors = [];
     this.movingBoats = [];
+    this.boatAvoidanceZones = [];
     this.smokePuffs = [];
     this.flowBeads = [];
     this.networkPulseMeshes = [];
@@ -811,7 +820,6 @@ export class LakeScene {
 
   createRoadsAndQuays() {
     const road = makeMat(COLORS.road, { roughness: 0.96 });
-    const asphalt = makeMat(COLORS.asphalt, { roughness: 0.86 });
     const concrete = makeMat(COLORS.concrete, { roughness: 0.78 });
     const quayPts = [];
     for (let x = -60; x <= 62; x += 6) quayPts.push({ x, z: coastLine(x) + 1.6 });
@@ -821,10 +829,6 @@ export class LakeScene {
     for (let x = -62; x <= 62; x += 8) shoreRoad.push({ x, z: coastLine(x) + 10.5 });
     createPath(this.world, shoreRoad, 1.6, 0.10, road, 'ground', 0.12);
     createSegment(this.world, { x: -64, z: 35 }, { x: 64, z: 35 }, 2.2, 0.10, road, 'ground', 0.12);
-    createSegment(this.world, { x: -18, z: 8 }, { x: -18, z: 58 }, 1.65, 0.10, asphalt, 'ground', 0.13);
-    createSegment(this.world, { x: 22, z: 5 }, { x: 22, z: 58 }, 1.65, 0.10, asphalt, 'ground', 0.13);
-    createSegment(this.world, { x: -52, z: coastLine(-52) + 6 }, { x: -52, z: 35 }, 1.1, 0.09, road, 'ground', 0.13);
-    createSegment(this.world, { x: 52, z: coastLine(52) + 4 }, { x: 52, z: 35 }, 1.1, 0.09, road, 'ground', 0.13);
     if (this.cityMode === 'skyline') {
       const boulevard = makeMat(0x3e4648, { roughness: 0.82 });
       createSegment(this.world, { x: -66, z: 24 }, { x: 66, z: 24 }, 2.9, 0.11, boulevard, 'ground', 0.14);
@@ -1043,9 +1047,10 @@ export class LakeScene {
     const grassPad = makeMat(0x6d9b59, { roughness: 0.98 });
     if (index === 0) {
       createPad(group, 13.0, 10.5, grassPad);
-      createPond(group, -3.2, -1.7, 1.7, 1.15);
-      createPond(group, 0.3, -1.8, 1.7, 1.12);
-      createPond(group, 3.5, -1.3, 1.35, 0.98);
+      const lakeY = 0.18 - group.position.y;
+      createPond(group, -3.4, -18.2, 1.7, 1.15, lakeY);
+      createPond(group, 0.2, -18.5, 1.7, 1.12, lakeY);
+      createPond(group, 3.7, -17.8, 1.35, 0.98, lakeY);
       const office = createSimpleHouse(3.0, 2.4, 2.1, 0xf0e7d2, 0xb56b3d, { windows: true, roofHeight: 0.75 });
       office.position.set(-3.8, 0.12, 2.7);
       group.add(office);
@@ -1053,7 +1058,8 @@ export class LakeScene {
       for (let j = 0; j < 4; j++) makePerson(group, rand(-4.6, 4.4), rand(-3.5, 3.2), pick([0x355c7d, 0x7d5a35, 0x2f6f56]), 0.9);
     } else if (index === 1) {
       createPad(group, 11.5, 9.0, grassPad);
-      [-2.4, 0.2, 2.7].forEach((x, j) => createPond(group, x, -1.6 + j * 0.12, 1.18, 0.88));
+      const lakeY = 0.18 - group.position.y;
+      [-2.5, 0.1, 2.7].forEach((x, j) => createPond(group, x, -17.2 + j * 0.12, 1.18, 0.88, lakeY));
       const house = createSimpleHouse(3.2, 2.4, 2.0, 0xe5d6b8, 0x885a40, { windows: true, roofHeight: 0.7 });
       house.position.set(-2.9, 0.10, 2.6);
       group.add(house);
@@ -1196,19 +1202,30 @@ export class LakeScene {
   }
 
   createBoats() {
+    this.refreshBoatAvoidanceZones();
     const colors = [0x2f7890, 0x9b4f42, 0xd7a64a, 0x365f7d, 0x4f7f55];
     for (let i = 0; i < 7; i++) {
       const kind = i === 0 ? 'cargo' : i % 3 === 0 ? 'sail' : 'work';
       const boat = createShip(kind, kind === 'cargo' ? null : pick(colors));
-      boat.scale.setScalar(kind === 'cargo' ? rand(0.95, 1.25) : rand(0.75, 1.25));
+      const scale = kind === 'cargo' ? rand(0.95, 1.25) : rand(0.75, 1.25);
+      boat.scale.setScalar(scale);
       boat.userData = {
         offset: rand(0, Math.PI * 2),
         rx: rand(22, 58),
         rz: rand(7, 20),
         speed: kind === 'cargo' ? rand(0.015, 0.03) : rand(0.025, 0.055),
         zBase: -30 + rand(-8, 6),
-        bob: rand(0.02, 0.08)
+        bob: rand(0.02, 0.08),
+        clearanceRadius: (kind === 'cargo' ? 4.4 : 2.4) * scale
       };
+      const initial = this.constrainBoatPosition(
+        Math.cos(boat.userData.offset) * boat.userData.rx,
+        boat.userData.zBase + Math.sin(boat.userData.offset * 0.72) * boat.userData.rz
+      );
+      boat.userData.lastX = initial.x;
+      boat.userData.lastZ = initial.z;
+      boat.userData.navX = initial.x;
+      boat.userData.navZ = initial.z;
       this.world.add(boat);
       this.movingBoats.push(boat);
     }
@@ -1221,6 +1238,83 @@ export class LakeScene {
       b.rotation.y = rand(-0.25, 0.25);
       this.world.add(b);
     });
+  }
+
+  refreshBoatAvoidanceZones() {
+    this.boatAvoidanceZones = [];
+    this.world.updateMatrixWorld(true);
+    this.world.traverse(obj => {
+      const radius = obj.userData?.boatAvoidanceRadius;
+      if (!radius) return;
+      const center = new THREE.Vector3();
+      obj.getWorldPosition(center);
+      this.boatAvoidanceZones.push({ x: center.x, z: center.z, radius });
+    });
+  }
+
+  constrainBoatPosition(x, z) {
+    let nextX = clamp(x, -68, 68);
+    let nextZ = z;
+
+    const shoreLimit = coastLine(nextX) - BOAT_SHORE_CLEARANCE;
+    if (nextZ > shoreLimit) nextZ = shoreLimit;
+
+    this.boatAvoidanceZones.forEach(zone => {
+      const dx = nextX - zone.x;
+      const dz = nextZ - zone.z;
+      const dist = Math.hypot(dx, dz);
+      if (dist >= zone.radius) return;
+      const angle = dist > 0.001 ? Math.atan2(dz, dx) : -Math.PI / 2;
+      nextX = zone.x + Math.cos(angle) * zone.radius;
+      nextZ = zone.z + Math.sin(angle) * zone.radius;
+      const adjustedShoreLimit = coastLine(nextX) - BOAT_SHORE_CLEARANCE;
+      if (nextZ > adjustedShoreLimit) nextZ = adjustedShoreLimit;
+    });
+
+    return { x: nextX, z: nextZ };
+  }
+
+  separateBoatPositions(positions) {
+    for (let pass = 0; pass < 3; pass++) {
+      for (let i = 0; i < positions.length; i++) {
+        for (let j = i + 1; j < positions.length; j++) {
+          const a = positions[i];
+          const b = positions[j];
+          const minDist = a.radius + b.radius + BOAT_CLEARANCE;
+          const dx = b.x - a.x;
+          const dz = b.z - a.z;
+          const dist = Math.hypot(dx, dz);
+          if (dist >= minDist) continue;
+
+          const angle = dist > 0.001 ? Math.atan2(dz, dx) : (i + j) * 1.7;
+          const push = (minDist - dist) * 0.5;
+          const px = Math.cos(angle) * push;
+          const pz = Math.sin(angle) * push;
+          const adjustedA = this.constrainBoatPosition(a.x - px, a.z - pz);
+          const adjustedB = this.constrainBoatPosition(b.x + px, b.z + pz);
+          a.x = adjustedA.x;
+          a.z = adjustedA.z;
+          b.x = adjustedB.x;
+          b.z = adjustedB.z;
+        }
+      }
+    }
+
+    return positions;
+  }
+
+  moveBoatToward(boat, targetX, targetZ, delta) {
+    const currentX = boat.userData.navX ?? boat.userData.lastX ?? targetX;
+    const currentZ = boat.userData.navZ ?? boat.userData.lastZ ?? targetZ;
+    const dx = targetX - currentX;
+    const dz = targetZ - currentZ;
+    const dist = Math.hypot(dx, dz);
+    const maxStep = BOAT_MAX_SPEED * delta;
+    if (dist <= maxStep || dist < 0.001) return this.constrainBoatPosition(targetX, targetZ);
+    return this.constrainBoatPosition(
+      currentX + (dx / dist) * maxStep,
+      currentZ + (dz / dist) * maxStep
+    );
   }
 
   addWorldLabel(index, name, anchor) {
@@ -1499,14 +1593,26 @@ export class LakeScene {
       this.waterMesh.geometry.computeVertexNormals();
     }
 
-    this.movingBoats.forEach(boat => {
+    const boatPositions = this.movingBoats.map(boat => {
       const u = time * boat.userData.speed + boat.userData.offset;
-      const x = Math.cos(u) * boat.userData.rx;
-      const z = boat.userData.zBase + Math.sin(u * 0.72) * boat.userData.rz;
+      const targetX = Math.cos(u) * boat.userData.rx;
+      const targetZ = boat.userData.zBase + Math.sin(u * 0.72) * boat.userData.rz;
+      const { x, z } = this.constrainBoatPosition(targetX, targetZ);
+      return { boat, x, z, radius: boat.userData.clearanceRadius ?? 2.5 };
+    });
+
+    this.separateBoatPositions(boatPositions).forEach(({ boat, x, z }) => {
+      const smoothed = this.moveBoatToward(boat, x, z, delta);
+      x = smoothed.x;
+      z = smoothed.z;
       boat.position.set(x, 0.18 + Math.sin(time * 1.9 + boat.userData.offset) * boat.userData.bob, z);
-      const dx = -Math.sin(u) * boat.userData.rx;
-      const dz = Math.cos(u * 0.72) * 0.72 * boat.userData.rz;
-      boat.rotation.y = Math.atan2(dx, dz) + Math.PI / 2;
+      const dx = x - (boat.userData.lastX ?? x);
+      const dz = z - (boat.userData.lastZ ?? z);
+      if (Math.hypot(dx, dz) > 0.001) boat.rotation.y = Math.atan2(dx, dz) + Math.PI / 2;
+      boat.userData.navX = x;
+      boat.userData.navZ = z;
+      boat.userData.lastX = x;
+      boat.userData.lastZ = z;
     });
 
     this.smokePuffs.forEach(puff => {

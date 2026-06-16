@@ -202,17 +202,6 @@ export default function LakeEconomyHome() {
             </button>
           </div>
 
-          <section className="scenario-card" aria-label="Current scenario">
-            <div className="scenario-heading">
-              <strong id="scenarioName">Scenario:</strong>
-              <span id="lakeSeed" className="sr-only" aria-hidden="true">
-                seed
-              </span>
-            </div>
-            <p id="scenarioText" />
-            <small id="scenarioNote" />
-          </section>
-
           <section className="control-section goal-section" aria-label="Choose your goal" data-step="1">
             <div className="section-title">
               <span className="step-dot">1</span>
@@ -254,6 +243,17 @@ export default function LakeEconomyHome() {
             </details>
           </section>
 
+          <section className="scenario-card" aria-label="Current scenario">
+            <div className="scenario-heading">
+              <strong id="scenarioName">Scenario:</strong>
+              <span id="lakeSeed" className="sr-only" aria-hidden="true">
+                seed
+              </span>
+            </div>
+            <p id="scenarioText" />
+            <small id="scenarioNote" />
+          </section>
+
           <section
             id="offerSection"
             className="control-section offer-section locked"
@@ -280,8 +280,8 @@ export default function LakeEconomyHome() {
               <button type="button" className="preset-btn" data-preset="equal">
                 Equal
               </button>
-              <button type="button" className="preset-btn" data-preset="payoff">
-                Highest payoff
+              <button type="button" className="preset-btn" data-preset="return">
+                Highest return
               </button>
               <button type="button" className="preset-btn" data-preset="outcome">
                 Highest raw outcome
@@ -323,7 +323,28 @@ export default function LakeEconomyHome() {
               </div>
             </div>
             <div id="resultSummary" />
-            <div id="frontierChart" className="frontier-chart" />
+            <div className="frontier-panel" aria-labelledby="frontierTitle">
+              <div className="frontier-panel-header">
+                <h3 id="frontierTitle">The Impact Frontier</h3>
+                <button
+                  id="expandFrontierBtn"
+                  type="button"
+                  className="frontier-expand-btn"
+                  aria-label="Expand The Impact Frontier chart"
+                  aria-controls="frontierModal"
+                  disabled
+                >
+                  ↗
+                </button>
+              </div>
+              <button
+                id="frontierChart"
+                className="frontier-chart"
+                type="button"
+                aria-label="Open a larger view of The Impact Frontier"
+                disabled
+              />
+            </div>
             <details className="response-details" open>
               <summary>Offers vs. actual capital change</summary>
               <div className="actual-explainer">
@@ -347,6 +368,25 @@ export default function LakeEconomyHome() {
               </button>
             </div>
             <div id="contentBody" className="content-body" />
+          </div>
+        </section>
+
+        <section
+          id="frontierModal"
+          className="frontier-modal hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="frontierModalTitle"
+        >
+          <div className="frontier-modal-card">
+            <div className="frontier-modal-header">
+              <span className="eyebrow">Result view</span>
+              <h2 id="frontierModalTitle">The Impact Frontier</h2>
+              <button id="closeFrontierModal" type="button" className="icon-button" aria-label="Close frontier view">
+                x
+              </button>
+            </div>
+            <div id="frontierModalChart" className="frontier-modal-chart" />
           </div>
         </section>
 

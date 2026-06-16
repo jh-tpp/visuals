@@ -143,7 +143,7 @@ Check:
 - no broken frontier scoring,
 - no nonsensical negative final firm sizes in normal play,
 - baseline-relative negative capital changes are explained correctly,
-- clear distinction between business payoff, risk, outcome intensity, offers, player capital, other-investor capital, and total capital.
+- clear distinction between business return, risk, outcome intensity, offers, player capital, other-investor capital, and total capital.
 
 Score: ___ / 5
 
@@ -171,7 +171,7 @@ Notes:
 
 Can the player learn by experimenting?
 
-A strong prototype lets the player discover that raw outcome intensity and expected business payoff are not enough.
+A strong prototype lets the player discover that raw outcome intensity and expected business return are not enough.
 
 Check:
 

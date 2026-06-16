@@ -23,6 +23,18 @@ function sum(v) { return v.reduce((a, b) => a + b, 0); }
 function fmt(v, digits = 1) { return Number.isFinite(v) ? v.toFixed(digits) : '—'; }
 function signed(v, digits = 1) { return Number.isFinite(v) ? `${v >= 0 ? '+' : ''}${v.toFixed(digits)}` : '—'; }
 function pct(v, digits = 1) { return Number.isFinite(v) ? `${(v * 100).toFixed(digits)}%` : '—'; }
+function metricScale(value, { max = 1, signed: isSigned = true } = {}) {
+  if (!Number.isFinite(value)) return '';
+  if (!isSigned) {
+    const fill = clamp(Math.abs(value) / max, 0, 1) * 100;
+    return `<i class="metric-scale positive-only" aria-hidden="true"><em style="width:${fill.toFixed(1)}%"></em></i>`;
+  }
+  const fill = clamp(Math.abs(value) / max, 0, 1) * 50;
+  const style = value >= 0
+    ? `left:50%;width:${fill.toFixed(1)}%`
+    : `left:${(50 - fill).toFixed(1)}%;width:${fill.toFixed(1)}%`;
+  return `<i class="metric-scale signed ${value >= 0 ? 'positive' : 'negative'}" aria-hidden="true"><em style="${style}"></em></i>`;
+}
 
 const state = {
   lakeIndex: 0,
@@ -37,7 +49,8 @@ const state = {
   frontierCache: new Map(),
   selectedEntity: null,
   panelOpen: false,
-  panelMode: null
+  panelMode: null,
+  frontierModalOpen: false
 };
 
 const CITY_MODES = ['town', 'skyline', 'network'];
@@ -93,6 +106,10 @@ function init(signal) {
     resultSummary: $('#resultSummary'),
     resultTable: $('#resultTable'),
     chartBox: $('#frontierChart'),
+    expandFrontierBtn: $('#expandFrontierBtn'),
+    frontierModal: $('#frontierModal'),
+    frontierModalChart: $('#frontierModalChart'),
+    closeFrontierModal: $('#closeFrontierModal'),
     bestReadout: $('#bestReadout'),
     topbar: $('.topbar'),
     topButtons: $$('.top-nav [data-panel]'),
@@ -147,6 +164,12 @@ function bindEvents(signal) {
     scene.updateOutcomeVisuals();
   }, signal);
   on(elements.cityModeBtn, 'click', toggleCityMode, signal);
+  on(elements.expandFrontierBtn, 'click', openFrontierModal, signal);
+  on(elements.chartBox, 'click', openFrontierModal, signal);
+  on(elements.closeFrontierModal, 'click', closeFrontierModal, signal);
+  on(elements.frontierModal, 'pointerdown', e => {
+    if (e.target === elements.frontierModal) closeFrontierModal();
+  }, signal);
   elements.panelButtons.forEach(btn => on(btn, 'click', () => {
     dismissWelcome();
     toggleContentPanel(btn.dataset.panel);
@@ -171,6 +194,7 @@ function bindEvents(signal) {
     if (e.key === 'Escape') {
       closeEntityPopup();
       closeContentPanel();
+      closeFrontierModal();
     }
   }, signal);
   on(window, 'resize', updateTopOffsets, signal);
@@ -241,7 +265,7 @@ function applyPreset(preset) {
   if (!state.goalChosen) return;
   const presets = makePresets(params, state.goalWeight);
   let shares = presets.equal;
-  if (preset === 'payoff') shares = presets.highestBusinessPayoff;
+  if (preset === 'return') shares = presets.highestBusinessReturn;
   if (preset === 'outcome') shares = presets.highestRawOutcome;
   if (preset === 'soft-outcome') shares = presets.outcomeTiltSoft;
   state.tokens = tokenVectorFromShares(shares);
@@ -272,6 +296,7 @@ function adjustToken(index, value) {
 
 function clearStaleRun() {
   state.lastScore = null;
+  closeFrontierModal();
   scene.updateState({ offers: state.tokens });
   renderAll();
 }
@@ -307,6 +332,7 @@ function runEconomy() {
 function startFresh() {
   state.tokens = [0, 0, 0, 0, 0, 0];
   state.lastScore = null;
+  closeFrontierModal();
   closeEntityPopup();
   scene.updateState({ offers: state.tokens, lastRun: null });
   scene.updateOutcomeVisuals();
@@ -321,6 +347,7 @@ function newLake() {
   state.tokens = [0, 0, 0, 0, 0, 0];
   state.lastScore = null;
   state.bestScore = null;
+  closeFrontierModal();
   state.frontierCache.clear();
   closeEntityPopup();
   params = buildLakeParams({ seed: state.seed, templateKey: state.templateKey, lakeOutcomeWeight: state.goalChosen ? state.goalWeight : 0.5 });
@@ -362,7 +389,7 @@ function renderGoal() {
   if (!state.goalChosen) {
     elements.goalSlider.value = 50;
     elements.goalReadout.textContent = 'No goal selected';
-    elements.goalHint.textContent = 'Choose a goal to unlock the offer sheet.';
+    elements.goalHint.textContent = 'Your goal determines your Impact Frontier.';
     elements.goalButtons.forEach(btn => btn.classList.remove('active'));
     return;
   }
@@ -417,7 +444,7 @@ function renderOfferRows() {
 
 function metricMini(e) {
   const lake = e.lakeHealthIntensity >= 0 ? `lake +${fmt(e.lakeHealthIntensity, 2)}` : `lake ${fmt(e.lakeHealthIntensity, 2)}`;
-  return `${pct(e.expectedBusinessPayoff, 1)} payoff · ${lake}`;
+  return `${pct(e.expectedBusinessReturn, 1)} return · ${lake}`;
 }
 
 function renderResults() {
@@ -430,6 +457,10 @@ function renderResults() {
       </div>`;
     elements.resultTable.innerHTML = '';
     renderFrontierChart(elements.chartBox, null, null);
+    renderFrontierChart(elements.frontierModalChart, null, null);
+    elements.chartBox.disabled = true;
+    elements.expandFrontierBtn.disabled = true;
+    elements.chartBox.classList.remove('interactive');
     elements.bestReadout.textContent = state.bestScore ? `${Math.round(state.bestScore.frontierRecovery * 100)}% best in this lake` : 'No run yet';
     return;
   }
@@ -481,7 +512,25 @@ function renderResults() {
     <div class="table-key"><span>Entity</span><span>Your offer</span><span>Actual capital</span><span>Your ΔK</span><span>Other investors</span></div>`;
 
   renderFrontierChart(elements.chartBox, score.grid, score);
+  renderFrontierChart(elements.frontierModalChart, score.grid, score);
+  elements.chartBox.disabled = false;
+  elements.expandFrontierBtn.disabled = false;
+  elements.chartBox.classList.add('interactive');
   elements.bestReadout.textContent = state.bestScore ? `${Math.round(state.bestScore.frontierRecovery * 100)}% best in this lake` : 'No run yet';
+}
+
+function openFrontierModal() {
+  if (!state.lastScore || !elements.frontierModal) return;
+  state.frontierModalOpen = true;
+  renderFrontierChart(elements.frontierModalChart, state.lastScore.grid, state.lastScore);
+  elements.frontierModal.classList.remove('hidden');
+  elements.closeFrontierModal?.focus();
+}
+
+function closeFrontierModal() {
+  if (!elements?.frontierModal) return;
+  state.frontierModalOpen = false;
+  elements.frontierModal.classList.add('hidden');
 }
 
 function renderFlowLocks() {
@@ -530,19 +579,16 @@ function renderEntityPopup() {
   elements.entityPopup.innerHTML = `
     <div class="popup-head">
       <div>
-        <span class="eyebrow">Visible characteristics only</span>
         <h3>${e.name}</h3>
-        <small>Click outside this card to close.</small>
       </div>
       <button type="button" class="popup-close" aria-label="Close entity popup">×</button>
     </div>
     <div class="stat-grid">
-      <span><b>${pct(e.expectedBusinessPayoff, 1)}</b><small>Business payoff</small></span>
-      <span><b>${pct(e.riskSigma, 0)}</b><small>Risk</small></span>
-      <span><b>${signed(e.lakeHealthIntensity, 2)}</b><small>Lake intensity</small></span>
-      <span><b>${signed(e.localProsperityIntensity, 2)}</b><small>Prosperity intensity</small></span>
+      <span><b>${pct(e.expectedBusinessReturn, 1)}</b>${metricScale(e.expectedBusinessReturn, { max: 0.25 })}<small>Expected return</small></span>
+      <span><b>${pct(e.riskSigma, 0)}</b>${metricScale(e.riskSigma, { max: 0.35, signed: false })}<small>Risk</small></span>
+      <span><b>${signed(e.lakeHealthIntensity, 2)}</b>${metricScale(e.lakeHealthIntensity, { max: 1 })}<small>Lake health score</small></span>
+      <span><b>${signed(e.localProsperityIntensity, 2)}</b>${metricScale(e.localProsperityIntensity, { max: 1 })}<small>Prosperity score</small></span>
     </div>
-    <p class="popup-copy">The hidden response system is not shown up front. Learn it by comparing your offers with capital after the economy clears.</p>
     ${actual !== null ? `
       <div class="entity-after-run">
         <span>After the economy clears, relative to the equal-offer baseline</span>

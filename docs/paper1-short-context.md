@@ -150,9 +150,9 @@ For the game, use a simple quadratic cost:
 L = 0.5 * b' A b
 ```
 
-where `A` is the financial cost or risk matrix used in the playable game. It can be diagonal in the earliest MVP, then expanded to include payoff covariance.
+where `A` is the financial cost or risk matrix used in the playable game. It can be diagonal in the earliest MVP, then expanded to include return covariance.
 
-The exact economic interpretation should stay light in the UI. The user can see expected payoff, risk, and frontier score without needing the full matrix.
+The exact economic interpretation should stay light in the UI. The user can see expected return, risk, and frontier score without needing the full matrix.
 
 ## Frontier score
 
@@ -181,12 +181,12 @@ Keep the language concrete. Avoid implying moral failure when the score is low. 
 
 The game should let the player compare strategies such as:
 
-- offer to the highest expected business payoff entity,
+- offer to the highest expected business return entity,
 - offer to the highest raw outcome-intensity entity,
 - spread offers equally,
 - discover a response-adjusted offer pattern.
 
-The lesson is not that financial payoff is bad or that high outcome intensity is bad. The lesson is that neither raw business payoff nor raw outcome intensity is enough. The response system matters.
+The lesson is not that financial return is bad or that high outcome intensity is bad. The lesson is that neither raw business return nor raw outcome intensity is enough. The response system matters.
 
 ## What to avoid
 
