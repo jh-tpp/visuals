@@ -467,7 +467,8 @@ function renderResults() {
 
   const recovery = Math.round(score.frontierRecovery * 100);
   const positiveOutcome = score.blendedGainVsEqual >= 0;
-  const positiveReturn = score.ceGainVsEqual >= 0;
+  const positiveReturn = score.playerCE >= 0;
+  const playerCEPercent = score.playerCE * 100;
   elements.resultSummary.innerHTML = `
     <div class="score-card ${recovery >= 85 ? 'strong' : recovery >= 55 ? 'ok' : 'learning'}">
       <span>Frontier score</span>
@@ -481,9 +482,9 @@ function renderResults() {
         <i style="--fill:${clamp(50 + score.blendedGainVsEqual * 7, 4, 96)}%"></i>
       </div>
       <div class="mini-meter">
-        <span>Risk-adjusted return</span>
-        <strong class="${positiveReturn ? 'pos' : 'neg'}">${signed(score.ceGainVsEqual, 2)}</strong>
-        <i style="--fill:${clamp(50 + score.ceGainVsEqual * 18, 4, 96)}%"></i>
+        <span>Risk-adjusted return (%)</span>
+        <strong class="${positiveReturn ? 'pos' : 'neg'}">${fmt(playerCEPercent, 2)}</strong>
+        <i style="--fill:${clamp(playerCEPercent * 18, 4, 96)}%"></i>
       </div>
       <div class="mini-meter two-values">
         <span>External outcomes</span>

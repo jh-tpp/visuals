@@ -13,6 +13,14 @@
   --lake-gold-soft: #fff0bf;
   --lake-green: #4f8f61;
   --lake-red: #b46658;
+  --bg-top: #dfecef;
+  --bg-mid: #f5f7f2;
+  --bg-low: #c9dfe5;
+  --bg-haze: rgba(255, 255, 255, 0.82);
+  --bg-shadow-blue: rgba(58, 118, 138, 0.22);
+  --bg-valley-haze: rgba(98, 142, 151, 0.14);
+  --bg-haze-reach: 48%;
+  --bg-scene-glow: var(--bg-shadow-blue);
   --paper: rgba(251, 248, 247, 0.92);
   --paper-strong: rgba(255, 253, 251, 0.97);
   --ink: var(--csp-ink);
@@ -43,7 +51,7 @@
   overflow: hidden;
   font-family: var(--font-body), Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--ink);
-  background: var(--csp-paper);
+  background: var(--bg-mid);
 }
 
 .lake-economy-root button,
@@ -62,8 +70,10 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 67% 19%, rgba(255, 221, 153, 0.36), transparent 25%),
-    linear-gradient(180deg, #ffffff 0%, #eef7fb 30%, #f7f4eb 76%, #ededeb 100%);
+    radial-gradient(circle at 50% 18%, var(--bg-haze) 0%, rgba(255, 255, 255, 0) var(--bg-haze-reach)),
+    radial-gradient(ellipse at 50% 58%, var(--bg-scene-glow) 0%, rgba(58, 118, 138, 0) 42%),
+    radial-gradient(ellipse at 50% 88%, var(--bg-valley-haze) 0%, rgba(98, 142, 151, 0) 58%),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 42%, var(--bg-low) 100%);
   pointer-events: none;
 }
 .lake-economy-root.light-network-mode {

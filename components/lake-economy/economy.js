@@ -400,9 +400,10 @@ export function computeLakeMetrics(eq, params, lakeOutcomeWeight = params.lakeOu
   const lake = dot(params.gLake, eq.K);
   const prosperity = dot(params.gProsperity, eq.K);
   const blended = lakeOutcomeWeight * lake + (1 - lakeOutcomeWeight) * prosperity;
-  const playerExpectedReturn = dot(eq.P, eq.KPlayer);
-  const playerVariance = dot(eq.KPlayer, matVec(params.Sigma, eq.KPlayer));
-  const playerRiskPenalty = 0.5 * params.gammaPlayer / params.playerWealth * playerVariance;
+  const wPlayer = scale(eq.KPlayer, 1 / sum(eq.KPlayer));
+  const playerExpectedReturn = dot(eq.P, wPlayer);
+  const playerVariance = dot(wPlayer, matVec(params.Sigma, wPlayer));
+  const playerRiskPenalty = 0.5 * params.gammaPlayer * playerVariance;
   const playerCE = playerExpectedReturn - playerRiskPenalty;
 
   return { lake, prosperity, blended, playerExpectedReturn, playerVariance, playerRiskPenalty, playerCE };
@@ -452,8 +453,6 @@ function rowFromRun(bShare, params, lakeOutcomeWeight) {
     blended: run.metrics.blended,
     lake: run.metrics.lake,
     prosperity: run.metrics.prosperity,
-    ceLossVsEqual: base.metrics.playerCE - run.metrics.playerCE,
-    ceGainVsEqual: run.metrics.playerCE - base.metrics.playerCE,
     blendedGainVsEqual: run.metrics.blended - base.metrics.blended,
     lakeGainVsEqual: run.metrics.lake - base.metrics.lake,
     prosperityGainVsEqual: run.metrics.prosperity - base.metrics.prosperity,
@@ -485,16 +484,16 @@ export function frontierGrid(params, lakeOutcomeWeight = params.lakeOutcomeWeigh
   }
 
   const points = uniqueRows.map(row => rowFromRun(row, params, lakeOutcomeWeight));
-  points.sort((a, b) => a.ceLossVsEqual - b.ceLossVsEqual || b.blendedGainVsEqual - a.blendedGainVsEqual);
+  points.sort((a, b) => b.playerCE - a.playerCE || b.blendedGainVsEqual - a.blendedGainVsEqual);
 
   let best = -Infinity;
   for (const p of points) {
     best = Math.max(best, p.blendedGainVsEqual);
-    p.frontierBestGainUpToLoss = best;
+    p.frontierBestGainAtOrAboveReturn = best;
     p.isFrontierPoint = p.blendedGainVsEqual >= best - 1e-10;
   }
 
-  const frontier = points.filter(p => p.isFrontierPoint && Number.isFinite(p.blendedGainVsEqual) && Number.isFinite(p.ceGainVsEqual));
+  const frontier = points.filter(p => p.isFrontierPoint && Number.isFinite(p.blendedGainVsEqual) && Number.isFinite(p.playerCE));
   return { points, frontier };
 }
 
@@ -503,10 +502,9 @@ export function scoreOfferAgainstGrid(bShare, params, lakeOutcomeWeight = params
   const current = runLake(bShare, params, lakeOutcomeWeight);
   const baseline = runLake(params.b0Share, params, lakeOutcomeWeight);
   const curGain = current.metrics.blended - baseline.metrics.blended;
-  const curLoss = baseline.metrics.playerCE - current.metrics.playerCE;
-  const curCEGain = current.metrics.playerCE - baseline.metrics.playerCE;
+  const curPlayerCE = current.metrics.playerCE;
 
-  const feasible = frontier.points.filter(p => p.ceLossVsEqual <= curLoss + 1e-8);
+  const feasible = frontier.points.filter(p => p.playerCE >= curPlayerCE - 1e-8);
   let bestGain = feasible.length ? Math.max(...feasible.map(p => p.blendedGainVsEqual)) : curGain;
   if (!Number.isFinite(bestGain)) bestGain = curGain;
   bestGain = Math.max(bestGain, curGain);
@@ -517,8 +515,7 @@ export function scoreOfferAgainstGrid(bShare, params, lakeOutcomeWeight = params
   return {
     current,
     baseline,
-    ceLossVsEqual: curLoss,
-    ceGainVsEqual: curCEGain,
+    playerCE: curPlayerCE,
     blendedGainVsEqual: curGain,
     lakeGainVsEqual: current.metrics.lake - baseline.metrics.lake,
     prosperityGainVsEqual: current.metrics.prosperity - baseline.metrics.prosperity,

@@ -394,7 +394,8 @@ export class LakeScene {
     this.canvas = canvas;
     this.labelRoot = labelRoot;
     this.onEntitySelect = onEntitySelect;
-    this.clock = new THREE.Clock();
+    this.timer = new THREE.Timer();
+    this.timer.connect(document);
     this.labels = [];
     this.outcomeLabels = [];
     this.entityGroups = [];
@@ -420,7 +421,7 @@ export class LakeScene {
     this.state = { offers: [0, 0, 0, 0, 0, 0], lastRun: null };
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xf7f7f3);
+    this.scene.background = null;
     this.scene.fog = new THREE.FogExp2(0xdce8eb, 0.001);
 
     this.camera = new THREE.PerspectiveCamera(52, 1, 0.1, 500);
@@ -431,8 +432,9 @@ export class LakeScene {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
+    this.renderer.setClearAlpha(0);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
@@ -561,7 +563,7 @@ export class LakeScene {
   }
 
   buildWorld(params) {
-    this.scene.background.setHex(this.cityMode === 'network' ? 0x02030a : 0xf7f7f3);
+    this.scene.background = null;
     this.scene.fog = this.cityMode === 'network'
       ? new THREE.FogExp2(0x02030a, 0.0035)
       : new THREE.FogExp2(0xdce8eb, 0.001);
@@ -1647,8 +1649,9 @@ export class LakeScene {
   animate() {
     if (this.isDisposed) return;
     this.animationFrame = requestAnimationFrame(() => this.animate());
-    const delta = Math.min(0.05, this.clock.getDelta());
-    const time = this.clock.elapsedTime;
+    this.timer.update();
+    const delta = Math.min(0.05, this.timer.getDelta());
+    const time = this.timer.getElapsed();
     this.updateMotion(delta, time);
     this.controls.update();
     this.updateLabels();
@@ -1663,6 +1666,7 @@ export class LakeScene {
     this.renderer.domElement.removeEventListener('pointerdown', this.handlePointerDown);
     this.renderer.domElement.removeEventListener('pointerup', this.handlePointerUp);
     this.clearWorld();
+    this.timer.dispose?.();
     this.controls.dispose?.();
     this.renderer.dispose?.();
   }

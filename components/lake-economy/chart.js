@@ -22,9 +22,9 @@ export function renderFrontierChart(container, grid, score) {
     return;
   }
 
-  const all = grid.points.filter(p => Number.isFinite(p.blendedGainVsEqual) && Number.isFinite(p.ceGainVsEqual));
+  const all = grid.points.filter(p => Number.isFinite(p.blendedGainVsEqual) && Number.isFinite(p.playerCE));
   const frontier = [...grid.frontier]
-    .filter(p => Number.isFinite(p.blendedGainVsEqual) && Number.isFinite(p.ceGainVsEqual))
+    .filter(p => Number.isFinite(p.blendedGainVsEqual) && Number.isFinite(p.playerCE))
     .sort((a, b) => a.blendedGainVsEqual - b.blendedGainVsEqual);
 
   if (!all.length) {
@@ -33,9 +33,9 @@ export function renderFrontierChart(container, grid, score) {
   }
 
   const currentX = score?.blendedGainVsEqual ?? 0;
-  const currentY = score?.ceGainVsEqual ?? 0;
+  const currentY = score ? score.playerCE * 100 : 0;
   const xs = all.map(p => p.blendedGainVsEqual).concat([0, currentX]);
-  const ys = all.map(p => p.ceGainVsEqual).concat([0, currentY]);
+  const ys = all.map(p => p.playerCE * 100).concat([0, currentY]);
   let xMin = Math.min(...xs), xMax = Math.max(...xs);
   let yMin = Math.min(...ys), yMax = Math.max(...ys);
   const xPad = Math.max(0.25, (xMax - xMin) * 0.08);
@@ -55,11 +55,11 @@ export function renderFrontierChart(container, grid, score) {
   const sampled = all.filter((_, i) => i % Math.ceil(all.length / 900) === 0);
   const dots = sampled.map(p => {
     const positive = p.blendedGainVsEqual >= 0;
-    return `<circle cx="${sx(p.blendedGainVsEqual).toFixed(2)}" cy="${sy(p.ceGainVsEqual).toFixed(2)}" r="1.45" class="${positive ? 'pt-positive' : 'pt-negative'}" />`;
+    return `<circle cx="${sx(p.blendedGainVsEqual).toFixed(2)}" cy="${sy(p.playerCE * 100).toFixed(2)}" r="1.45" class="${positive ? 'pt-positive' : 'pt-negative'}" />`;
   }).join('');
 
   const path = frontier.length
-    ? `M ${frontier.map(p => `${sx(p.blendedGainVsEqual).toFixed(2)} ${sy(p.ceGainVsEqual).toFixed(2)}`).join(' L ')}`
+    ? `M ${frontier.map(p => `${sx(p.blendedGainVsEqual).toFixed(2)} ${sy(p.playerCE * 100).toFixed(2)}`).join(' L ')}`
     : '';
 
   const current = score ? `
@@ -91,6 +91,6 @@ export function renderFrontierChart(container, grid, score) {
       ${current}
       ${ticksX}${ticksY}
       <text x="${m.left + iw / 2}" y="${H - 9}" class="axis-label" text-anchor="middle">Expected outcome change</text>
-      <text transform="translate(14 ${m.top + ih / 2}) rotate(-90)" class="axis-label" text-anchor="middle">Risk-adjusted return</text>
+      <text transform="translate(14 ${m.top + ih / 2}) rotate(-90)" class="axis-label" text-anchor="middle">Risk-adjusted return (%)</text>
     </svg>`;
 }
