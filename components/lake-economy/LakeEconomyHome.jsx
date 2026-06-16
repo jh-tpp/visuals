@@ -115,7 +115,7 @@ export default function LakeEconomyHome() {
 
           <div className="brand-block">
             <strong>The Impact Frontier</strong>
-            <span>Research and tools for investor impact</span>
+            <span>Research and models for investor impact</span>
           </div>
 
           <nav className="top-nav" aria-label="Research panels">
@@ -164,9 +164,9 @@ export default function LakeEconomyHome() {
         <section id="welcomePanel" className="welcome-panel" aria-label="Welcome">
           <span className="eyebrow">Total Portfolio Project presents</span>
           {/* REVIEW COPY: Jonathan may want to rephrase this headline/body in his own voice. */}
-          <h1>An interactive model of investing with real outcomes.</h1>
+          <h1>An interactive model of investor impact.</h1>
           <p>
-            Make investment bids in a stylized lake economy. See how close you can get to the Impact Frontier.
+            Make investment offers in a stylized lake economy. See if you can reach the Impact Frontier.
           </p>
           <div className="welcome-actions">
             <button type="button" className="primary-action" data-open-play>
@@ -195,7 +195,7 @@ export default function LakeEconomyHome() {
           <div className="panel-topline">
             <div>
               <span className="eyebrow">Interactive demo</span>
-              <h1>Make investment offers. See how the system reacts.</h1>
+              <h1>Make offers. See how the economy reacts.</h1>
             </div>
             <button id="minimizePanel" type="button" className="icon-button" aria-label="Minimize controls">
               -
@@ -264,8 +264,8 @@ export default function LakeEconomyHome() {
             <div className="section-title">
               <span className="step-dot">2</span>
               <div>
-                <strong>Allocate 100 offer tokens</strong>
-                <small>Offers shift supply. The market decides actual capital.</small>
+                <strong>Place 100 offer tokens</strong>
+                <small>Offers shift the supply of capital and the companies react.</small>
               </div>
             </div>
             <div className="token-row">
@@ -285,9 +285,6 @@ export default function LakeEconomyHome() {
               </button>
               <button type="button" className="preset-btn" data-preset="outcome">
                 Highest raw outcome
-              </button>
-              <button type="button" className="preset-btn subtle" data-preset="soft-outcome">
-                Soft outcome tilt
               </button>
             </div>
             <div id="offersList" className="offers-list" />
@@ -318,7 +315,7 @@ export default function LakeEconomyHome() {
             <div className="section-title compact-title">
               <span className="step-dot">3</span>
               <div>
-                <strong>Market result</strong>
+                <strong>Market-clearing result</strong>
                 <small id="bestReadout">No run yet</small>
               </div>
             </div>
@@ -348,9 +345,7 @@ export default function LakeEconomyHome() {
             <details className="response-details" open>
               <summary>Offers vs. actual capital change</summary>
               <div className="actual-explainer">
-                Actual capital means total firm capital after market clearing, measured as a change from the equal-offer
-                baseline. Other investors remain in the market and may increase or decrease their positions as prices and firm
-                demand change.
+                The offer is what you choose. Actual capital is what changes after firms and other investors respond.
               </div>
               <div id="resultTable" />
             </details>

@@ -267,7 +267,6 @@ function applyPreset(preset) {
   let shares = presets.equal;
   if (preset === 'return') shares = presets.highestBusinessReturn;
   if (preset === 'outcome') shares = presets.highestRawOutcome;
-  if (preset === 'soft-outcome') shares = presets.outcomeTiltSoft;
   state.tokens = tokenVectorFromShares(shares);
   clearStaleRun();
 }
@@ -389,7 +388,7 @@ function renderGoal() {
   if (!state.goalChosen) {
     elements.goalSlider.value = 50;
     elements.goalReadout.textContent = 'No goal selected';
-    elements.goalHint.textContent = 'Your goal determines your Impact Frontier.';
+    elements.goalHint.textContent = 'The same outcomes can look different given different goals.';
     elements.goalButtons.forEach(btn => btn.classList.remove('active'));
     return;
   }
@@ -473,7 +472,7 @@ function renderResults() {
     <div class="score-card ${recovery >= 85 ? 'strong' : recovery >= 55 ? 'ok' : 'learning'}">
       <span>Frontier score</span>
       <strong>${recovery}%</strong>
-      <small>${recovery >= 85 ? 'Coherent strategy for this goal.' : "You're still leaving value on the table."}</small>
+      <small>${recovery >= 85 ? 'Close to the frontier for this goal.' : "You're still leaving value on the table."}</small>
     </div>
     <div class="meter-row">
       <div class="mini-meter">
@@ -651,7 +650,7 @@ function contentForMode(mode) {
             <span class="eyebrow">What this is</span>
             <h3>Interactive research.</h3>
             <!-- REVIEW COPY: Jonathan may want to rephrase this About-panel language. -->
-            <p>The Impact Frontier studies how investment choices affect real outcomes through the way firms, prices, and other investors respond. The Lake Economy turns that idea into a small playable model.</p>
+            <p>The Impact Frontier studies investor impact as a market response, not just a company score. The Lake Economy makes that idea playable.</p>
             <p>You make investment offers. The model financial market responds. The result shows what actually got funded, how lake health and local prosperity changed, and how close the strategy came to the frontier.</p>
              <p>The demo is stylized. It is not a forecast or a calibrated policy model. It is a way to make the research intuition visible: impact and financial returns depend on the system, not just raw company impact or profitability in isolation.</p>
           </article>
@@ -693,7 +692,7 @@ function contentForMode(mode) {
               <span class="eyebrow">Paper 1</span>
               <h3>The Impact Frontier</h3>
               <!-- REVIEW COPY: replace with final abstract language if desired. -->
-              <p>How portfolio tilts move capital, returns, and external outcomes through an equilibrium response system. The Lake Economy game is a stylized front-end version of this idea.</p>
+              <p>How portfolio tilts move capital, financial outcomes, and external outcomes through a financial market system. The Lake Economy is a stylized version of the core mechanism.</p>
               <p class="status-note">Working paper. SSRN link coming soon.</p>
               <button class="research-action secondary-link disabled-action" type="button" disabled aria-disabled="true">View on SSRN</button>
             </div>
@@ -704,7 +703,7 @@ function contentForMode(mode) {
               <span class="eyebrow">Paper 2</span>
               <h3>Shifting the Frontier</h3>
               <!-- REVIEW COPY: replace with final abstract language if desired. -->
-              <p>How larger coalitions, policy, stewardship, and other instruments can change the response system itself, not just move along a fixed frontier.</p>
+              <p>How coalitions, policy, stewardship, and other instruments can shift the frontier itself, not just move along it.</p>
               <p class="status-note">In development. SSRN link coming soon.</p>
               <button class="research-action secondary-link disabled-action" type="button" disabled aria-disabled="true">View on SSRN</button>
             </div>
@@ -716,7 +715,7 @@ function contentForMode(mode) {
     return {
       title: 'Guides',
       body: `
-        <p class="panel-intro">Clear goals: the essential first step.</p>
+        <p class="panel-intro">Start with the goal, then choose the strategy.</p>
         <div class="guide-stack">
           <section class="guide-hero-card">
             <img class="guide-cover-small" src="/guides/ig-goals-cover.jpg" alt="Investor's Guide to Goals-based Investing and Philanthropy cover">

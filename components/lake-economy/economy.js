@@ -426,8 +426,7 @@ export function makePresets(params, lakeOutcomeWeight = params.lakeOutcomeWeight
     equal: Array.from({ length: params.n }, () => 1 / params.n),
     highestBusinessReturn: oneHot(params.muBusiness.indexOf(Math.max(...params.muBusiness)), params.n),
     highestRawOutcome: oneHot(blendedG.indexOf(Math.max(...blendedG)), params.n),
-    returnTiltSoft: softmax(params.muBusiness, 25),
-    outcomeTiltSoft: softmax(blendedG, 4)
+    returnTiltSoft: softmax(params.muBusiness, 25)
   };
 }
 
