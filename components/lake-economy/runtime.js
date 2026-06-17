@@ -693,8 +693,8 @@ function contentForMode(mode) {
               <h3>The Impact Frontier</h3>
               <!-- REVIEW COPY: replace with final abstract language if desired. -->
               <p>How portfolio tilts move capital, financial outcomes, and external outcomes through a financial market system. The Lake Economy is a stylized version of the core mechanism.</p>
-              <p class="status-note">Working paper. SSRN link coming soon.</p>
-              <button class="research-action secondary-link disabled-action" type="button" disabled aria-disabled="true">View on SSRN</button>
+              <p class="status-note">Working paper. Now available on SSRN.</p>
+              <a class="research-action secondary-link" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6859238" target="_blank" rel="noopener noreferrer">View on SSRN</a>
             </div>
           </article>
           <article class="paper-hero-card">
