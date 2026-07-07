@@ -218,6 +218,7 @@ function updateTopOffsets() {
   document.documentElement.style.setProperty('--lake-panel-toggle-top', `${panelToggleTop}px`);
   document.documentElement.style.setProperty('--lake-welcome-top', `${welcomeTop}px`);
   document.documentElement.style.setProperty('--lake-panel-top', `${welcomeTop + 46}px`);
+  document.documentElement.style.setProperty('--lake-content-top', `${topbarBottom + 2}px`);
 }
 
 function dismissWelcome() {
@@ -646,6 +647,17 @@ function contentForMode(mode) {
       title: 'About',
       body: `
         <section class="about-layout">
+          <article class="about-card bio-card">
+            <div class="about-portrait" aria-hidden="true">
+              <img src="/jonathan-harris-portrait.jpg" alt="">
+            </div>
+            <div class="bio-copy">
+              <span class="eyebrow">Research lead</span>
+              <h3>Jonathan Harris</h3>
+              <p>Jonathan founded the Total Portfolio Project to help investors and philanthropists translate clear goals into coherent strategies across their portfolios.</p>
+              <a class="research-action secondary-link" href="https://www.linkedin.com/in/jonathanharris99/" target="_blank" rel="noopener noreferrer">Connect on LinkedIn</a>
+            </div>
+          </article>
           <article class="about-lede">
             <span class="eyebrow">What this is</span>
             <h3>Interactive research.</h3>
