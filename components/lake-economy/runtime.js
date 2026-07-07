@@ -655,7 +655,10 @@ function contentForMode(mode) {
               <span class="eyebrow">Research lead</span>
               <h3>Jonathan Harris</h3>
               <p>Jonathan founded the Total Portfolio Project to help investors and philanthropists translate clear goals into coherent strategies across their portfolios.</p>
-              <a class="research-action secondary-link" href="https://www.linkedin.com/in/jonathanharris99/" target="_blank" rel="noopener noreferrer">Connect on LinkedIn</a>
+              <div class="bio-actions">
+                <a class="research-action" href="https://www.cspglobal.org/about/people/jonathan-harris-phd" target="_blank" rel="noopener noreferrer">Read CSP bio</a>
+                <a class="research-action secondary-link" href="https://www.linkedin.com/in/jonathanharris99/" target="_blank" rel="noopener noreferrer">Connect on LinkedIn</a>
+              </div>
             </div>
           </article>
           <article class="about-lede">

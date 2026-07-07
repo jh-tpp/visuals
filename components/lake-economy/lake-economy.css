@@ -1184,6 +1184,15 @@ button.research-action.disabled-action:hover {
 .bio-copy {
   max-width: 690px;
 }
+.bio-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.bio-actions .research-action {
+  margin-top: 0;
+}
 .bio-copy h3 {
   margin: 6px 0 10px;
   font-family: var(--font-serif), Georgia, "Times New Roman", serif;
