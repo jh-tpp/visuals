@@ -13,6 +13,21 @@ const GUIDES = [
     downloadDisabled: false,
   },
   {
+    id: "diagnose-target-adapt",
+    title: "Diagnose, Target, Adapt",
+    eyebrow: "Convergence Analysis report",
+    status:
+      "A strategic guide to galvanizing public-private investment in the age of transformative AI.",
+    note:
+      "By Raphael Gregorian and Jonathan Harris. Published February 5, 2026.",
+    previewSrc: "/guides/diagnose-target-adapt-cover.jpg",
+    previewType: "image",
+    downloadHref:
+      "https://www.convergenceanalysis.org/fellowships/economics/diagnose-target-adapt",
+    downloadLabel: "Open guide on Convergence",
+    downloadDisabled: false,
+  },
+  {
     id: "impact-returns-three-cases",
     title: "Impact Returns: Three Case Studies",
     eyebrow: "Legacy report by Total Portfolio Project",

@@ -727,6 +727,16 @@ function contentForMode(mode) {
               <a class="research-action" href="https://www.cspglobal.org/research/publications/investors-guide-goals-based-investing-and-philanthropy" target="_blank" rel="noopener noreferrer">Open guide on CSP</a>
             </div>
           </section>
+          <section class="guide-hero-card">
+            <img class="guide-cover-small" src="/guides/diagnose-target-adapt-cover.jpg" alt="Diagnose, Target, Adapt report cover">
+            <div class="guide-copy">
+              <span class="eyebrow">Convergence Analysis report</span>
+              <h3>Diagnose, Target, Adapt</h3>
+              <p>A strategic guide to galvanizing public-private investment in the age of transformative AI, matching investment mechanisms to the distortions they are meant to solve.</p>
+              <p class="status-note">By Raphael Gregorian and Jonathan Harris. Published February 5, 2026.</p>
+              <a class="research-action" href="https://www.convergenceanalysis.org/fellowships/economics/diagnose-target-adapt" target="_blank" rel="noopener noreferrer">Open guide on Convergence</a>
+            </div>
+          </section>
           <section class="guide-hero-card legacy-guide-card">
             <img class="guide-cover-small" src="/guides/three_cases_TPP.png" alt="Impact Returns: Three Case Studies report cover">
             <div class="guide-copy">
