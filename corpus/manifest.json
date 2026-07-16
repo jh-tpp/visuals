@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "documents": [
+    {
+      "id": "csp-systemic-investing-2025",
+      "filename": "CSP-Investors-Guide-Systemic-Investing-Digital-Singles.pdf",
+      "title": "Investor's Guide to Systemic Investing",
+      "authors": [
+        "Rory Tews",
+        "Jason Jay",
+        "Kirsten Andersen",
+        "Falko Paetzold"
+      ],
+      "organizations": [
+        "CSP",
+        "MIT Sloan Sustainability Initiative",
+        "TransCap Initiative",
+        "TWIST",
+        "The ImPact"
+      ],
+      "publication_date": "2025-03-10",
+      "publication_status": "final",
+      "source_type": "applied-research-guide",
+      "canonical_url": "https://www.cspglobal.org/research/publications/investors-guide-systemic-investing",
+      "sha256": "7506bcf315ffe9315f82870bedd99332dec6c6d0da77eacb8701c43c46fe3e35",
+      "citation_page_basis": "pdf_page",
+      "aliases": [
+        "systemic investing guide",
+        "investor's guide to systemic investing",
+        "investors guide to systemic investing",
+        "issue 3"
+      ],
+      "answer_policy": {
+        "conceptual_use": "allowed",
+        "quantitative_reporting": "allowed"
+      }
+    },
+    {
+      "id": "csp-multicapital-strategies-2025",
+      "filename": "CSP-InvestorsGuide-Multicapital-A4-RGB-Digital-Singles.pdf",
+      "title": "Investor's Guide to Multicapital Strategies",
+      "authors": [
+        "Kirsten Andersen",
+        "Jason Jay",
+        "Falko Paetzold",
+        "Hibah Khan"
+      ],
+      "organizations": [
+        "CSP",
+        "CCSP-HSG",
+        "MIT Sloan Sustainability Initiative",
+        "Forward Global",
+        "NEXUS"
+      ],
+      "publication_date": "2025-09-15",
+      "publication_status": "final",
+      "source_type": "applied-research-guide",
+      "canonical_url": "https://www.cspglobal.org/research/publications/investors-guide-multicapital-strategies",
+      "sha256": "b9f43f3b121d61c919245f3001190332ef63a1fd036ae7b2bf079120f71bddfb",
+      "citation_page_basis": "pdf_page",
+      "aliases": [
+        "multicapital strategies guide",
+        "multicapital guide",
+        "investor's guide to multicapital strategies",
+        "issue 4"
+      ],
+      "answer_policy": {
+        "conceptual_use": "allowed",
+        "quantitative_reporting": "allowed"
+      }
+    },
+    {
+      "id": "csp-eight-asian-families-2025",
+      "filename": "Insights from the Journeys of Eight Asian Families.pdf",
+      "title": "Insights from the Journeys of Eight Asian Families: Ten Key Actions to Investing for Impact",
+      "authors": [
+        "Juliana Koh",
+        "Pearline Yum"
+      ],
+      "organizations": [
+        "CSP",
+        "CCSP-HSG",
+        "The ImPact"
+      ],
+      "publication_date": "2025-09-08",
+      "publication_status": "final",
+      "source_type": "applied-research-guide",
+      "canonical_url": "https://www.cspglobal.org/research/publications/insights-journeys-eight-asian-families",
+      "sha256": "265ed0835489c374a4da9ea4d3b2596471a2bfbadeff219e45dfae99dde676c7",
+      "citation_page_basis": "pdf_page",
+      "aliases": [
+        "eight Asian families",
+        "Asian families report",
+        "journeys of eight Asian families",
+        "ten key actions to investing for impact"
+      ],
+      "answer_policy": {
+        "conceptual_use": "allowed",
+        "quantitative_reporting": "allowed"
+      }
+    },
+    {
+      "id": "csp-goals-based-investing-philanthropy-2026",
+      "filename": "Investor's-Guide-to-Goals-based-Investing-and-Philanthropy.pdf",
+      "title": "Investor's Guide to Goals-based Investing and Philanthropy",
+      "authors": [
+        "Jonathan Harris",
+        "Vera Michalchik",
+        "Jason Jay",
+        "Falko Paetzold",
+        "Mike McCreless"
+      ],
+      "organizations": [
+        "Total Portfolio Project",
+        "CSP",
+        "CCSP-HSG",
+        "Stanford PACS",
+        "MIT Sloan Sustainability Initiative",
+        "Impact Frontiers"
+      ],
+      "publication_date": "2026-05-26",
+      "publication_status": "final",
+      "source_type": "applied-research-guide",
+      "canonical_url": "https://www.cspglobal.org/research/publications/investors-guide-goals-based-investing-and-philanthropy",
+      "sha256": "844d45a8f0f8422cadb6e2558942afbc12cacad13a33f37013390f5a47654d53",
+      "citation_page_basis": "pdf_page",
+      "aliases": [
+        "goals-based investing guide",
+        "goals based investing guide",
+        "goals-based investing and philanthropy",
+        "philanthropy guide",
+        "issue 6"
+      ],
+      "answer_policy": {
+        "conceptual_use": "allowed",
+        "quantitative_reporting": "allowed"
+      }
+    },
+    {
+      "id": "csp-investors-guide-impact-2021",
+      "filename": "Investors Guide to Impact.pdf",
+      "title": "The Investor's Guide to Impact: Evidence-based Advice for Investors Who Want to Change the World",
+      "authors": [
+        "Florian Heeb",
+        "Julian Kölbel"
+      ],
+      "organizations": [
+        "CSP",
+        "University of Zurich"
+      ],
+      "publication_date": "2021-09-23",
+      "publication_status": "final",
+      "source_type": "applied-research-guide",
+      "canonical_url": "https://www.cspglobal.org/research/publications/investors-guide-impact-how-can-investors-change-world",
+      "sha256": "85b4045a653ae02abe58206219521fe20d7bc0c9fd1f884a7a64b5445c3a0ac0",
+      "citation_page_basis": "pdf_page",
+      "aliases": [
+        "investor's guide to impact",
+        "investors guide to impact",
+        "how can investors change the world",
+        "Heeb Kölbel guide"
+      ],
+      "answer_policy": {
+        "conceptual_use": "allowed",
+        "quantitative_reporting": "allowed"
+      }
+    },
+    {
+      "id": "csp-b-corp-investment-organizations-2024",
+      "filename": "InvestorsGuide_BCorp.pdf",
+      "title": "Investor's Guide to B Corp Certification in Investment Organizations",
+      "authors": [
+        "Lara Kaulfuss",
+        "Anne Henow"
+      ],
+      "organizations": [
+        "CSP",
+        "University of Zurich",
+        "EBS University",
+        "B Lab Germany"
+      ],
+      "publication_date": "2024-04-03",
+      "publication_status": "final",
+      "source_type": "applied-research-guide",
+      "canonical_url": "https://www.cspglobal.org/research/publications/investors-guide-b-corp-certification-investment-organizations",
+      "sha256": "4385dce64a973c77d3551a8b315718678a572877c68215a544d7979d91018152",
+      "citation_page_basis": "pdf_page",
+      "aliases": [
+        "B Corp guide",
+        "B Corp certification guide",
+        "B Corp certification in investment organizations",
+        "issue 2"
+      ],
+      "answer_policy": {
+        "conceptual_use": "allowed",
+        "quantitative_reporting": "allowed"
+      }
+    },
+    {
+      "id": "csp-impact-wealth-management-2025",
+      "filename": "Investors_Guide_to_Impact_Wealth_Management.pdf",
+      "title": "Investor's Guide to Impact Wealth Management",
+      "authors": [
+        "Andrew Douglas",
+        "Claudia Coppenolle",
+        "Falko Paetzold"
+      ],
+      "organizations": [
+        "CSP",
+        "CCSP-HSG",
+        "The ImPact"
+      ],
+      "publication_date": "2025-11-17",
+      "publication_status": "final",
+      "source_type": "applied-research-guide",
+      "canonical_url": "https://www.cspglobal.org/research/publications/investors-guide-impact-wealth-management",
+      "sha256": "ceb81e19fb3ed7d3ad91066d5ed1fcd02c17def6a5788e3798d99a8ba8904e0e",
+      "citation_page_basis": "pdf_page",
+      "aliases": [
+        "impact wealth management guide",
+        "investor's guide to impact wealth management",
+        "wealth manager guide",
+        "issue 5"
+      ],
+      "answer_policy": {
+        "conceptual_use": "allowed",
+        "quantitative_reporting": "allowed"
+      }
+    },
+    {
+      "id": "tpp-impact-frontier-preliminary-2026",
+      "filename": "paper1.pdf",
+      "title": "The Impact Frontier",
+      "authors": [
+        "Jonathan Harris"
+      ],
+      "organizations": [
+        "Total Portfolio Project",
+        "CCSP-HSG",
+        "MIT Sloan"
+      ],
+      "publication_date": "2026-06-30",
+      "publication_status": "preliminary",
+      "source_type": "working-paper",
+      "canonical_url": null,
+      "sha256": "fb546e333f4463aaaa73b87f758d24b8234b97f66e9e95998f64adaeee6c3dfa",
+      "citation_page_basis": "pdf_page",
+      "aliases": [
+        "The Impact Frontier",
+        "Impact Frontier paper",
+        "Jonathan Harris paper",
+        "paper 1",
+        "paper1"
+      ],
+      "answer_policy": {
+        "conceptual_use": "allowed",
+        "quantitative_reporting": "restricted",
+        "instruction": "Use this paper for conceptual and methodological discussion. Do not proactively report its numerical estimates, calibration results, coefficients, or quantitative findings. If a user asks for numbers from the paper, state that the quantitative results are preliminary, do not present them as final, and defer to a forthcoming final version."
+      }
+    }
+  ]
+}

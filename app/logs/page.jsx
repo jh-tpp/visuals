@@ -106,9 +106,9 @@ export default async function LogsPage({ searchParams }) {
     <main className="min-h-screen bg-slate-50 p-8 text-slate-900">
       <div className="mx-auto max-w-[1600px] space-y-6">
         <header className="space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight">Chat logs</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">AskTPP chat logs</h1>
           <p className="text-sm text-slate-600">
-            Private viewer for saved assistant sessions.
+            Private viewer for saved AskTPP sessions.
           </p>
         </header>
 

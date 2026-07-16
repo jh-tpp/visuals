@@ -26,6 +26,13 @@ const SOURCE_ALIAS_MAP = {
   ],
 };
 
+const PRELIMINARY_IMPACT_FRONTIER_POLICY = {
+  conceptual_use: "allowed",
+  quantitative_reporting: "restricted",
+  instruction:
+    "Use this paper for conceptual and methodological discussion. Do not proactively report its numerical estimates, calibration results, coefficients, or quantitative findings. If a user asks for numbers from the paper, state that the quantitative results are preliminary, do not present them as final, and defer to a forthcoming final version.",
+};
+
 function normalizeText(text) {
   return (text || "")
     .toLowerCase()
@@ -96,16 +103,30 @@ function classifyQuestion(question) {
 function getSourceInfos(corpus) {
   const uniqueSources = [...new Set(corpus.map((item) => item.source))];
 
-  return uniqueSources.map((source) => ({
-    source,
-    normSource: normalizeText(source),
-    normBase: normalizeText(source.replace(/\.pdf$/i, "")),
-    aliases: (SOURCE_ALIAS_MAP[source] || []).map(normalizeText),
-    isGuide:
-      source === "guide-1-IGGv3.pdf" || /\bguide\b/i.test(source),
-    isPaper:
-      source === "paper-1-IFfeb26.pdf" || /\bpaper\b/i.test(source),
-  }));
+  return uniqueSources.map((source) => {
+    const sample = corpus.find((item) => item.source === source) || {};
+    const aliases = Array.isArray(sample.aliases)
+      ? sample.aliases
+      : SOURCE_ALIAS_MAP[source] || [];
+
+    return {
+      source,
+      title: sample.title || source,
+      normSource: normalizeText(source),
+      normBase: normalizeText(source.replace(/\.pdf$/i, "")),
+      normTitle: normalizeText(sample.title || ""),
+      aliases: aliases.map(normalizeText),
+      isGuide:
+        sample.source_type === "applied-research-guide" ||
+        source === "guide-1-IGGv3.pdf" ||
+        /\bguide\b/i.test(source),
+      isPaper:
+        sample.source_type === "working-paper" ||
+        source === "paper-1-IFfeb26.pdf" ||
+        source === "paper1.pdf" ||
+        /\bpaper\b/i.test(source),
+    };
+  });
 }
 
 function detectSourceControls(messages, sourceInfos) {
@@ -185,7 +206,8 @@ function detectSourceControls(messages, sourceInfos) {
       const aliasMatched =
         info.aliases.some((alias) => lowerNorm.includes(alias)) ||
         lowerNorm.includes(info.normSource) ||
-        lowerNorm.includes(info.normBase);
+        lowerNorm.includes(info.normBase) ||
+        (info.normTitle && lowerNorm.includes(info.normTitle));
 
       if (aliasMatched) {
         controls.exactSourceMentions.push(info.source);
@@ -235,7 +257,8 @@ function scoreSourceBias(item, latestUserMessage, controls, sourceInfos) {
   if (
     sourceInfo.aliases.some((alias) => qNorm.includes(alias)) ||
     qNorm.includes(sourceInfo.normSource) ||
-    qNorm.includes(sourceInfo.normBase)
+    qNorm.includes(sourceInfo.normBase) ||
+    (sourceInfo.normTitle && qNorm.includes(sourceInfo.normTitle))
   ) {
     boost += 0.14;
   }
@@ -430,17 +453,40 @@ function searchCorpus(
 function buildContext(hits) {
   return hits
     .map((hit) => {
+      const policySafeContent = getPolicySafeContent(hit);
       const parts = [
         "BEGIN EXCERPT",
+        `Source title: ${hit.title || hit.source}`,
         `Source file: ${hit.source}`,
       ];
+
+      if (Array.isArray(hit.authors) && hit.authors.length > 0) {
+        parts.push(`Authors: ${hit.authors.join(", ")}`);
+      }
+
+      if (hit.publication_date) {
+        parts.push(`Publication date: ${hit.publication_date}`);
+      }
+
+      if (hit.publication_status) {
+        parts.push(`Publication status: ${hit.publication_status}`);
+      }
+
+      const answerPolicy = getAnswerPolicy(hit);
+      if (answerPolicy?.instruction) {
+        parts.push(`Source-use policy: ${answerPolicy.instruction}`);
+      }
 
       if (hit.page) {
         parts.push(`Page: ${hit.page}`);
       }
 
+      if (hit.canonical_url) {
+        parts.push(`Canonical URL: ${hit.canonical_url}`);
+      }
+
       parts.push("Excerpt:");
-      parts.push(hit.content);
+      parts.push(policySafeContent);
       parts.push("END EXCERPT");
 
       return parts.join("\n");
@@ -464,13 +510,47 @@ function buildCitationData(hits) {
     seen.add(key);
 
     citations.push({
-      source: hit.source,
+      source: hit.title || hit.source,
       page: hit.page,
-      snippet: cleanSnippet(hit.content),
+      url: hit.canonical_url || null,
+      snippet: cleanSnippet(getPolicySafeContent(hit)),
     });
   }
 
   return citations;
+}
+
+function getAnswerPolicy(item) {
+  if (item?.answer_policy) return item.answer_policy;
+
+  const identity = normalizeText(`${item?.source || ""} ${item?.title || ""}`);
+  if (
+    identity.includes("paper 1 iffeb26") ||
+    identity.includes("paper1") ||
+    identity.includes("impact frontier")
+  ) {
+    return PRELIMINARY_IMPACT_FRONTIER_POLICY;
+  }
+
+  return null;
+}
+
+function getPolicySafeContent(item) {
+  const content = item?.content || "";
+  const policy = getAnswerPolicy(item);
+
+  if (policy?.quantitative_reporting !== "restricted") {
+    return content;
+  }
+
+  return content
+    .replace(
+      /(?<![\p{L}])(?:[$€£]\s*)?[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\s*%|\s*(?:basis points?|bps|times|x))?/giu,
+      "[preliminary figure omitted]"
+    )
+    .replace(/(?:\[preliminary figure omitted\]\s*){2,}/g, "[preliminary figures omitted] ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function stripTrailingSourcesSection(text) {
@@ -558,7 +638,8 @@ export const POST = auth(async function POST(request) {
     const priorUserContext = recentUserTurns.slice(0, -1);
 
     const strictModeInstruction = [
-    "You are a strict, risk-averse assistant for Jon's research site.",
+    "You are AskTPP, a strict, risk-averse research assistant from Total Portfolio Project.",
+    "The source collection may contain research from TPP, CSP, and CCSP-HSG.",
     "Use only the retrieved excerpts and the recent user-side context provided below.",
     "Do not use outside knowledge.",
     "Do not rely on prior assistant answers, because they may have been wrong.",
@@ -628,6 +709,14 @@ export const POST = auth(async function POST(request) {
       );
     }
 
+    if (
+      hits.some(
+        (hit) => getAnswerPolicy(hit)?.quantitative_reporting === "restricted"
+      )
+    ) {
+      taskHints.push(PRELIMINARY_IMPACT_FRONTIER_POLICY.instruction);
+    }
+
     const systemMessage = {
       role: "system",
       content: `${strictModeInstruction}\n\n${taskHints.join("\n")}`.trim(),
@@ -662,7 +751,7 @@ export const POST = auth(async function POST(request) {
         headers: {
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
-          "X-OpenRouter-Title": "Jon Research Site",
+          "X-OpenRouter-Title": "AskTPP",
         },
         body: JSON.stringify({
           model: process.env.OPENROUTER_MODEL || "openai/gpt-4.1-mini",

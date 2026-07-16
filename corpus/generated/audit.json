@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "document_count": 8,
+  "page_count": 529,
+  "chunk_count": 552,
+  "documents": [
+    {
+      "document_id": "csp-systemic-investing-2025",
+      "filename": "CSP-Investors-Guide-Systemic-Investing-Digital-Singles.pdf",
+      "publication_status": "final",
+      "pages": 56,
+      "near_empty_pages": 10,
+      "near_empty_page_numbers": [
+        1,
+        8,
+        14,
+        17,
+        18,
+        22,
+        28,
+        32,
+        46,
+        56
+      ],
+      "extracted_words": 11908,
+      "chunks": 53
+    },
+    {
+      "document_id": "csp-multicapital-strategies-2025",
+      "filename": "CSP-InvestorsGuide-Multicapital-A4-RGB-Digital-Singles.pdf",
+      "publication_status": "final",
+      "pages": 60,
+      "near_empty_pages": 8,
+      "near_empty_page_numbers": [
+        1,
+        4,
+        12,
+        18,
+        33,
+        57,
+        58,
+        60
+      ],
+      "extracted_words": 12170,
+      "chunks": 57
+    },
+    {
+      "document_id": "csp-eight-asian-families-2025",
+      "filename": "Insights from the Journeys of Eight Asian Families.pdf",
+      "publication_status": "final",
+      "pages": 49,
+      "near_empty_pages": 2,
+      "near_empty_page_numbers": [
+        1,
+        49
+      ],
+      "extracted_words": 15140,
+      "chunks": 61
+    },
+    {
+      "document_id": "csp-goals-based-investing-philanthropy-2026",
+      "filename": "Investor's-Guide-to-Goals-based-Investing-and-Philanthropy.pdf",
+      "publication_status": "final",
+      "pages": 60,
+      "near_empty_pages": 12,
+      "near_empty_page_numbers": [
+        1,
+        3,
+        6,
+        12,
+        16,
+        20,
+        26,
+        34,
+        40,
+        49,
+        58,
+        60
+      ],
+      "extracted_words": 12682,
+      "chunks": 55
+    },
+    {
+      "document_id": "csp-investors-guide-impact-2021",
+      "filename": "Investors Guide to Impact.pdf",
+      "publication_status": "final",
+      "pages": 40,
+      "near_empty_pages": 3,
+      "near_empty_page_numbers": [
+        1,
+        39,
+        40
+      ],
+      "extracted_words": 9924,
+      "chunks": 42
+    },
+    {
+      "document_id": "csp-b-corp-investment-organizations-2024",
+      "filename": "InvestorsGuide_BCorp.pdf",
+      "publication_status": "final",
+      "pages": 32,
+      "near_empty_pages": 7,
+      "near_empty_page_numbers": [
+        1,
+        4,
+        8,
+        11,
+        16,
+        22,
+        32
+      ],
+      "extracted_words": 7416,
+      "chunks": 31
+    },
+    {
+      "document_id": "csp-impact-wealth-management-2025",
+      "filename": "Investors_Guide_to_Impact_Wealth_Management.pdf",
+      "publication_status": "final",
+      "pages": 144,
+      "near_empty_pages": 22,
+      "near_empty_page_numbers": [
+        1,
+        3,
+        6,
+        12,
+        20,
+        29,
+        30,
+        37,
+        44,
+        50,
+        58,
+        67,
+        81,
+        83,
+        85,
+        93,
+        94,
+        107,
+        110,
+        111,
+        142,
+        144
+      ],
+      "extracted_words": 37763,
+      "chunks": 161
+    },
+    {
+      "document_id": "tpp-impact-frontier-preliminary-2026",
+      "filename": "paper1.pdf",
+      "publication_status": "preliminary",
+      "pages": 88,
+      "near_empty_pages": 0,
+      "near_empty_page_numbers": [],
+      "extracted_words": 23949,
+      "chunks": 92
+    }
+  ]
+}

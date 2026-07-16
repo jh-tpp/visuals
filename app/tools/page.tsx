@@ -1,30 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import SystemVisualization from "@/components/SystemVisualization";
 import IntegrationScatterplot from "@/components/IntegrationScatterplot";
 import AssistantPanel from "@/components/AssistantPanel";
 
-type Tab = "system" | "scatterplot" | "assistant";
+type Tab = "scatterplot" | "assistant";
 
 function getInitialTab(): Tab {
-  if (typeof window === "undefined") return "system";
+  if (typeof window === "undefined") return "scatterplot";
 
   const tab = new URLSearchParams(window.location.search).get("tab");
 
-  if (
-    tab === "system" ||
-    tab === "scatterplot" ||
-    tab === "assistant"
-  ) {
+  if (tab === "scatterplot" || tab === "assistant") {
     return tab;
   }
 
-  return "system";
+  return "scatterplot";
 }
 
 export default function Page() {
-  const [activeTab, setActiveTab] = useState<Tab>("system");
+  const [activeTab, setActiveTab] = useState<Tab>("scatterplot");
   const [isMounted, setIsMounted] = useState(false);
 
   const [scatterplotMode, setScatterplotMode] = useState<
@@ -38,7 +33,7 @@ export default function Page() {
 
     const url = new URL(window.location.href);
 
-    if (tab === "system") {
+    if (tab === "scatterplot") {
       url.searchParams.delete("tab");
     } else {
       url.searchParams.set("tab", tab);
@@ -61,25 +56,13 @@ export default function Page() {
       <div className="max-w-[1850px] mx-auto space-y-8">
         <header className="space-y-3">
           <h1 className="text-4xl font-bold tracking-tight">
-            Systemic Finance: Hidden Tools
+            Total Portfolio Project: Research Tools
           </h1>
         </header>
 
         <div className="space-y-6">
           <div>
             <div className="flex items-end gap-2 px-2">
-              <button
-                type="button"
-                onClick={() => switchTab("system")}
-                className={`rounded-t-2xl border border-slate-300 border-b-0 px-5 py-2 text-sm font-medium transition ${
-                  activeTab === "system"
-                    ? "bg-white text-slate-900"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                System
-              </button>
-
               <button
                 type="button"
                 onClick={() => switchTab("scatterplot")}
@@ -101,7 +84,7 @@ export default function Page() {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                AskCCSP
+                AskTPP
               </button>
 
             </div>
@@ -111,8 +94,6 @@ export default function Page() {
                 <div className="flex min-h-[420px] items-center justify-center text-sm text-slate-500">
                   Loading tools...
                 </div>
-              ) : activeTab === "system" ? (
-                <SystemVisualization />
               ) : activeTab === "scatterplot" ? (
                 <div className="space-y-4">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

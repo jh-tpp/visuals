@@ -7,3 +7,4 @@ public/.DS_Store
 .DS_Store
 .DS_Store
 corpus/.DS_Store
+corpus/generated/corpus.partial.json

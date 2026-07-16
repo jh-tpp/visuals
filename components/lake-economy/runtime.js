@@ -666,6 +666,7 @@ function contentForMode(mode) {
             <h3>Interactive research.</h3>
             <!-- REVIEW COPY: Jonathan may want to rephrase this About-panel language. -->
             <p>The Impact Frontier studies investor impact as a market response, not just a company score. The Lake Economy makes that idea playable.</p>
+            <p>This project is independently initiated and self-directed, developed on Jonathan's own schedule through the Total Portfolio Project as a public-good research effort. It is not client-commissioned work.</p>
             <p>You make investment offers. The model financial market responds. The result shows what actually got funded, how lake health and local prosperity changed, and how close the strategy came to the frontier.</p>
              <p>The demo is stylized. It is not a forecast or a calibrated policy model. It is a way to make the research intuition visible: impact and financial returns depend on the system, not just raw company impact or profitability in isolation.</p>
           </article>

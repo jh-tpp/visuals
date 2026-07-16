@@ -6,11 +6,11 @@ import remarkGfm from "remark-gfm";
 import { getSession, signIn } from "next-auth/react";
 
 const EXAMPLE_QUESTIONS = [
-  "What is CSP?",
-  "What is the guide about?",
+  "What themes recur across the CSP guides?",
   "What is The Impact Frontier paper about?",
-  "What programs does CSP offer?",
-  "How does the guide relate to CSP's programs?",
+  "How does The Impact Frontier paper relate to CSP's work?",
+  "What does the research say about goals-based investing?",
+  "Where is the available evidence incomplete?",
 ];
 
 function createSessionId() {
@@ -23,7 +23,7 @@ function createSessionId() {
 function formatTranscript(messages) {
   return messages
     .map((message) => {
-      const speaker = message.role === "user" ? "User" : "Assistant";
+      const speaker = message.role === "user" ? "User" : "AskTPP";
 
       let citationBlock = "";
 
@@ -37,8 +37,9 @@ function formatTranscript(messages) {
           message.citations
             .map((c) => {
               const pagePart = c.page ? `, page ${c.page}` : "";
+              const urlPart = c.url ? `\n  ${c.url}` : "";
               const snippetPart = c.snippet ? `\n  ${c.snippet}` : "";
-              return `- ${c.source}${pagePart}${snippetPart}`;
+              return `- ${c.source}${pagePart}${urlPart}${snippetPart}`;
             })
             .join("\n");
       }
@@ -138,7 +139,8 @@ export default function AssistantPanel() {
     return [
       {
         role: "assistant",
-        content: "Welcome. Ask me about CSP and CCSP Research...",
+        content:
+          "Welcome to AskTPP. Ask about the current collection of CSP guides and research publications and Jonathan Harris's The Impact Frontier paper.",
       },
     ];
   });
@@ -434,7 +436,7 @@ export default function AssistantPanel() {
     const a = document.createElement("a");
     const stamp = new Date().toISOString().replace(/[:.]/g, "-");
     a.href = url;
-    a.download = `assistant-chat-${stamp}.txt`;
+    a.download = `asktpp-chat-${stamp}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -454,9 +456,12 @@ export default function AssistantPanel() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 print:hidden">
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-slate-900">AskCCSP Assistant</h2>
+          <h2 className="text-xl font-semibold text-slate-900">AskTPP</h2>
           <p className="text-sm text-slate-600 max-w-3xl">
-            Early prototype 'talk with the research' assistant just to spark discussion. It has limited memory and context (currently only early copies of the 'guide' and Paper 1). You need to sign in to use it. Email Jonathan to request access.
+            An early &ldquo;talk with the research&rdquo; prototype from Total Portfolio Project. Its current corpus includes CSP guides and major research publications, along with Jonathan Harris&rsquo;s <em>The Impact Frontier</em> paper. Its conversational memory and retrieved context remain limited, so answers may be incomplete. Sign in to use it, or email Jonathan to request access.
+          </p>
+          <p className="text-sm text-slate-600 max-w-3xl">
+            This is independently initiated, self-directed public-good research developed on Jonathan&rsquo;s own schedule. It is not client-commissioned work.
           </p>
           <p className="text-xs text-slate-500">{authMessage}</p>
         </div>
@@ -514,7 +519,7 @@ export default function AssistantPanel() {
                       isUser ? "text-right text-slate-500" : "text-slate-500"
                     }`}
                   >
-                    {isUser ? "User" : "Assistant"}
+                    {isUser ? "User" : "AskTPP"}
                   </div>
                   <div
                     className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 ${
@@ -539,7 +544,18 @@ export default function AssistantPanel() {
                           {message.citations.map((citation, citationIndex) => (
                             <div key={citationIndex} className="space-y-1">
                               <div className="font-medium text-slate-600">
-                                {citation.source}
+                                {citation.url ? (
+                                  <a
+                                    href={citation.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline underline-offset-2 hover:text-slate-900"
+                                  >
+                                    {citation.source}
+                                  </a>
+                                ) : (
+                                  citation.source
+                                )}
                                 {citation.page ? `, page ${citation.page}` : ""}
                               </div>
                               {citation.snippet && (
@@ -557,7 +573,7 @@ export default function AssistantPanel() {
             {isLoading && (
               <div className="space-y-1">
                 <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Assistant
+                  AskTPP
                 </div>
                 <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 bg-white text-slate-500 border border-slate-200">
                   Thinking...
