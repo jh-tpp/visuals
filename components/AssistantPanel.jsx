@@ -5,6 +5,12 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getSession, signIn } from "next-auth/react";
 
+const STORAGE_KEYS = {
+  messages: "asktpp-rag-v2-messages",
+  sessionId: "asktpp-rag-v2-session-id",
+  createdAt: "asktpp-rag-v2-created-at",
+};
+
 const EXAMPLE_QUESTIONS = [
   "What themes recur across the CSP guides?",
   "What is The Impact Frontier paper about?",
@@ -128,7 +134,7 @@ const markdownComponents = {
 export default function AssistantPanel() {
   const [messages, setMessages] = useState(() => {
     if (typeof window !== "undefined") {
-      const saved = sessionStorage.getItem("assistant-messages");
+      const saved = sessionStorage.getItem(STORAGE_KEYS.messages);
       if (saved) {
         try {
           return JSON.parse(saved);
@@ -162,7 +168,7 @@ export default function AssistantPanel() {
 
   const [sessionId] = useState(() => {
     if (typeof window !== "undefined") {
-      const existing = sessionStorage.getItem("assistant-session-id");
+      const existing = sessionStorage.getItem(STORAGE_KEYS.sessionId);
       if (existing) return existing;
     }
     return createSessionId();
@@ -170,7 +176,7 @@ export default function AssistantPanel() {
 
   const [createdAt] = useState(() => {
     if (typeof window !== "undefined") {
-      const existing = sessionStorage.getItem("assistant-created-at");
+      const existing = sessionStorage.getItem(STORAGE_KEYS.createdAt);
       if (existing) return existing;
     }
     return new Date().toISOString();
@@ -234,9 +240,9 @@ export default function AssistantPanel() {
   }, []);
 
   useEffect(() => {
-    sessionStorage.setItem("assistant-session-id", sessionId);
-    sessionStorage.setItem("assistant-created-at", createdAt);
-    sessionStorage.setItem("assistant-messages", JSON.stringify(messages));
+    sessionStorage.setItem(STORAGE_KEYS.sessionId, sessionId);
+    sessionStorage.setItem(STORAGE_KEYS.createdAt, createdAt);
+    sessionStorage.setItem(STORAGE_KEYS.messages, JSON.stringify(messages));
   }, [sessionId, createdAt, messages]);
 
   useEffect(() => {
@@ -540,30 +546,37 @@ export default function AssistantPanel() {
                     {!isUser &&
                       Array.isArray(message.citations) &&
                       message.citations.length > 0 && (
-                        <div className="mt-3 space-y-2 border-t border-slate-200 pt-3 text-xs text-slate-500">
-                          {message.citations.map((citation, citationIndex) => (
-                            <div key={citationIndex} className="space-y-1">
-                              <div className="font-medium text-slate-600">
-                                {citation.url ? (
-                                  <a
-                                    href={citation.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="underline underline-offset-2 hover:text-slate-900"
-                                  >
-                                    {citation.source}
-                                  </a>
-                                ) : (
-                                  citation.source
+                        <details className="group mt-3 border-t border-slate-200 pt-3 text-xs text-slate-500">
+                          <summary className="cursor-pointer select-none font-medium text-slate-600 hover:text-slate-900">
+                            Sources and retrieved excerpts ({message.citations.length})
+                          </summary>
+                          <div className="mt-3 space-y-3 border-l border-slate-200 pl-3">
+                            {message.citations.map((citation, citationIndex) => (
+                              <div key={citationIndex} className="space-y-1">
+                                <div className="font-medium text-slate-600">
+                                  {citation.url ? (
+                                    <a
+                                      href={citation.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="underline underline-offset-2 hover:text-slate-900"
+                                    >
+                                      {citation.source}
+                                    </a>
+                                  ) : (
+                                    citation.source
+                                  )}
+                                  {citation.page ? `, page ${citation.page}` : ""}
+                                </div>
+                                {citation.snippet && (
+                                  <div className="italic text-slate-500">
+                                    {citation.snippet}
+                                  </div>
                                 )}
-                                {citation.page ? `, page ${citation.page}` : ""}
                               </div>
-                              {citation.snippet && (
-                                <div className="italic text-slate-500">{citation.snippet}</div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
+                        </details>
                       )}
                   </div>
                 </div>

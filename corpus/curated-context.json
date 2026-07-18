@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "organizations": [
+    {
+      "id": "csp",
+      "acronym": "CSP",
+      "name": "Center for Sustainable Finance and Private Wealth",
+      "description": "CSP works at the intersection of scientific research, wealth holders, and investment professionals to help move private wealth toward sustainable development. It was initiated at the University of Zurich in 2017 after earlier program work at Harvard Kennedy School, and its current academic home is the University of St.Gallen.",
+      "canonical_url": "https://www.cspglobal.org/about"
+    },
+    {
+      "id": "ccsp-hsg",
+      "acronym": "CCSP-HSG",
+      "name": "Competence Center for Sustainable Finance and Private Wealth at the University of St.Gallen",
+      "description": "CCSP-HSG is the University of St.Gallen competence center within the wider CSP research and education ecosystem.",
+      "canonical_url": "https://www.cspglobal.org/about/people"
+    },
+    {
+      "id": "tpp",
+      "acronym": "TPP",
+      "name": "Total Portfolio Project",
+      "description": "Total Portfolio Project is the name under which Jonathan Harris develops independent, self-directed public-good research on investing, capital allocation, and impact.",
+      "canonical_url": "https://total-portfolio.org"
+    }
+  ],
+  "terminology_rules": [
+    "In AskTPP, an unqualified reference to CSP means the Center for Sustainable Finance and Private Wealth, not Corporate Sustainability Performance.",
+    "Describe documents as indexed in or retrieved from the AskTPP corpus; do not claim that the assistant was trained on them.",
+    "The Impact Frontier is a Jonathan Harris / Total Portfolio Project working paper in the corpus. It is not a CSP publication.",
+    "When relating The Impact Frontier to CSP research, use evidence from both the paper and CSP publications and label synthesis as synthesis."
+  ]
+}

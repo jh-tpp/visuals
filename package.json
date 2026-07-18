@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:assistant": "node --test test/asktpp-retrieval.test.mjs",
     "corpus:build": "node scripts/build-chunks.mjs",
     "corpus:embed": "node --env-file-if-exists=.env.local scripts/build-corpus.mjs"
   },

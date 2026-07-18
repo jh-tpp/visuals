@@ -43,12 +43,12 @@ export default function Page() {
   }
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
+    const timeout = window.setTimeout(() => {
       setActiveTab(getInitialTab());
       setIsMounted(true);
-    });
+    }, 0);
 
-    return () => window.cancelAnimationFrame(frame);
+    return () => window.clearTimeout(timeout);
   }, []);
   
   return (
