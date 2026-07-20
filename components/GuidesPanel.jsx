@@ -36,15 +36,18 @@ const GUIDES = [
     note: "Early Total Portfolio Project report, formerly featured and included here for legacy context.",
     previewSrc: "/guides/three_cases_TPP.png",
     previewType: "image",
-    downloadHref: "",
-    downloadLabel: "Report link coming soon",
-    downloadDisabled: true,
+    downloadHref:
+      "/guides/TPP%20-%20Impact%20Returns%203%20Case%20Studies.pdf",
+    downloadLabel: "Download guide",
+    downloadDisabled: false,
+    download: true,
   },
 ];
 
 function ActionButton({
   href,
   disabled = false,
+  download = false,
   children,
 }) {
   if (disabled || !href) {
@@ -62,8 +65,9 @@ function ActionButton({
   return (
     <a
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+      download={download || undefined}
+      target={download ? undefined : "_blank"}
+      rel={download ? undefined : "noopener noreferrer"}
       className="inline-flex items-center justify-center rounded-2xl border border-slate-900 bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
     >
       {children}
@@ -101,6 +105,7 @@ function GuideCard({ guide }) {
             <ActionButton
               href={guide.downloadHref}
               disabled={guide.downloadDisabled}
+              download={guide.download}
             >
               {guide.downloadLabel}
             </ActionButton>
