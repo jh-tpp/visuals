@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { buildFaqGuidance, findFaqMatch } from "@/lib/asktpp-faq.mjs";
 import {
   buildCorpusCatalog,
   buildRetrievalQuery,
@@ -20,6 +21,7 @@ const CURATED_CONTEXT_PATH = path.join(
   "corpus",
   "curated-context.json"
 );
+const FAQ_PATH = path.join(process.cwd(), "corpus", "generated", "faq.json");
 
 const PRELIMINARY_IMPACT_FRONTIER_POLICY = {
   conceptual_use: "allowed",
@@ -180,7 +182,12 @@ export const POST = auth(async function POST(request) {
       return Response.json({ error: "Missing OPENROUTER_API_KEY" }, { status: 500 });
     }
 
-    const requiredFiles = [CORPUS_PATH, MANIFEST_PATH, CURATED_CONTEXT_PATH];
+    const requiredFiles = [
+      CORPUS_PATH,
+      MANIFEST_PATH,
+      CURATED_CONTEXT_PATH,
+      FAQ_PATH,
+    ];
     const missingFile = requiredFiles.find((filePath) => !fs.existsSync(filePath));
     if (missingFile) {
       return Response.json(
@@ -201,6 +208,7 @@ export const POST = auth(async function POST(request) {
     const corpus = readJson(CORPUS_PATH);
     const manifest = readJson(MANIFEST_PATH);
     const curatedContext = readJson(CURATED_CONTEXT_PATH);
+    const faq = readJson(FAQ_PATH);
     const sourceControls = detectSourceControls(messages, getSourceInfos(corpus));
     const curatedResponse = getCuratedResponse(
       latestUserMessage,
@@ -217,6 +225,7 @@ export const POST = auth(async function POST(request) {
 
     const retrievalQuery = buildRetrievalQuery(messages);
     const queryEmbedding = await embedText(retrievalQuery);
+    const faqMatch = findFaqMatch(latestUserMessage, faq, queryEmbedding);
     const { hits, controls, candidateNames } = searchCorpus(
       queryEmbedding,
       corpus,
@@ -225,14 +234,19 @@ export const POST = auth(async function POST(request) {
       36,
       12
     );
-    const { isListQuery, isCrossDocQuery, isNameQuery } =
+    const {
+      isListQuery,
+      isCrossDocQuery,
+      isCorpusWideSynthesis,
+      isNameQuery,
+    } =
       classifyQuestion(latestUserMessage);
     const citations = buildCitationData(hits);
     const priorUserContext = recentUserTurns.slice(0, -1);
 
     const strictModeInstruction = [
       "You are AskTPP, a strict, risk-averse research assistant from Total Portfolio Project.",
-      "Use only the curated organization reference, complete corpus catalog, retrieved excerpts, and recent user-side context provided below.",
+      "Use only the approved FAQ guidance (when supplied), curated organization reference, complete corpus catalog, retrieved excerpts, and recent user-side context provided below.",
       "Do not use outside knowledge or rely on prior assistant answers.",
       "CSP means the Center for Sustainable Finance and Private Wealth unless the user explicitly defines another meaning.",
       "Never reinterpret CSP as Corporate Sustainability Performance in this project.",
@@ -258,6 +272,11 @@ export const POST = auth(async function POST(request) {
         "This is a cross-document question. Use evidence from every relevant source group represented in the excerpts; do not answer a CSP/paper relationship question from the paper alone."
       );
     }
+    if (isCorpusWideSynthesis) {
+      taskHints.push(
+        "This is a corpus-wide synthesis question, not a request for a corpus inventory. Answer the substantive question. Identify only themes supported by multiple distinct publications, note meaningful differences, and use evidence from across the represented publications."
+      );
+    }
     if (isNameQuery) {
       taskHints.push(
         "This is a person question. Confirm only names appearing verbatim in the supplied materials."
@@ -273,6 +292,11 @@ export const POST = auth(async function POST(request) {
     if (controls.onlyGuide) taskHints.push("Use only the guides.");
     if (candidateNames.length > 0) {
       taskHints.push(`Candidate names from the user: ${candidateNames.join(", ")}`);
+    }
+    if (faqMatch) {
+      taskHints.push(
+        `A provisionally approved FAQ entry (${faqMatch.faq_id}) strongly matches this question. Use it as the answer backbone and preserve its mandatory cautions. Do not mention the FAQ id or matching process to the user.`
+      );
     }
     if (
       hits.some(
@@ -291,6 +315,9 @@ export const POST = auth(async function POST(request) {
         role: "system",
         content: buildCorpusCatalog(manifest, curatedContext),
       },
+      ...(faqMatch
+        ? [{ role: "system", content: buildFaqGuidance(faqMatch) }]
+        : []),
       ...(priorUserContext.length > 0
         ? [
             {
@@ -331,7 +358,17 @@ export const POST = auth(async function POST(request) {
     const content = stripTrailingSourcesSection(
       data?.choices?.[0]?.message?.content || "No response content returned."
     );
-    return Response.json({ content, citations });
+    return Response.json({
+      content,
+      citations,
+      faq_match: faqMatch
+        ? {
+            faq_id: faqMatch.faq_id,
+            match_type: faqMatch.match_type,
+            match_score: faqMatch.match_score,
+          }
+        : null,
+    });
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "Unknown server error" },

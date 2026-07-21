@@ -1,10 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { parseFaqMarkdown } from "../lib/asktpp-faq.mjs";
+
 const CHUNKS_PATH = path.join(process.cwd(), "corpus", "generated", "chunks.json");
 const OUTPUT_DIR = path.join(process.cwd(), "corpus", "generated");
 const OUTPUT_PATH = path.join(OUTPUT_DIR, "corpus.json");
 const PARTIAL_PATH = path.join(OUTPUT_DIR, "corpus.partial.json");
+const FAQ_SOURCE_PATH = path.join(process.cwd(), "corpus", "AskTPP_FAQ.md");
+const FAQ_RECORDS_PATH = path.join(OUTPUT_DIR, "faq-records.json");
+const FAQ_OUTPUT_PATH = path.join(OUTPUT_DIR, "faq.json");
 
 const EMBEDDING_MODEL =
   process.env.OPENROUTER_EMBEDDING_MODEL || "openai/text-embedding-3-small";
@@ -78,6 +83,68 @@ function loadReusableEmbeddings() {
   return new Map();
 }
 
+function loadReusableFaqEmbeddings() {
+  if (!fs.existsSync(FAQ_OUTPUT_PATH)) return new Map();
+  try {
+    const faq = JSON.parse(fs.readFileSync(FAQ_OUTPUT_PATH, "utf8"));
+    return new Map(
+      (faq.entries || [])
+        .filter(
+          (entry) =>
+            entry.embedding_model === EMBEDDING_MODEL &&
+            entry.content_hash &&
+            Array.isArray(entry.embedding)
+        )
+        .map((entry) => [entry.content_hash, entry.embedding])
+    );
+  } catch {
+    return new Map();
+  }
+}
+
+async function buildEmbeddedFaq() {
+  if (!fs.existsSync(FAQ_SOURCE_PATH)) {
+    throw new Error(`Missing FAQ source: ${FAQ_SOURCE_PATH}`);
+  }
+
+  const faq = parseFaqMarkdown(fs.readFileSync(FAQ_SOURCE_PATH, "utf8"));
+  if (faq.entries.length !== 44) {
+    throw new Error(`Expected 44 FAQ entries, found ${faq.entries.length}`);
+  }
+  fs.writeFileSync(FAQ_RECORDS_PATH, `${JSON.stringify(faq, null, 2)}\n`, "utf8");
+
+  const reusable = loadReusableFaqEmbeddings();
+  const entries = faq.entries.map((entry) => ({
+    ...entry,
+    embedding_model: entry.active ? EMBEDDING_MODEL : null,
+    embedding: entry.active ? reusable.get(entry.content_hash) || null : null,
+  }));
+  const pendingIndexes = entries
+    .map((entry, index) => (entry.active && !entry.embedding ? index : null))
+    .filter((index) => index !== null);
+
+  console.log(
+    `Embedding ${pendingIndexes.length} of ${entries.filter((entry) => entry.active).length} active FAQ records with ${EMBEDDING_MODEL}`
+  );
+
+  for (let start = 0; start < pendingIndexes.length; start += BATCH_SIZE) {
+    const indexes = pendingIndexes.slice(start, start + BATCH_SIZE);
+    const embeddings = await getEmbeddings(
+      indexes.map((index) => entries[index].retrieval_text)
+    );
+    indexes.forEach((entryIndex, batchIndex) => {
+      entries[entryIndex].embedding = embeddings[batchIndex];
+    });
+  }
+
+  fs.writeFileSync(
+    FAQ_OUTPUT_PATH,
+    `${JSON.stringify({ ...faq, embedding_model: EMBEDDING_MODEL, entries })}\n`,
+    "utf8"
+  );
+  console.log(`Wrote embedded FAQ to ${FAQ_OUTPUT_PATH}`);
+}
+
 async function main() {
   if (!process.env.OPENROUTER_API_KEY) {
     throw new Error("Missing OPENROUTER_API_KEY");
@@ -131,6 +198,7 @@ async function main() {
   fs.writeFileSync(OUTPUT_PATH, `${JSON.stringify(corpus)}\n`, "utf8");
   if (fs.existsSync(PARTIAL_PATH)) fs.unlinkSync(PARTIAL_PATH);
   console.log(`Wrote embedded corpus to ${OUTPUT_PATH}`);
+  await buildEmbeddedFaq();
 }
 
 main().catch((error) => {

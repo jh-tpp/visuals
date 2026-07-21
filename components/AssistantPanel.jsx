@@ -12,11 +12,12 @@ const STORAGE_KEYS = {
 };
 
 const EXAMPLE_QUESTIONS = [
-  "What themes recur across the CSP guides?",
+  "What is CSP?",
+  "What is Total Portfolio Project?",
+  "What is the goals-based investing and philanthropy guide about?",
   "What is The Impact Frontier paper about?",
+  "How does the 'goals'-guide relate to the rest of CSP's work?",
   "How does The Impact Frontier paper relate to CSP's work?",
-  "What does the research say about goals-based investing?",
-  "Where is the available evidence incomplete?",
 ];
 
 function createSessionId() {
@@ -465,9 +466,6 @@ export default function AssistantPanel() {
           <h2 className="text-xl font-semibold text-slate-900">AskTPP</h2>
           <p className="text-sm text-slate-600 max-w-3xl">
             An early &ldquo;talk with the research&rdquo; prototype from Total Portfolio Project. Its current corpus includes CSP guides and major research publications, along with Jonathan Harris&rsquo;s <em>The Impact Frontier</em> paper. Its conversational memory and retrieved context remain limited, so answers may be incomplete. Sign in to use it, or email Jonathan to request access.
-          </p>
-          <p className="text-sm text-slate-600 max-w-3xl">
-            This is independently initiated, self-directed public-good research developed on Jonathan&rsquo;s own schedule. It is not client-commissioned work.
           </p>
           <p className="text-xs text-slate-500">{authMessage}</p>
         </div>

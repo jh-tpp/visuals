@@ -10,7 +10,23 @@ official URL, file hash, aliases, and answer policy.
    page by page with Poppler, and writes `generated/pages.json` and
    `generated/chunks.json`.
 2. `npm run corpus:embed` embeds `retrieval_text` through OpenRouter and writes
-   `generated/corpus.json`, which the live `/api/chat` route reads.
+   `generated/corpus.json`, which the live `/api/chat` route reads. The same
+   command compiles approved entries from `AskTPP_FAQ.md`, embeds each entry's
+   canonical question and alternate phrasings, and writes `generated/faq.json`.
+
+## Approved FAQ answer layer
+
+`AskTPP_FAQ.md` is the human-editable source of truth for reviewed FAQ answers.
+Run `npm run faq:build` to validate and compile it without making an API call.
+The file is split into one record per FAQ entry; the full Markdown document is
+never sent to the answer model. Only active, provisionally approved entries are
+eligible for matching. Entries marked runtime-inactive remain available for
+editorial work but are excluded from production matching.
+
+At answer time, AskTPP first checks exact canonical and alternate questions,
+then uses a conservative semantic threshold against the FAQ question
+embeddings. A strong match supplies one approved answer backbone and its
+mandatory cautions alongside ordinary retrieved publication excerpts.
 
 ## Local OpenRouter credential
 
