@@ -7,7 +7,7 @@ import AssistantPanel from "@/components/AssistantPanel";
 type Tab = "scatterplot" | "assistant";
 
 function getInitialTab(): Tab {
-  if (typeof window === "undefined") return "scatterplot";
+  if (typeof window === "undefined") return "assistant";
 
   const tab = new URLSearchParams(window.location.search).get("tab");
 
@@ -15,11 +15,11 @@ function getInitialTab(): Tab {
     return tab;
   }
 
-  return "scatterplot";
+  return "assistant";
 }
 
 export default function Page() {
-  const [activeTab, setActiveTab] = useState<Tab>("scatterplot");
+  const [activeTab, setActiveTab] = useState<Tab>("assistant");
   const [isMounted, setIsMounted] = useState(false);
 
   const [scatterplotMode, setScatterplotMode] = useState<
@@ -63,6 +63,7 @@ export default function Page() {
         <div className="space-y-6">
           <div>
             <div className="flex items-end gap-2 px-2">
+              {/* Scatterplots tab temporarily hidden.
               <button
                 type="button"
                 onClick={() => switchTab("scatterplot")}
@@ -74,6 +75,7 @@ export default function Page() {
               >
                 Scatterplots
               </button>
+              */}
 
               <button
                 type="button"
