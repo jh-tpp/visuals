@@ -12,11 +12,11 @@ const STORAGE_KEYS = {
 };
 
 const EXAMPLE_QUESTIONS = [
+  "What is the Total Portfolio Project?",
   "What is CSP?",
-  "What is Total Portfolio Project?",
   "What is the goals-based investing and philanthropy guide about?",
   "What is The Impact Frontier paper about?",
-  "How does the 'goals'-guide relate to the rest of CSP's work?",
+  "How does the 'goals'-guide relate to CSP's work?",
   "How does The Impact Frontier paper relate to CSP's work?",
 ];
 
